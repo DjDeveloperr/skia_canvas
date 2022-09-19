@@ -4,6 +4,7 @@ import ffi from "./ffi.ts";
 const {
   sk_create_context,
   sk_destroy_context,
+  sk_context_clear_rect,
 } = ffi;
 
 const CONTEXT_FINALIZER = new FinalizationRegistry((ptr: Deno.PointerValue) => {
@@ -29,5 +30,9 @@ export class Context {
       throw new Error("Failed to create context");
     }
     CONTEXT_FINALIZER.register(this, this.#ptr);
+  }
+
+  clearRect(x: number, y: number, width: number, height: number) {
+    sk_context_clear_rect(this.#ptr, x, y, width, height);
   }
 }

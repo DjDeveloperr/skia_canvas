@@ -25,6 +25,11 @@ const lib = Deno.dlopen(
       parameters: ["pointer"],
       result: "void",
     },
+
+    sk_context_clear_rect: {
+      parameters: ["pointer", "f32", "f32", "f32", "f32"],
+      result: "void",
+    },
   } as const,
 ).symbols;
 
