@@ -1,5 +1,7 @@
 import { Canvas } from "./mod.ts";
 
-const canvas = new Canvas(100, 100);
+Deno.bench("noop", () => {});
 
-canvas.destroy();
+Deno.bench("canvas", () => {
+  const canvas = new Canvas(100, 100);
+});

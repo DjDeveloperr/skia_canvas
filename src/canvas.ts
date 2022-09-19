@@ -5,6 +5,10 @@ const {
   sk_destroy_canvas,
 } = ffi;
 
+const CANVAS_FINALIZER = new FinalizationRegistry((ptr: Deno.PointerValue) => {
+  sk_destroy_canvas(ptr);
+});
+
 export class Canvas {
   #ptr: Deno.PointerValue;
 
@@ -13,9 +17,6 @@ export class Canvas {
     if (this.#ptr === 0) {
       throw new Error("Failed to create canvas");
     }
-  }
-
-  destroy() {
-    sk_destroy_canvas(this.#ptr);
+    CANVAS_FINALIZER.register(this, this.#ptr);
   }
 }
