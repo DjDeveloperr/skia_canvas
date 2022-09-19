@@ -55,6 +55,51 @@ const lib = Deno.dlopen(
       parameters: ["pointer", "f32", "f32", "f32", "f32"],
       result: "void",
     },
+
+    sk_context_stroke_rect: {
+      parameters: ["pointer", "f32", "f32", "f32", "f32"],
+      result: "void",
+    },
+
+    sk_context_get_stroke_style: {
+      parameters: ["pointer"],
+      result: "pointer",
+    },
+
+    sk_context_set_stroke_style: {
+      parameters: ["pointer", "buffer"],
+      result: "void",
+    },
+
+    sk_context_begin_path: {
+      parameters: ["pointer"],
+      result: "void",
+    },
+
+    sk_context_move_to: {
+      parameters: ["pointer", "f32", "f32"],
+      result: "void",
+    },
+
+    sk_context_line_to: {
+      parameters: ["pointer", "f32", "f32"],
+      result: "void",
+    },
+
+    sk_context_close_path: {
+      parameters: ["pointer"],
+      result: "void",
+    },
+
+    sk_context_fill: {
+      parameters: ["pointer"],
+      result: "void",
+    },
+
+    sk_context_stroke: {
+      parameters: ["pointer"],
+      result: "void",
+    },
   } as const,
 ).symbols;
 

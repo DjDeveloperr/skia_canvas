@@ -21,6 +21,11 @@ typedef struct RGBA {
   uint8_t a;
 } RGBA;
 
+typedef struct Style {
+  unsigned char type;
+  RGBA color;
+} Style;
+
 typedef struct sk_context_state {
   SkPaint* paint;
   float shadowOffsetX;
@@ -171,11 +176,67 @@ extern "C" {
     return false;
   }
 
+  char* sk_context_get_stroke_style(sk_context* context) {
+    return context->state->strokeStyleString;
+  }
+
+  bool sk_context_set_stroke_style(sk_context* context, char* style) {
+    auto color = CSSColorParser::parse(std::string(style));
+    if (color) {
+      auto val = color.value();
+      context->state->strokeStyle = {val.r, val.g, val.b, (uint8_t)(val.a * 255)};
+      context->state->strokeStyleString = strdup(style);
+      return true;
+    }
+    return false;
+  }
+
   void sk_context_fill_rect(sk_context* context, float x, float y, float width, float height) {
     auto canvas = SK_CANVAS(context->canvas);
     auto paint = context->state->paint;
+    paint->setStroke(false);
     paint->setColor(SkColorSetARGB(context->state->fillStyle.a, context->state->fillStyle.r, context->state->fillStyle.g, context->state->fillStyle.b));
     canvas->drawRect(SkRect::MakeXYWH(x, y, width, height), *paint);
+  }
+
+  void sk_context_stroke_rect(sk_context* context, float x, float y, float width, float height) {
+    auto canvas = SK_CANVAS(context->canvas);
+    auto paint = context->state->paint;
+    paint->setStroke(true);
+    paint->setColor(SkColorSetARGB(context->state->strokeStyle.a, context->state->strokeStyle.r, context->state->strokeStyle.g, context->state->strokeStyle.b));
+    canvas->drawRect(SkRect::MakeXYWH(x, y, width, height), *paint);
+  }
+
+  void sk_context_begin_path(sk_context* context) {
+    context->path->reset();
+  }
+
+  void sk_context_move_to(sk_context* context, float x, float y) {
+    context->path->moveTo(x, y);
+  }
+
+  void sk_context_line_to(sk_context* context, float x, float y) {
+    context->path->lineTo(x, y);
+  }
+
+  void sk_context_close_path(sk_context* context) {
+    context->path->close();
+  }
+
+  void sk_context_fill(sk_context* context) {
+    auto canvas = SK_CANVAS(context->canvas);
+    auto paint = context->state->paint;
+    paint->setStroke(false);
+    paint->setColor(SkColorSetARGB(context->state->fillStyle.a, context->state->fillStyle.r, context->state->fillStyle.g, context->state->fillStyle.b));
+    canvas->drawPath(*context->path, *paint);
+  }
+
+  void sk_context_stroke(sk_context* context) {
+    auto canvas = SK_CANVAS(context->canvas);
+    auto paint = context->state->paint;
+    paint->setStroke(true);
+    paint->setColor(SkColorSetARGB(context->state->strokeStyle.a, context->state->strokeStyle.r, context->state->strokeStyle.g, context->state->strokeStyle.b));
+    canvas->drawPath(*context->path, *paint);
   }
 
   void sk_destroy_context(sk_context* context) {

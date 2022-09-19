@@ -10,6 +10,15 @@ const {
   sk_context_save,
   sk_context_restore,
   sk_context_fill_rect,
+  sk_context_get_stroke_style,
+  sk_context_set_stroke_style,
+  sk_context_stroke_rect,
+  sk_context_begin_path,
+  sk_context_close_path,
+  sk_context_line_to,
+  sk_context_move_to,
+  sk_context_fill,
+  sk_context_stroke,
 } = ffi;
 
 const CONTEXT_FINALIZER = new FinalizationRegistry((ptr: Deno.PointerValue) => {
@@ -38,12 +47,19 @@ export class Context {
   }
 
   get fillStyle() {
-    const ptr = sk_context_get_fill_style(this.#ptr);
-    return readCstr(ptr);
+    return readCstr(sk_context_get_fill_style(this.#ptr));
   }
 
   set fillStyle(value: string) {
     sk_context_set_fill_style(this.#ptr, cstr(value));
+  }
+
+  get strokeStyle() {
+    return readCstr(sk_context_get_stroke_style(this.#ptr));
+  }
+
+  set strokeStyle(value: string) {
+    sk_context_set_stroke_style(this.#ptr, cstr(value));
   }
 
   save() {
@@ -60,5 +76,33 @@ export class Context {
 
   fillRect(x: number, y: number, width: number, height: number) {
     sk_context_fill_rect(this.#ptr, x, y, width, height);
+  }
+
+  strokeRect(x: number, y: number, width: number, height: number) {
+    sk_context_stroke_rect(this.#ptr, x, y, width, height);
+  }
+
+  beginPath() {
+    sk_context_begin_path(this.#ptr);
+  }
+
+  closePath() {
+    sk_context_close_path(this.#ptr);
+  }
+
+  moveTo(x: number, y: number) {
+    sk_context_move_to(this.#ptr, x, y);
+  }
+
+  lineTo(x: number, y: number) {
+    sk_context_line_to(this.#ptr, x, y);
+  }
+
+  fill() {
+    sk_context_fill(this.#ptr);
+  }
+
+  stroke() {
+    sk_context_stroke(this.#ptr);
   }
 }

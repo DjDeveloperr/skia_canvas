@@ -13,9 +13,19 @@ const CANVAS_FINALIZER = new FinalizationRegistry((ptr: Deno.PointerValue) => {
 
 export class Canvas {
   #ptr: Deno.PointerValue;
+  #width: number;
+  #height: number;
 
   get _unsafePointer() {
     return this.#ptr;
+  }
+
+  get width() {
+    return this.#width;
+  }
+
+  get height() {
+    return this.#height;
   }
 
   constructor(width: number, height: number) {
@@ -24,6 +34,8 @@ export class Canvas {
       throw new Error("Failed to create canvas");
     }
     CANVAS_FINALIZER.register(this, this.#ptr);
+    this.#width = width;
+    this.#height = height;
   }
 
   save(path: string) {
