@@ -18,6 +18,7 @@ target_link_libraries(native_canvas ${CMAKE_SOURCE_DIR}/../skia/out/Static/libsk
 target_link_libraries(native_canvas ${CMAKE_SOURCE_DIR}/../skia/out/Static/libsktext.a)
 target_link_libraries(native_canvas jpeg)
 target_link_libraries(native_canvas webp)
+target_link_libraries(native_canvas png)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
