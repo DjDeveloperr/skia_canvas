@@ -7,7 +7,7 @@ include(CTest)
 include_directories(../skia)
 enable_testing()
 
-add_library(native_canvas SHARED native_canvas.cpp)
+add_library(native_canvas SHARED native_canvas.cpp csscolorparser.cpp)
 target_link_libraries(native_canvas ${CMAKE_SOURCE_DIR}/../skia/out/Static/libskia.a)
 target_link_libraries(native_canvas ${CMAKE_SOURCE_DIR}/../skia/out/Static/libharfbuzz.a)
 target_link_libraries(native_canvas ${CMAKE_SOURCE_DIR}/../skia/out/Static/libpathkit.a)
