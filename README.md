@@ -1,1 +1,3 @@
-# native_canvas
+# Deno Canvas
+
+Fastest JavaScript Canvas backed by Skia

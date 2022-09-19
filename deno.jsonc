@@ -1,0 +1,6 @@
+{
+  "tasks": {
+    "build": "cd native/build && cmake .. && make",
+    "test": "deno run -A --unstable test.ts"
+  }
+}
