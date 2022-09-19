@@ -6,22 +6,28 @@
 #include "include/core/SkStream.h"
 #include "include/core/SkSurface.h"
 #include "include/core/SkEncodedImageFormat.h"
+#include "include/core/SkPath.h"
 
 typedef struct sk_canvas {
   SkSurface* surface;
 } sk_canvas;
 
 typedef struct sk_context_state {
-
+  SkPaint* paint;
+  float shadowOffsetX;
+  float shadowOffsetY;
+  float shadowBlur;
 } sk_context_state;
 
 typedef struct sk_context {
   SkCanvas* canvas;
+  SkPath* path;
   sk_context_state* state;
 } sk_context;
 
 #define SK_SURFACE(surface) reinterpret_cast<SkSurface *>(surface)
 #define SK_CANVAS(canvas) reinterpret_cast<SkCanvas *>(canvas)
+#define SK_PATH(path) reinterpret_cast<SkPath *>(path)
 
 extern "C" {
   sk_canvas* sk_create_canvas(int width, int height){
@@ -52,7 +58,14 @@ extern "C" {
   sk_context* sk_create_context(sk_canvas* canvas) {
     sk_context* context = new sk_context();
     context->canvas = SK_SURFACE(canvas->surface)->getCanvas();
+    context->path = new SkPath();
+
     context->state = new sk_context_state();
+    context->state->paint = new SkPaint();
+    context->state->shadowOffsetX = 0;
+    context->state->shadowOffsetY = 0;
+    context->state->shadowBlur = 0;
+
     return context;
   }
 
@@ -64,6 +77,8 @@ extern "C" {
   }
 
   void sk_destroy_context(sk_context* context) {
+    delete context->path;
+    delete context->state;
     delete context;
   }
 }
