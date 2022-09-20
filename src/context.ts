@@ -35,6 +35,12 @@ const {
   sk_context_bezier_curve_to,
   sk_context_ellipse,
   sk_context_quadratic_curve_to,
+  sk_context_reset_transform,
+  sk_context_rotate,
+  sk_context_scale,
+  sk_context_set_transform,
+  sk_context_transform,
+  sk_context_translate,
 } = ffi;
 
 const CONTEXT_FINALIZER = new FinalizationRegistry((ptr: Deno.PointerValue) => {
@@ -239,5 +245,43 @@ export class Context {
     const fillRuleStr = typeof path === "string" ? path : fillRule;
     const ifillRule = fillRuleStr === "evenodd" ? 1 : 0;
     sk_context_clip(this.#ptr, pathptr, ifillRule);
+  }
+
+  translate(x: number, y: number) {
+    sk_context_translate(this.#ptr, x, y);
+  }
+
+  transform(
+    a: number,
+    b: number,
+    c: number,
+    d: number,
+    e: number,
+    f: number,
+  ) {
+    sk_context_transform(this.#ptr, a, b, c, d, e, f);
+  }
+
+  rotate(angle: number) {
+    sk_context_rotate(this.#ptr, angle);
+  }
+
+  scale(x: number, y: number) {
+    sk_context_scale(this.#ptr, x, y);
+  }
+
+  setTransform(
+    a: number,
+    b: number,
+    c: number,
+    d: number,
+    e: number,
+    f: number,
+  ) {
+    sk_context_set_transform(this.#ptr, a, b, c, d, e, f);
+  }
+
+  resetTransform() {
+    sk_context_reset_transform(this.#ptr);
   }
 }

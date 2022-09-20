@@ -265,6 +265,36 @@ const lib = Deno.dlopen(
       parameters: ["pointer", "f32", "f32", "f32", "f32"],
       result: "void",
     },
+
+    sk_context_translate: {
+      parameters: ["pointer", "f32", "f32"],
+      result: "void",
+    },
+
+    sk_context_rotate: {
+      parameters: ["pointer", "f32"],
+      result: "void",
+    },
+
+    sk_context_scale: {
+      parameters: ["pointer", "f32", "f32"],
+      result: "void",
+    },
+
+    sk_context_transform: {
+      parameters: ["pointer", "f32", "f32", "f32", "f32", "f32", "f32"],
+      result: "void",
+    },
+
+    sk_context_set_transform: {
+      parameters: ["pointer", "f32", "f32", "f32", "f32", "f32", "f32"],
+      result: "void",
+    },
+
+    sk_context_reset_transform: {
+      parameters: ["pointer"],
+      result: "void",
+    },
   } as const,
 ).symbols;
 
