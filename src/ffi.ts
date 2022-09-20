@@ -12,11 +12,11 @@ const lib = Deno.dlopen(
     },
 
     sk_canvas_save: {
-      parameters: ["pointer", "buffer"],
-      result: "u8",
+      parameters: ["pointer", "buffer", "i32", "i32"],
+      result: "i32",
     },
 
-    sk_create_context: {
+    sk_canvas_get_context: {
       parameters: ["pointer"],
       result: "pointer",
     },
@@ -41,14 +41,9 @@ const lib = Deno.dlopen(
       result: "void",
     },
 
-    sk_context_get_fill_style: {
-      parameters: ["pointer"],
-      result: "pointer",
-    },
-
     sk_context_set_fill_style: {
       parameters: ["pointer", "buffer"],
-      result: "void",
+      result: "i32",
     },
 
     sk_context_fill_rect: {
@@ -61,14 +56,9 @@ const lib = Deno.dlopen(
       result: "void",
     },
 
-    sk_context_get_stroke_style: {
-      parameters: ["pointer"],
-      result: "pointer",
-    },
-
     sk_context_set_stroke_style: {
       parameters: ["pointer", "buffer"],
-      result: "void",
+      result: "i32",
     },
 
     sk_context_begin_path: {
@@ -92,12 +82,12 @@ const lib = Deno.dlopen(
     },
 
     sk_context_fill: {
-      parameters: ["pointer"],
+      parameters: ["pointer", "pointer", "u8"],
       result: "void",
     },
 
     sk_context_stroke: {
-      parameters: ["pointer"],
+      parameters: ["pointer", "pointer"],
       result: "void",
     },
 
@@ -131,14 +121,9 @@ const lib = Deno.dlopen(
       result: "void",
     },
 
-    sk_context_get_shadow_color: {
-      parameters: ["pointer"],
-      result: "pointer",
-    },
-
     sk_context_set_shadow_color: {
       parameters: ["pointer", "buffer"],
-      result: "void",
+      result: "i32",
     },
 
     sk_context_rect: {
@@ -295,17 +280,131 @@ const lib = Deno.dlopen(
       parameters: ["pointer"],
       result: "void",
     },
+
+    sk_context_get_line_cap: {
+      parameters: ["pointer"],
+      result: "i32",
+    },
+
+    sk_context_set_line_cap: {
+      parameters: ["pointer", "i32"],
+      result: "void",
+    },
+
+    sk_context_get_line_dash_offset: {
+      parameters: ["pointer"],
+      result: "f32",
+    },
+
+    sk_context_set_line_dash_offset: {
+      parameters: ["pointer", "f32"],
+      result: "void",
+    },
+
+    sk_context_get_text_direction: {
+      parameters: ["pointer"],
+      result: "i32",
+    },
+
+    sk_context_set_text_direction: {
+      parameters: ["pointer", "i32"],
+      result: "void",
+    },
+
+    sk_context_get_text_align: {
+      parameters: ["pointer"],
+      result: "i32",
+    },
+
+    sk_context_set_text_align: {
+      parameters: ["pointer", "i32"],
+      result: "void",
+    },
+
+    sk_context_get_text_baseline: {
+      parameters: ["pointer"],
+      result: "i32",
+    },
+
+    sk_context_set_text_baseline: {
+      parameters: ["pointer", "i32"],
+      result: "void",
+    },
+
+    sk_context_get_shadow_blur: {
+      parameters: ["pointer"],
+      result: "f32",
+    },
+
+    sk_context_set_shadow_blur: {
+      parameters: ["pointer", "f32"],
+      result: "void",
+    },
+
+    sk_context_get_shadow_offset_x: {
+      parameters: ["pointer"],
+      result: "f32",
+    },
+
+    sk_context_set_shadow_offset_x: {
+      parameters: ["pointer", "f32"],
+      result: "void",
+    },
+
+    sk_context_get_shadow_offset_y: {
+      parameters: ["pointer"],
+      result: "f32",
+    },
+
+    sk_context_set_shadow_offset_y: {
+      parameters: ["pointer", "f32"],
+      result: "void",
+    },
+
+    sk_context_set_font: {
+      parameters: ["pointer", "f32", "buffer", "u32", "i32", "i32", "i32"],
+      result: "i32",
+    },
+
+    sk_canvas_read_pixels: {
+      parameters: [
+        "pointer",
+        "i32",
+        "i32",
+        "i32",
+        "i32",
+        "buffer",
+      ],
+      result: "void",
+    },
+
+    sk_canvas_encode_image: {
+      parameters: [
+        "pointer",
+        "i32",
+        "i32",
+        "buffer",
+        "buffer",
+      ],
+      result: "pointer",
+    },
+
+    sk_data_free: {
+      parameters: ["pointer"],
+      result: "void",
+    },
   } as const,
 ).symbols;
 
 export default lib;
 
-const { op_ffi_cstr_read }: {
+const { op_ffi_cstr_read, op_ffi_get_buf }: {
   op_ffi_cstr_read: (ptr: Deno.PointerValue) => string;
+  op_ffi_get_buf: (ptr: Deno.PointerValue, size: number) => ArrayBuffer;
 } = (Deno as any).core.ops;
 
 export function cstr(str: string) {
   return new TextEncoder().encode(str + "\0");
 }
 
-export { op_ffi_cstr_read as readCstr };
+export { op_ffi_cstr_read as readCstr, op_ffi_get_buf as getBuffer };

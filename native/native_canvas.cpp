@@ -10,6 +10,7 @@
 #include "include/core/SkPath.h"
 #include "include/utils/SkParsePath.h"
 #include "include/core/SkMatrix.h"
+#include "include/core/SkPaint.h"
 #include "./csscolorparser.hpp"
 
 typedef struct sk_canvas {
@@ -93,18 +94,14 @@ typedef struct sk_context_state {
   float globalAlpha;
   float lineDashOffset;
   RGBA fillStyle;
-  char* fillStyleString;
   RGBA strokeStyle;
-  char* strokeStyleString;
   RGBA shadowColor;
-  char* shadowColorString;
   SkMatrix* transform;
   bool imageSmoothingEnabled;
   FilterQuality imageSmoothingQuality;
   TextAlign textAlign;
   TextBaseline textBaseline;
   TextDirection direction;
-  char* fontString;
   Font* font;
 } sk_context_state;
 
@@ -118,11 +115,8 @@ sk_context_state* create_default_state() {
   state->globalAlpha = 1;
   state->lineDashOffset = 0;
   state->fillStyle = {0, 0, 0, 255};
-  state->fillStyleString = strdup("black");
   state->strokeStyle = {0, 0, 0, 255};
-  state->strokeStyleString = strdup("black");
   state->shadowColor = {0, 0, 0, 255};
-  state->shadowColorString = strdup("black");
   state->transform = new SkMatrix();
   state->transform->setIdentity();
   state->imageSmoothingEnabled = true;
@@ -130,7 +124,6 @@ sk_context_state* create_default_state() {
   state->textAlign = kLeft;
   state->textBaseline = kTop;
   state->direction = kLTR;
-  state->fontString = strdup("10px sans-serif");
   state->font = new Font();
   state->font->size = 10;
   state->font->family = strdup("sans-serif");
@@ -150,13 +143,9 @@ sk_context_state* clone_context_state(sk_context_state* state) {
   new_state->lineDash = state->lineDash;
   new_state->globalAlpha = state->globalAlpha;
   new_state->lineDashOffset = state->lineDashOffset;
-  new_state->fontString = strdup(state->fontString);
   new_state->fillStyle = state->fillStyle;
-  new_state->fillStyleString = strdup(state->fillStyleString);
   new_state->strokeStyle = state->strokeStyle;
-  new_state->strokeStyleString = strdup(state->strokeStyleString);
   new_state->shadowColor = state->shadowColor;
-  new_state->shadowColorString = strdup(state->shadowColorString);
   new_state->transform = new SkMatrix(*state->transform);
   new_state->imageSmoothingEnabled = state->imageSmoothingEnabled;
   new_state->imageSmoothingQuality = state->imageSmoothingQuality;
@@ -177,10 +166,6 @@ void free_context_state(sk_context_state* state) {
   delete state->paint;
   delete state->transform;
   free(state->font);
-  free(state->fillStyleString);
-  free(state->strokeStyleString);
-  free(state->shadowColorString);
-  free(state->fontString);
   delete state;
 }
 
@@ -318,20 +303,52 @@ extern "C" {
     delete canvas;
   }
 
-  bool sk_canvas_save(sk_canvas* canvas, char* path) {
+  SkEncodedImageFormat format_from_int(int format) {
+    switch (format) {
+      case 0:
+        return SkEncodedImageFormat::kPNG;
+      case 1:
+        return SkEncodedImageFormat::kJPEG;
+      case 2:
+        return SkEncodedImageFormat::kWEBP;
+    }
+  }
+
+  int sk_canvas_save(sk_canvas* canvas, char* path, int format, int quality) {
     auto info = SK_SURFACE(canvas->surface)->makeImageSnapshot();
-    auto buf = info->encodeToData(SkEncodedImageFormat::kPNG, 0);
+    auto buf = info->encodeToData(format_from_int(format), quality);
     if (buf) {
       SkFILEWStream stream(path);
       if (stream.write(buf->data(), buf->size())) {
         stream.flush();
-        return true;
+        buf.release();
+        return 1;
       }
     }
-    return false;
+    return 0;
   }
 
-  sk_context* sk_create_context(sk_canvas* canvas) {
+  void sk_canvas_read_pixels(sk_canvas* canvas, int x, int y, int width, int height, void* pixels) {
+    SK_SURFACE(canvas->surface)->readPixels(SkImageInfo::MakeN32Premul(width, height), pixels, width * 4, x, y);
+  }
+
+  const void* sk_canvas_encode_image(sk_canvas* canvas, int format, int quality, int* size, SkData** data) {
+    auto info = SK_SURFACE(canvas->surface)->makeImageSnapshot();
+    auto buf = info->encodeToData(format_from_int(format), quality);
+    if (buf) {
+      auto ptr = buf->data();
+      *size = buf->size();
+      *data = buf.release();
+      return ptr;
+    }
+    return nullptr;
+  }
+
+  void sk_data_free(SkData* data) {
+    data->unref();
+  }
+
+  sk_context* sk_canvas_get_context(sk_canvas* canvas) {
     sk_context* context = new sk_context();
     
     context->canvas = SK_SURFACE(canvas->surface)->getCanvas();
@@ -365,49 +382,134 @@ extern "C" {
     canvas->drawRect(SkRect::MakeXYWH(x, y, width, height), paint);
   }
 
-  char* sk_context_get_fill_style(sk_context* context) {
-    return context->state->fillStyleString;
-  }
-
-  bool sk_context_set_fill_style(sk_context* context, char* style) {
+  int sk_context_set_fill_style(sk_context* context, char* style) {
     auto color = CSSColorParser::parse(std::string(style));
     if (color) {
       auto val = color.value();
       context->state->fillStyle = {val.r, val.g, val.b, (uint8_t)(val.a * 255)};
-      context->state->fillStyleString = strdup(style);
-      return true;
+      return 1;
     }
-    return false;
+    return 0;
   }
 
-  char* sk_context_get_stroke_style(sk_context* context) {
-    return context->state->strokeStyleString;
-  }
-
-  bool sk_context_set_stroke_style(sk_context* context, char* style) {
+  int sk_context_set_stroke_style(sk_context* context, char* style) {
     auto color = CSSColorParser::parse(std::string(style));
     if (color) {
       auto val = color.value();
       context->state->strokeStyle = {val.r, val.g, val.b, (uint8_t)(val.a * 255)};
-      context->state->strokeStyleString = strdup(style);
-      return true;
+      return 1;
     }
-    return false;
+    return 0;
   }
 
-  char* sk_context_get_shadow_color(sk_context* context) {
-    return context->state->shadowColorString;
-  }
-
-  bool sk_context_set_shadow_color(sk_context* context, char* style) {
+  int sk_context_set_shadow_color(sk_context* context, char* style) {
     auto color = CSSColorParser::parse(std::string(style));
     if (color) {
       auto val = color.value();
       context->state->shadowColor = {val.r, val.g, val.b, (uint8_t)(val.a * 255)};
-      context->state->shadowColorString = strdup(style);
-      return true;
+      return 1;
     }
-    return false;
+    return 0;
+  }
+
+  int sk_context_get_line_cap(sk_context* context) {
+    auto cap = context->state->paint->getStrokeCap();
+    switch (cap) {
+      case SkPaint::kButt_Cap:
+        return 0;
+      case SkPaint::kRound_Cap:
+        return 1;
+      case SkPaint::kSquare_Cap:
+        return 2;
+    }
+  }
+
+  void sk_context_set_line_cap(sk_context* context, int cap) {
+    switch (cap) {
+      case 0:
+        context->state->paint->setStrokeCap(SkPaint::kButt_Cap);
+        break;
+      case 1:
+        context->state->paint->setStrokeCap(SkPaint::kRound_Cap);
+        break;
+      case 2:
+        context->state->paint->setStrokeCap(SkPaint::kSquare_Cap);
+        break;
+    }
+  }
+
+  float sk_context_get_line_dash_offset(sk_context* context) {
+    return context->state->lineDashOffset;
+  }
+
+  void sk_context_set_line_dash_offset(sk_context* context, float offset) {
+    context->state->lineDashOffset = offset;
+  }
+
+  int sk_context_get_text_direction(sk_context* context) {
+    return context->state->direction;
+  }
+
+  void sk_context_set_text_direction(sk_context* context, int direction) {
+    context->state->direction = TextDirection(direction);
+  }
+
+  int sk_context_get_text_align(sk_context* context) {
+    return context->state->textAlign;
+  }
+
+  void sk_context_set_text_align(sk_context* context, int align) {
+    context->state->textAlign = TextAlign(align);
+  }
+
+  int sk_context_get_text_baseline(sk_context* context) {
+    return context->state->textBaseline;
+  }
+
+  void sk_context_set_text_baseline(sk_context* context, int baseline) {
+    context->state->textBaseline = TextBaseline(baseline);
+  }
+
+  float sk_context_get_shadow_blur(sk_context* context) {
+    return context->state->shadowBlur;
+  }
+
+  void sk_context_set_shadow_blur(sk_context* context, float blur) {
+    context->state->shadowBlur = blur;
+  }
+
+  void sk_context_get_shadow_offset_x(sk_context* context, float* x) {
+    *x = context->state->shadowOffsetX;
+  }
+
+  void sk_context_set_shadow_offset_x(sk_context* context, float x) {
+    context->state->shadowOffsetX = x;
+  }
+
+  void sk_context_get_shadow_offset_y(sk_context* context, float* y) {
+    *y = context->state->shadowOffsetY;
+  }
+
+  void sk_context_set_shadow_offset_y(sk_context* context, float y) {
+    context->state->shadowOffsetY = y;
+  }
+
+  void sk_context_set_font(
+    sk_context* context,
+    float size,
+    char* family,
+    unsigned int weight,
+    int style,
+    int variant,
+    int stretch
+  ) {
+    context->state->font = new Font();
+    context->state->font->family = strdup(family);
+    context->state->font->size = size;
+    context->state->font->weight = weight;
+    context->state->font->style = FontStyle(style);
+    context->state->font->variant = FontVariant(variant);
+    context->state->font->stretch = FontStretch(stretch);
   }
 
   void sk_context_fill_rect(sk_context* context, float x, float y, float width, float height) {
@@ -474,20 +576,23 @@ extern "C" {
     SK_CANVAS(context->canvas)->clipPath(*path);
   }
 
-  void sk_context_fill(sk_context* context) {
+  void sk_context_fill(sk_context* context, SkPath* path, unsigned char rule) {
+    if (path == nullptr) path = context->path;
     auto canvas = SK_CANVAS(context->canvas);
     auto paint = context->state->paint;
     paint->setStroke(false);
     paint->setColor(SkColorSetARGB(context->state->fillStyle.a, context->state->fillStyle.r, context->state->fillStyle.g, context->state->fillStyle.b));
-    canvas->drawPath(*context->path, *paint);
+    path->setFillType(rule == 1 ? SkPathFillType::kEvenOdd : SkPathFillType::kWinding);
+    canvas->drawPath(*path, *paint);
   }
 
-  void sk_context_stroke(sk_context* context) {
+  void sk_context_stroke(sk_context* context, SkPath* path) {
+    if (path == nullptr) path = context->path;
     auto canvas = SK_CANVAS(context->canvas);
     auto paint = context->state->paint;
     paint->setStroke(true);
     paint->setColor(SkColorSetARGB(context->state->strokeStyle.a, context->state->strokeStyle.r, context->state->strokeStyle.g, context->state->strokeStyle.b));
-    canvas->drawPath(*context->path, *paint);
+    canvas->drawPath(*path, *paint);
   }
 
   float sk_context_get_line_width(sk_context* context) {
