@@ -393,6 +393,48 @@ const lib = Deno.dlopen(
       parameters: ["pointer"],
       result: "void",
     },
+
+    sk_context_draw_image: {
+      parameters: [
+        "pointer",
+        "pointer",
+        "pointer",
+        "f32",
+        "f32",
+        "f32",
+        "f32",
+        "f32",
+        "f32",
+        "f32",
+        "f32",
+      ],
+      result: "void",
+    },
+
+    sk_image_from_encoded: {
+      parameters: ["buffer", "u32"],
+      result: "pointer",
+    },
+
+    sk_image_from_file: {
+      parameters: ["buffer"],
+      result: "pointer",
+    },
+
+    sk_image_width: {
+      parameters: ["pointer"],
+      result: "i32",
+    },
+
+    sk_image_height: {
+      parameters: ["pointer"],
+      result: "i32",
+    },
+
+    sk_image_destroy: {
+      parameters: ["pointer"],
+      result: "void",
+    }
   } as const,
 ).symbols;
 

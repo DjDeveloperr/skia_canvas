@@ -1,5 +1,6 @@
-import type { Canvas } from "./canvas.ts";
-import ffi, { cstr, readCstr } from "./ffi.ts";
+import { Canvas } from "./canvas.ts";
+import ffi, { cstr } from "./ffi.ts";
+import { Image } from "./image.ts";
 import { Path2D } from "./path.ts";
 
 const {
@@ -55,6 +56,7 @@ const {
   sk_context_set_text_align,
   sk_context_set_text_baseline,
   sk_context_set_text_direction,
+  sk_context_draw_image,
 } = ffi;
 
 const CONTEXT_FINALIZER = new FinalizationRegistry((ptr: Deno.PointerValue) => {
@@ -97,6 +99,7 @@ export type TextDirection = keyof typeof CTextDirection;
 export type TextBaseline = keyof typeof CTextBaseline;
 export type LineCap = keyof typeof CLineCap;
 export type LineJoin = keyof typeof CLineJoin;
+export type CanvasImageSource = Canvas | Image;
 
 export class Context {
   #canvas: Canvas;
@@ -454,5 +457,58 @@ export class Context {
 
   measureText(text: string) {
     throw new Error("unimplemented");
+  }
+
+  drawImage(image: CanvasImageSource, dx: number, dy: number): void;
+  drawImage(
+    image: CanvasImageSource,
+    dx: number,
+    dy: number,
+    dw: number,
+    dh: number,
+  ): void;
+  drawImage(
+    image: CanvasImageSource,
+    sx: number,
+    sy: number,
+    sw: number,
+    sh: number,
+    dx: number,
+    dy: number,
+    dw: number,
+    dh: number,
+  ): void;
+  drawImage(
+    image: CanvasImageSource,
+    adx: number,
+    ady: number,
+    adw?: number,
+    adh?: number,
+    asx?: number,
+    asy?: number,
+    asw?: number,
+    ash?: number,
+  ) {
+    const dx = asx ?? adx;
+    const dy = asy ?? ady;
+    const dw = asw ?? adw ?? image.width;
+    const dh = ash ?? adh ?? image.height;
+    const sx = asx === undefined ? 0 : adx;
+    const sy = asy === undefined ? 0 : ady;
+    const sw = asw === undefined ? image.width : adw ?? image.width;
+    const sh = ash === undefined ? image.height : adh ?? image.height;
+    sk_context_draw_image(
+      this.#ptr,
+      image instanceof Canvas ? image._unsafePointer : 0,
+      image instanceof Image ? image._unsafePointer : 0,
+      dx,
+      dy,
+      dw,
+      dh,
+      sx,
+      sy,
+      sw,
+      sh,
+    );
   }
 }

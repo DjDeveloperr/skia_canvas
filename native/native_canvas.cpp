@@ -11,6 +11,7 @@
 #include "include/utils/SkParsePath.h"
 #include "include/core/SkMatrix.h"
 #include "include/core/SkPaint.h"
+#include "include/core/SkBitmap.h"
 #include "./csscolorparser.hpp"
 
 typedef struct sk_canvas {
@@ -291,6 +292,36 @@ extern "C" {
     delete path;
   }
 
+  SkImage* sk_image_from_encoded(void* data, size_t length) {
+    auto skData = SkData::MakeFromMalloc(data, length);
+    SkImage* image = SkImage::MakeFromEncoded(skData).release();
+    skData.release();
+    return image;
+  }
+
+  SkImage* sk_image_from_file(char* path) {
+    FILE* file = fopen(path, "rb");
+    fseek(file, 0, SEEK_END);
+    size_t length = ftell(file);
+    fseek(file, 0, SEEK_SET);
+    void* data = malloc(length);
+    fread(data, 1, length, file);
+    fclose(file);
+    return sk_image_from_encoded(data, length);
+  }
+
+  int sk_image_width(SkImage* image) {
+    return image->width();
+  }
+
+  int sk_image_height(SkImage* image) {
+    return image->height();
+  }
+
+  void sk_image_destroy(SkImage* image) {
+    image->unref();
+  }
+
   sk_canvas* sk_canvas_create(int width, int height){
     SkGraphics::Init();
     sk_canvas* canvas = new sk_canvas();
@@ -526,6 +557,51 @@ extern "C" {
     paint->setStroke(true);
     paint->setColor(SkColorSetARGB(context->state->strokeStyle.a, context->state->strokeStyle.r, context->state->strokeStyle.g, context->state->strokeStyle.b));
     canvas->drawRect(SkRect::MakeXYWH(x, y, width, height), *paint);
+  }
+
+  void sk_context_draw_image(
+    sk_context* context,
+    sk_canvas* canvas,
+    SkImage* image,
+    float sx,
+    float sy,
+    float sw,
+    float sh,
+    float dx,
+    float dy,
+    float dw,
+    float dh
+  ) {
+    if (canvas != nullptr) {
+      image = SK_SURFACE(canvas->surface)->makeImageSnapshot().release();
+    }
+
+    SkSamplingOptions options;
+
+    if (context->state->imageSmoothingEnabled && context->state->imageSmoothingQuality != FilterQuality::kNone) {
+      switch (context->state->imageSmoothingQuality) {
+        case FilterQuality::kLow:
+          options = SkSamplingOptions(SkFilterMode::kLinear, SkMipmapMode::kNone);
+          break;
+        case FilterQuality::kMedium:
+          options = SkSamplingOptions(SkFilterMode::kLinear, SkMipmapMode::kNearest);
+          break;
+        case FilterQuality::kHigh:
+          options = SkSamplingOptions(SkCubicResampler{1 / 3.0f, 1 / 3.0f});
+          break;
+      }
+    } else {
+      options = SkSamplingOptions(SkFilterMode::kNearest, SkMipmapMode::kNone);
+    }
+
+    SK_CANVAS(context->canvas)->drawImageRect(
+      image,
+      SkRect::MakeXYWH(dx, dy, dw, dh),
+      SkRect::MakeXYWH(sx, sy, sw, sh),
+      options,
+      context->state->paint,
+      SkCanvas::kFast_SrcRectConstraint
+    );
   }
 
   void sk_context_begin_path(sk_context* context) {
