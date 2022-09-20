@@ -1,12 +1,12 @@
 const lib = Deno.dlopen(
   "./native/build/libnative_canvas.so",
   {
-    sk_create_canvas: {
+    sk_canvas_create: {
       parameters: ["i32", "i32"],
       result: "pointer",
     },
 
-    sk_destroy_canvas: {
+    sk_canvas_destroy: {
       parameters: ["pointer"],
       result: "void",
     },
@@ -21,7 +21,7 @@ const lib = Deno.dlopen(
       result: "pointer",
     },
 
-    sk_destroy_context: {
+    sk_context_destroy: {
       parameters: ["pointer"],
       result: "void",
     },
@@ -98,6 +98,171 @@ const lib = Deno.dlopen(
 
     sk_context_stroke: {
       parameters: ["pointer"],
+      result: "void",
+    },
+
+    sk_context_get_line_width: {
+      parameters: ["pointer"],
+      result: "f32",
+    },
+
+    sk_context_set_line_width: {
+      parameters: ["pointer", "f32"],
+      result: "void",
+    },
+
+    sk_context_get_miter_limit: {
+      parameters: ["pointer"],
+      result: "f32",
+    },
+
+    sk_context_set_miter_limit: {
+      parameters: ["pointer", "f32"],
+      result: "void",
+    },
+
+    sk_context_get_global_alpha: {
+      parameters: ["pointer"],
+      result: "f32",
+    },
+
+    sk_context_set_global_alpha: {
+      parameters: ["pointer", "f32"],
+      result: "void",
+    },
+
+    sk_context_get_shadow_color: {
+      parameters: ["pointer"],
+      result: "pointer",
+    },
+
+    sk_context_set_shadow_color: {
+      parameters: ["pointer", "buffer"],
+      result: "void",
+    },
+
+    sk_context_rect: {
+      parameters: ["pointer", "f32", "f32", "f32", "f32"],
+      result: "void",
+    },
+
+    sk_context_clip: {
+      parameters: ["pointer", "pointer", "u8"],
+      result: "void",
+    },
+
+    sk_path_create: {
+      parameters: [],
+      result: "pointer",
+    },
+
+    sk_path_destroy: {
+      parameters: ["pointer"],
+      result: "void",
+    },
+
+    sk_path_move_to: {
+      parameters: ["pointer", "f32", "f32"],
+      result: "void",
+    },
+
+    sk_path_line_to: {
+      parameters: ["pointer", "f32", "f32"],
+      result: "void",
+    },
+
+    sk_path_close: {
+      parameters: ["pointer"],
+      result: "void",
+    },
+
+    sk_path_rect: {
+      parameters: ["pointer", "f32", "f32", "f32", "f32"],
+      result: "void",
+    },
+
+    sk_path_create_copy: {
+      parameters: ["pointer"],
+      result: "pointer",
+    },
+
+    sk_path_from_svg_string: {
+      parameters: ["buffer"],
+      result: "pointer",
+    },
+
+    sk_path_begin: {
+      parameters: ["pointer"],
+      result: "pointer",
+    },
+
+    sk_path_arc_to: {
+      parameters: ["pointer", "f32", "f32", "f32", "f32", "f32"],
+      result: "void",
+    },
+
+    sk_path_arc: {
+      parameters: ["pointer", "f32", "f32", "f32", "f32", "f32", "u8"],
+      result: "void",
+    },
+
+    sk_path_ellipse: {
+      parameters: [
+        "pointer",
+        "f32",
+        "f32",
+        "f32",
+        "f32",
+        "f32",
+        "f32",
+        "f32",
+        "u8",
+      ],
+      result: "void",
+    },
+
+    sk_path_bezier_curve_to: {
+      parameters: ["pointer", "f32", "f32", "f32", "f32", "f32", "f32"],
+      result: "void",
+    },
+
+    sk_path_quadratic_curve_to: {
+      parameters: ["pointer", "f32", "f32", "f32", "f32"],
+      result: "void",
+    },
+
+    sk_context_arc_to: {
+      parameters: ["pointer", "f32", "f32", "f32", "f32", "f32"],
+      result: "void",
+    },
+
+    sk_context_arc: {
+      parameters: ["pointer", "f32", "f32", "f32", "f32", "f32", "u8"],
+      result: "void",
+    },
+
+    sk_context_ellipse: {
+      parameters: [
+        "pointer",
+        "f32",
+        "f32",
+        "f32",
+        "f32",
+        "f32",
+        "f32",
+        "f32",
+        "u8",
+      ],
+      result: "void",
+    },
+
+    sk_context_bezier_curve_to: {
+      parameters: ["pointer", "f32", "f32", "f32", "f32", "f32", "f32"],
+      result: "void",
+    },
+
+    sk_context_quadratic_curve_to: {
+      parameters: ["pointer", "f32", "f32", "f32", "f32"],
       result: "void",
     },
   } as const,

@@ -1,9 +1,10 @@
 import type { Canvas } from "./canvas.ts";
 import ffi, { cstr, readCstr } from "./ffi.ts";
+import { Path2D } from "./path.ts";
 
 const {
   sk_create_context,
-  sk_destroy_context,
+  sk_context_destroy,
   sk_context_clear_rect,
   sk_context_get_fill_style,
   sk_context_set_fill_style,
@@ -19,10 +20,25 @@ const {
   sk_context_move_to,
   sk_context_fill,
   sk_context_stroke,
+  sk_context_get_global_alpha,
+  sk_context_get_line_width,
+  sk_context_get_miter_limit,
+  sk_context_set_global_alpha,
+  sk_context_set_line_width,
+  sk_context_set_miter_limit,
+  sk_context_get_shadow_color,
+  sk_context_set_shadow_color,
+  sk_context_rect,
+  sk_context_clip,
+  sk_context_arc,
+  sk_context_arc_to,
+  sk_context_bezier_curve_to,
+  sk_context_ellipse,
+  sk_context_quadratic_curve_to,
 } = ffi;
 
 const CONTEXT_FINALIZER = new FinalizationRegistry((ptr: Deno.PointerValue) => {
-  sk_destroy_context(ptr);
+  sk_context_destroy(ptr);
 });
 
 export class Context {
@@ -62,6 +78,38 @@ export class Context {
     sk_context_set_stroke_style(this.#ptr, cstr(value));
   }
 
+  get lineWidth() {
+    return sk_context_get_line_width(this.#ptr);
+  }
+
+  set lineWidth(value: number) {
+    sk_context_set_line_width(this.#ptr, value);
+  }
+
+  get miterLimit() {
+    return sk_context_get_miter_limit(this.#ptr);
+  }
+
+  set miterLimit(value: number) {
+    sk_context_set_miter_limit(this.#ptr, value);
+  }
+
+  get globalAlpha() {
+    return sk_context_get_global_alpha(this.#ptr);
+  }
+
+  set globalAlpha(value: number) {
+    sk_context_set_global_alpha(this.#ptr, value);
+  }
+
+  get shadowColor() {
+    return readCstr(sk_context_get_shadow_color(this.#ptr));
+  }
+
+  set shadowColor(value: string) {
+    sk_context_set_shadow_color(this.#ptr, cstr(value));
+  }
+
   save() {
     sk_context_save(this.#ptr);
   }
@@ -98,11 +146,98 @@ export class Context {
     sk_context_line_to(this.#ptr, x, y);
   }
 
+  rect(x: number, y: number, width: number, height: number) {
+    sk_context_rect(this.#ptr, x, y, width, height);
+  }
+
+  arcTo(
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number,
+    radius: number,
+  ) {
+    sk_context_arc_to(this.#ptr, x1, y1, x2, y2, radius);
+  }
+
+  arc(
+    x: number,
+    y: number,
+    radius: number,
+    startAngle: number,
+    endAngle: number,
+    anticlockwise: boolean,
+  ) {
+    sk_context_arc(
+      this.#ptr,
+      x,
+      y,
+      radius,
+      startAngle,
+      endAngle,
+      anticlockwise ? 1 : 0,
+    );
+  }
+
+  ellipse(
+    x: number,
+    y: number,
+    radiusX: number,
+    radiusY: number,
+    rotation: number,
+    startAngle: number,
+    endAngle: number,
+    anticlockwise: boolean,
+  ) {
+    sk_context_ellipse(
+      this.#ptr,
+      x,
+      y,
+      radiusX,
+      radiusY,
+      rotation,
+      startAngle,
+      endAngle,
+      anticlockwise ? 1 : 0,
+    );
+  }
+
+  bezierCurveTo(
+    cp1x: number,
+    cp1y: number,
+    cp2x: number,
+    cp2y: number,
+    x: number,
+    y: number,
+  ) {
+    sk_context_bezier_curve_to(this.#ptr, cp1x, cp1y, cp2x, cp2y, x, y);
+  }
+
+  quadraticCurveTo(cpx: number, cpy: number, x: number, y: number) {
+    sk_context_quadratic_curve_to(this.#ptr, cpx, cpy, x, y);
+  }
+
   fill() {
     sk_context_fill(this.#ptr);
   }
 
   stroke() {
     sk_context_stroke(this.#ptr);
+  }
+
+  clip(): void;
+  clip(path: Path2D): void;
+  clip(fillRule: "nonzero" | "evenodd"): void;
+  clip(path: Path2D, fillRule: "nonzero" | "evenodd"): void;
+  clip(
+    path?: Path2D | "nonzero" | "evenodd",
+    fillRule?: "nonzero" | "evenodd",
+  ) {
+    const pathptr = typeof path === "object" && path !== null
+      ? path._unsafePointer
+      : 0;
+    const fillRuleStr = typeof path === "string" ? path : fillRule;
+    const ifillRule = fillRuleStr === "evenodd" ? 1 : 0;
+    sk_context_clip(this.#ptr, pathptr, ifillRule);
   }
 }

@@ -2,13 +2,13 @@ import { Context } from "./context.ts";
 import ffi, { cstr } from "./ffi.ts";
 
 const {
-  sk_create_canvas,
-  sk_destroy_canvas,
+  sk_canvas_create,
+  sk_canvas_destroy,
   sk_canvas_save,
 } = ffi;
 
 const CANVAS_FINALIZER = new FinalizationRegistry((ptr: Deno.PointerValue) => {
-  sk_destroy_canvas(ptr);
+  sk_canvas_destroy(ptr);
 });
 
 export class Canvas {
@@ -29,7 +29,7 @@ export class Canvas {
   }
 
   constructor(width: number, height: number) {
-    this.#ptr = sk_create_canvas(width, height);
+    this.#ptr = sk_canvas_create(width, height);
     if (this.#ptr === 0) {
       throw new Error("Failed to create canvas");
     }
