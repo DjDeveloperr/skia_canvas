@@ -1,4 +1,4 @@
-import { Canvas, Path2D } from "./mod.ts";
+import { Canvas } from "./mod.ts";
 
 const canvas = new Canvas(300, 300);
 
