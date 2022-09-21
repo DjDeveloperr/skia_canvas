@@ -21,7 +21,7 @@ ctx.lineTo(250, 140);
 ctx.closePath();
 ctx.stroke();
 
-const img = new Image("./testdata/skia_logo.svg");
+const img = new Image("./testdata/skia_logo.png");
 
 ctx.drawImage(
   img,
