@@ -12,6 +12,10 @@
 #include "include/core/SkMatrix.h"
 #include "include/core/SkPaint.h"
 #include "include/core/SkBitmap.h"
+#include "include/core/SkFont.h"
+#include "include/core/SkFontMgr.h"
+#include "modules/skparagraph/include/FontCollection.h"
+#include "modules/skparagraph/include/TypefaceFontProvider.h"
 #include "./csscolorparser.hpp"
 
 typedef struct sk_canvas {
@@ -183,6 +187,58 @@ typedef struct sk_context {
 
 #define DEGREES(radians) ((radians) * 180.0 / M_PI)
 #define ALMOST_EQUAL(a, b) (fabs((a) - (b)) < 0.00001)
+
+using skia::textlayout::TypefaceFontProvider;
+
+class TypefaceFontProviderCustom : public TypefaceFontProvider {
+public:
+  explicit TypefaceFontProviderCustom(sk_sp<SkFontMgr> mgr) : font_mgr(std::move(mgr))
+  {
+  }
+
+  ~TypefaceFontProviderCustom(){};
+
+  sk_sp<SkTypeface> onLegacyMakeTypeface(const char family_name[], SkFontStyle style) const override
+  {
+    auto style_set = this->onMatchFamily(family_name);
+    if (!style_set)
+    {
+      return nullptr;
+    }
+    auto tf = style_set->matchStyle(style);
+    if (!tf)
+    {
+      return nullptr;
+    }
+    return sk_sp<SkTypeface>(const_cast<SkTypeface *>(tf));
+  }
+
+private:
+  sk_sp<SkFontMgr> font_mgr;
+};
+
+int systemFontsLoaded = -1;
+sk_sp<SkFontMgr> fontMgr = nullptr;
+skia::textlayout::FontCollection* fontCollection = nullptr;
+TypefaceFontProviderCustom* assets = nullptr;
+
+void setup_font_collection() {
+  if (fontCollection == nullptr) {
+    fontMgr = SkFontMgr::RefDefault();
+    fontCollection = new skia::textlayout::FontCollection();
+    assets = new TypefaceFontProviderCustom(fontMgr);
+    fontCollection->setDefaultFontManager(sk_ref_sp(assets));
+    
+  }
+}
+
+int fonts_register_path(const char* path, char* alias) {
+  setup_font_collection();
+  auto tf = fontMgr->makeFromFile(path);
+  auto result = assets->registerTypeface(tf);
+  if (alias != nullptr) assets->registerTypeface(tf, alias);
+  return (int) result;
+}
 
 extern "C" {
   SkPath* sk_path_create() {
