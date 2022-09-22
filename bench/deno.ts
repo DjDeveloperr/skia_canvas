@@ -1,8 +1,7 @@
-import { Canvas } from "../mod.ts";
+import { createCanvas } from "../mod.ts";
 
-Deno.bench("deno_canvas native", () => {
-  const canvas = new Canvas(1024, 768);
-
+Deno.bench("deno skia_canvas", () => {
+  const canvas = createCanvas(1024, 768);
   const ctx = canvas.getContext("2d");
 
   ctx.lineWidth = 10;

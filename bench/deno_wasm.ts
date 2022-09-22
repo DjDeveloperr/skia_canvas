@@ -1,6 +1,6 @@
 import { createCanvas } from "https://deno.land/x/canvas@v1.4.1/mod.ts";
 
-Deno.bench("deno_canvas wasm", () => {
+Deno.bench("deno canvaskit-wasm", () => {
   const canvas = createCanvas(1024, 768);
 
   const ctx = canvas.getContext("2d")!;

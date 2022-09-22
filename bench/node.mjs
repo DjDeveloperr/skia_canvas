@@ -4,7 +4,7 @@ import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 const { createCanvas } = require("@napi-rs/canvas");
 
-bench("napi-rs/canvas", () => {
+bench("node @napi-rs/canvas", () => {
   const canvas = createCanvas(1024, 768);
   const ctx = canvas.getContext("2d");
 

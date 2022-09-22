@@ -209,10 +209,6 @@ typedef struct sk_line_metrics {
   float font_descent;
 } sk_line_metrics;
 
-#define SK_SURFACE(surface) reinterpret_cast<SkSurface *>(surface)
-#define SK_CANVAS(canvas) reinterpret_cast<SkCanvas *>(canvas)
-#define SK_PATH(path) reinterpret_cast<SkPath *>(path)
-
 #define DEGREES(radians) ((radians) * 180.0 / M_PI)
 #define ALMOST_EQUAL(a, b) (fabs((a) - (b)) < 0.00001)
 
@@ -429,7 +425,7 @@ extern "C" {
   }
 
   void sk_canvas_destroy(sk_canvas* canvas) {
-    SK_SURFACE(canvas->surface)->unref();
+    canvas->surface->unref();
     delete canvas;
   }
 
@@ -445,7 +441,7 @@ extern "C" {
   }
 
   int sk_canvas_save(sk_canvas* canvas, char* path, int format, int quality) {
-    auto info = SK_SURFACE(canvas->surface)->makeImageSnapshot();
+    auto info = canvas->surface->makeImageSnapshot();
     auto buf = info->encodeToData(format_from_int(format), quality);
     if (buf) {
       SkFILEWStream stream(path);
@@ -459,11 +455,11 @@ extern "C" {
   }
 
   void sk_canvas_read_pixels(sk_canvas* canvas, int x, int y, int width, int height, void* pixels) {
-    SK_SURFACE(canvas->surface)->readPixels(SkImageInfo::MakeN32Premul(width, height), pixels, width * 4, x, y);
+    canvas->surface->readPixels(SkImageInfo::MakeN32Premul(width, height), pixels, width * 4, x, y);
   }
 
   const void* sk_canvas_encode_image(sk_canvas* canvas, int format, int quality, int* size, SkData** data) {
-    auto info = SK_SURFACE(canvas->surface)->makeImageSnapshot();
+    auto info = canvas->surface->makeImageSnapshot();
     auto buf = info->encodeToData(format_from_int(format), quality);
     if (buf) {
       auto ptr = buf->data();
@@ -481,7 +477,7 @@ extern "C" {
   sk_context* sk_canvas_get_context(sk_canvas* canvas) {
     sk_context* context = new sk_context();
     
-    context->canvas = SK_SURFACE(canvas->surface)->getCanvas();
+    context->canvas = canvas->surface->getCanvas();
 
     context->path = new SkPath();
 
@@ -493,7 +489,7 @@ extern "C" {
 
   void sk_context_save(sk_context* context) {
     context->states.push_back(*clone_context_state(context->state));
-    SK_CANVAS(context->canvas)->save();
+    context->canvas->save();
   }
 
   void sk_context_restore(sk_context* context) {
@@ -501,12 +497,12 @@ extern "C" {
       free_context_state(context->state);
       context->state = &context->states.back();
       context->states.pop_back();
-      SK_CANVAS(context->canvas)->restore();
+      context->canvas->restore();
     }
   }
 
   void sk_context_clear_rect(sk_context* context, float x, float y, float width, float height) {
-    auto canvas = SK_CANVAS(context->canvas);
+    auto canvas = context->canvas;
     SkPaint paint;
     paint.setARGB(0, 0, 0, 0);
     canvas->drawRect(SkRect::MakeXYWH(x, y, width, height), paint);
@@ -806,12 +802,12 @@ extern "C" {
   }
 
   void sk_context_fill_rect(sk_context* context, float x, float y, float width, float height) {
-    auto canvas = SK_CANVAS(context->canvas);
+    auto canvas = context->canvas;
     canvas->drawRect(SkRect::MakeXYWH(x, y, width, height), *sk_context_fill_paint(context->state));
   }
 
   void sk_context_stroke_rect(sk_context* context, float x, float y, float width, float height) {
-    auto canvas = SK_CANVAS(context->canvas);
+    auto canvas = context->canvas;
     canvas->drawRect(SkRect::MakeXYWH(x, y, width, height), *sk_context_stroke_paint(context->state));
   }
 
@@ -829,7 +825,7 @@ extern "C" {
     float dh
   ) {
     if (canvas != nullptr) {
-      image = SK_SURFACE(canvas->surface)->makeImageSnapshot().release();
+      image = canvas->surface->makeImageSnapshot().release();
     }
 
     SkSamplingOptions options;
@@ -850,7 +846,7 @@ extern "C" {
       options = SkSamplingOptions(SkFilterMode::kNearest, SkMipmapMode::kNone);
     }
 
-    SK_CANVAS(context->canvas)->drawImageRect(
+    context->canvas->drawImageRect(
       image,
       SkRect::MakeXYWH(dx, dy, dw, dh),
       SkRect::MakeXYWH(sx, sy, sw, sh),
@@ -905,12 +901,12 @@ extern "C" {
     // Should we clone?
     // path = new SkPath(*path);
     path->setFillType(rule == 1 ? SkPathFillType::kEvenOdd : SkPathFillType::kWinding);
-    SK_CANVAS(context->canvas)->clipPath(*path);
+    context->canvas->clipPath(*path);
   }
 
   void sk_context_fill(sk_context* context, SkPath* path, unsigned char rule) {
     if (path == nullptr) path = context->path;
-    auto canvas = SK_CANVAS(context->canvas);
+    auto canvas = context->canvas;
     auto paint = sk_context_fill_paint(context->state);
     path->setFillType(rule == 1 ? SkPathFillType::kEvenOdd : SkPathFillType::kWinding);
     canvas->drawPath(*path, *paint);
@@ -918,7 +914,7 @@ extern "C" {
 
   void sk_context_stroke(sk_context* context, SkPath* path) {
     if (path == nullptr) path = context->path;
-    auto canvas = SK_CANVAS(context->canvas);
+    auto canvas = context->canvas;
     canvas->drawPath(*path, *sk_context_stroke_paint(context->state));
   }
 
@@ -952,7 +948,7 @@ extern "C" {
     inverse->setTranslate(-x, -y);
     context->path->transform(*inverse, SkApplyPerspectiveClip::kYes);
     s->transform->preTranslate(x, y);
-    SK_CANVAS(context->canvas)->setMatrix(*s->transform);
+    context->canvas->setMatrix(*s->transform);
   }
 
   void sk_context_rotate(sk_context* context, float angle) {
@@ -961,7 +957,7 @@ extern "C" {
     inverse->setRotate(-DEGREES(angle), 0.0f, 0.0f);
     context->path->transform(*inverse, SkApplyPerspectiveClip::kYes);
     s->transform->preRotate(DEGREES(angle));
-    SK_CANVAS(context->canvas)->setMatrix(*s->transform);
+    context->canvas->setMatrix(*s->transform);
   }
 
   void sk_context_scale(sk_context* context, float x, float y) {
@@ -970,7 +966,7 @@ extern "C" {
     inverse->preScale(1.0f / x, 1.0f / y);
     context->path->transform(*inverse, SkApplyPerspectiveClip::kYes);
     s->transform->preScale(x, y);
-    SK_CANVAS(context->canvas)->setMatrix(*s->transform);
+    context->canvas->setMatrix(*s->transform);
   }
 
   void sk_context_transform(sk_context* context, float a, float b, float c, float d, float e, float f) {
@@ -980,7 +976,7 @@ extern "C" {
     context->path->transform(*ts, SkApplyPerspectiveClip::kYes);
     auto mul = (*ts) * (*s->transform);
     s->transform = &mul;
-    SK_CANVAS(context->canvas)->setMatrix(mul);
+    context->canvas->setMatrix(mul);
   }
 
   void sk_context_set_transform(sk_context* context, float a, float b, float c, float d, float e, float f) {
@@ -988,13 +984,13 @@ extern "C" {
     auto ts = new SkMatrix();
     ts->setAll(a, b, e, c, d, f, 0.0f, 0.0f, 1.0f);
     s->transform = ts;
-    SK_CANVAS(context->canvas)->setMatrix(*s->transform);
+    context->canvas->setMatrix(*s->transform);
   }
 
   void sk_context_reset_transform(sk_context* context) {
     auto s = context->state;
     s->transform->reset();
-    SK_CANVAS(context->canvas)->setMatrix(*s->transform);
+    context->canvas->setMatrix(*s->transform);
   }
 
   void sk_context_destroy(sk_context* context) {

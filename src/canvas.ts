@@ -23,7 +23,9 @@ enum CFormat {
 export type ImageFormat = keyof typeof CFormat;
 
 const OUT_SIZE = new Uint32Array(1);
-const OUT_DATA_PTR = new BigUint64Array(1);
+const OUT_SIZE_PTR = Number(Deno.UnsafePointer.of(OUT_SIZE));
+const OUT_DATA = new BigUint64Array(1);
+const OUT_DATA_PTR = Number(Deno.UnsafePointer.of(OUT_DATA));
 
 const SK_DATA_FINALIZER = new FinalizationRegistry(
   (ptr: Deno.PointerValue) => {
@@ -69,19 +71,19 @@ export class Canvas {
       this.#ptr,
       CFormat[format],
       quality,
-      OUT_SIZE,
+      OUT_SIZE_PTR,
       OUT_DATA_PTR,
     );
 
-    if (bufptr === 0) {
-      throw new Error("Failed to encode canvas");
-    }
+    // if (bufptr === 0) {
+    //   throw new Error("Failed to encode canvas");
+    // }
 
-    const size = OUT_SIZE[0];
-    const ptr = OUT_DATA_PTR[0];
-    const buffer = new Uint8Array(getBuffer(bufptr, size));
-    SK_DATA_FINALIZER.register(buffer, ptr);
-    return buffer;
+    // const size = OUT_SIZE[0];
+    // const ptr = OUT_DATA[0];
+    // const buffer = new Uint8Array(getBuffer(bufptr, size));
+    // SK_DATA_FINALIZER.register(buffer, ptr);
+    // return buffer;
   }
 
   readPixels(
