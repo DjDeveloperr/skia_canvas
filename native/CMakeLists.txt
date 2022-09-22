@@ -30,11 +30,6 @@ target_link_libraries(native_canvas ${CMAKE_SOURCE_DIR}/../skia/out/Release/libw
 target_link_libraries(native_canvas ${CMAKE_SOURCE_DIR}/../skia/out/Release/libicu.a)
 target_link_libraries(native_canvas ${CMAKE_SOURCE_DIR}/../skia/out/Release/libexpat.a)
 
-# target_link_libraries(native_canvas /workspaces/skia-binaries/libskia.a)
-# target_link_libraries(native_canvas /workspaces/skia-binaries/libskparagraph.a)
-# target_link_libraries(native_canvas /workspaces/skia-binaries/libskshaper.a)
-# target_link_libraries(native_canvas /workspaces/skia-binaries/libskunicode.a)
-
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 include(CPack)
