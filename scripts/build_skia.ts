@@ -1,5 +1,5 @@
 const BUILD_ARGS: Record<string, any> = {
-  is_official_build: true,
+  is_official_build: false,
   skia_use_system_harfbuzz: false,
   werror: false,
   skia_use_system_libpng: false,

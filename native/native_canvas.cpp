@@ -1,4 +1,8 @@
+// A lot of stuff here is based on
+// https://github.com/Brooooooklyn/canvas/blob/9c505e2530a6c526b1e338a785115edeeafae267/skia-c/skia_c.cpp
+
 #include <iostream>
+#include <filesystem>
 #include <vector>
 #include "include/core/SkGraphics.h"
 #include "include/core/SkCanvas.h"
@@ -16,6 +20,10 @@
 #include "include/core/SkFontMgr.h"
 #include "modules/skparagraph/include/FontCollection.h"
 #include "modules/skparagraph/include/TypefaceFontProvider.h"
+#include "modules/skparagraph/include/ParagraphStyle.h"
+#include "modules/skparagraph/include/ParagraphBuilder.h"
+#include "modules/skparagraph/src/ParagraphBuilderImpl.h"
+#include "modules/skparagraph/src/ParagraphImpl.h"
 #include "./csscolorparser.hpp"
 
 typedef struct sk_canvas {
@@ -49,6 +57,16 @@ enum TextBaseline {
 enum TextDirection {
   kLTR,
   kRTL
+};
+
+enum class CssBaseline
+{
+  Top,
+  Hanging,
+  Middle,
+  Alphabetic,
+  Ideographic,
+  Bottom,
 };
 
 enum FilterQuality {
@@ -131,7 +149,7 @@ sk_context_state* create_default_state() {
   state->direction = kLTR;
   state->font = new Font();
   state->font->size = 10;
-  state->font->family = strdup("sans-serif");
+  state->font->family = strdup("DejaVu Sans");
   state->font->weight = 400;
   state->font->style = FontStyle::kNormalStyle;
   state->font->variant = FontVariant::kNormalVariant;
@@ -181,6 +199,16 @@ typedef struct sk_context {
   sk_context_state* state;
 } sk_context;
 
+typedef struct sk_line_metrics {
+  float ascent;
+  float descent;
+  float left;
+  float right;
+  float width;
+  float font_ascent;
+  float font_descent;
+} sk_line_metrics;
+
 #define SK_SURFACE(surface) reinterpret_cast<SkSurface *>(surface)
 #define SK_CANVAS(canvas) reinterpret_cast<SkCanvas *>(canvas)
 #define SK_PATH(path) reinterpret_cast<SkPath *>(path)
@@ -188,59 +216,74 @@ typedef struct sk_context {
 #define DEGREES(radians) ((radians) * 180.0 / M_PI)
 #define ALMOST_EQUAL(a, b) (fabs((a) - (b)) < 0.00001)
 
-using skia::textlayout::TypefaceFontProvider;
-
-class TypefaceFontProviderCustom : public TypefaceFontProvider {
-public:
-  explicit TypefaceFontProviderCustom(sk_sp<SkFontMgr> mgr) : font_mgr(std::move(mgr))
-  {
-  }
-
-  ~TypefaceFontProviderCustom(){};
-
-  sk_sp<SkTypeface> onLegacyMakeTypeface(const char family_name[], SkFontStyle style) const override
-  {
-    auto style_set = this->onMatchFamily(family_name);
-    if (!style_set)
-    {
-      return nullptr;
-    }
-    auto tf = style_set->matchStyle(style);
-    if (!tf)
-    {
-      return nullptr;
-    }
-    return sk_sp<SkTypeface>(const_cast<SkTypeface *>(tf));
-  }
-
-private:
-  sk_sp<SkFontMgr> font_mgr;
-};
-
 int systemFontsLoaded = -1;
 sk_sp<SkFontMgr> fontMgr = nullptr;
-skia::textlayout::FontCollection* fontCollection = nullptr;
-TypefaceFontProviderCustom* assets = nullptr;
-
-void setup_font_collection() {
-  if (fontCollection == nullptr) {
-    fontMgr = SkFontMgr::RefDefault();
-    fontCollection = new skia::textlayout::FontCollection();
-    assets = new TypefaceFontProviderCustom(fontMgr);
-    fontCollection->setDefaultFontManager(sk_ref_sp(assets));
-    
-  }
-}
-
-int fonts_register_path(const char* path, char* alias) {
-  setup_font_collection();
-  auto tf = fontMgr->makeFromFile(path);
-  auto result = assets->registerTypeface(tf);
-  if (alias != nullptr) assets->registerTypeface(tf, alias);
-  return (int) result;
-}
+sk_sp<skia::textlayout::FontCollection> fontCollection = nullptr;
+sk_sp<skia::textlayout::TypefaceFontProvider> assets = nullptr;
 
 extern "C" {
+  void setup_font_collection() {
+    if (fontCollection == nullptr) {
+      fontMgr = SkFontMgr::RefDefault();
+      fontCollection = sk_sp(new skia::textlayout::FontCollection());
+      assets = sk_sp(new skia::textlayout::TypefaceFontProvider());
+      fontCollection->setDefaultFontManager(fontMgr);
+      fontCollection->setAssetFontManager(assets);
+    }
+  }
+
+  int fonts_register_path(const char* path, char* alias) {
+    auto tf = fontMgr->makeFromFile(path);
+    auto result = assets->registerTypeface(tf);
+    if (alias != nullptr) assets->registerTypeface(tf, SkString(alias));
+    return (int) result;
+  }
+
+  int fonts_register_memory(const void* data, size_t length, char* alias) {
+    auto tf = fontMgr->makeFromData(sk_sp<SkData>(SkData::MakeWithoutCopy(data, length)));
+    auto result = assets->registerTypeface(tf);
+    if (alias != nullptr) assets->registerTypeface(tf, SkString(alias));
+    return (int) result;
+  }
+
+  int fonts_register_dir(char* path) {
+    // Recursively register all fonts in a directory
+    int count = 0;
+    for (std::filesystem::recursive_directory_iterator i(path), end; i != end; ++i) {
+      if (!std::filesystem::is_directory(i->path())) {
+        auto ext = i->path().extension();
+        if (ext == ".ttf" || ext == ".otf" || ext == ".ttc" || ext == ".pfb" || ext == ".woff" || ext == ".woff2") {
+          fonts_register_path(i->path().c_str(), nullptr);
+          count++;
+        }
+      }
+    }
+    return count;
+  }
+
+  int load_system_fonts() {
+    if (systemFontsLoaded == -1) {
+      systemFontsLoaded = fonts_register_dir("/usr/share/fonts/");
+    }
+    return systemFontsLoaded;
+  }
+
+  void fonts_set_alias(char* alias, char* family) {
+    auto style = SkFontStyle();
+    auto typeface = assets->matchFamilyStyle(family, style);
+    assets->registerTypeface(sk_sp(typeface), SkString(alias));
+  }
+
+  int fonts_count() {
+    return assets->countFamilies();
+  }
+
+  char* fonts_family(int index) {
+    auto family = new SkString();
+    assets->getFamilyName(index, family);
+    return strdup(family->c_str());
+  }
+
   SkPath* sk_path_create() {
     return new SkPath();
   }
@@ -479,6 +522,20 @@ extern "C" {
     return 0;
   }
 
+  SkPaint* sk_context_fill_paint(sk_context_state* state) {
+    SkPaint* paint = new SkPaint(*state->paint);
+    paint->setStyle(SkPaint::kFill_Style);
+    paint->setColor(SkColorSetARGB(state->fillStyle.a, state->fillStyle.r, state->fillStyle.g, state->fillStyle.b));
+    return paint;
+  }
+
+  SkPaint* sk_context_stroke_paint(sk_context_state* state) {
+    SkPaint* paint = new SkPaint(*state->paint);
+    paint->setStyle(SkPaint::kStroke_Style);
+    paint->setColor(SkColorSetARGB(state->strokeStyle.a, state->strokeStyle.r, state->strokeStyle.g, state->strokeStyle.b));
+    return paint;
+  }
+
   int sk_context_set_stroke_style(sk_context* context, char* style) {
     auto color = CSSColorParser::parse(std::string(style));
     if (color) {
@@ -599,20 +656,163 @@ extern "C" {
     context->state->font->stretch = FontStretch(stretch);
   }
 
+  int sk_context_text(
+    sk_context* context,
+    char* text,
+    int textLen,
+    float x,
+    float y,
+    float maxWidth,
+    int fill,
+    sk_line_metrics* out_metrics
+  ) {
+    SkTArray<SkString> families;
+    SkStrSplit(context->state->font->family, ",", &families);
+    std::vector<SkString> familyVec;
+    for (auto& family : families) {
+      familyVec.emplace_back(family);
+    }
+
+    skia::textlayout::TextStyle tstyle;
+    tstyle.setTextBaseline(skia::textlayout::TextBaseline::kAlphabetic);
+    tstyle.setFontFamilies(familyVec);
+    tstyle.setFontSize(context->state->font->size);
+    tstyle.setWordSpacing(0);
+    tstyle.setHeight(1);
+
+    auto fstyle = SkFontStyle(
+      context->state->font->weight,
+      context->state->font->stretch,
+      (SkFontStyle::Slant) context->state->font->style
+    );
+    tstyle.setFontStyle(fstyle);
+    
+    if (fill == 1) tstyle.setForegroundColor(*sk_context_fill_paint(context->state));
+    else tstyle.setForegroundColor(*sk_context_stroke_paint(context->state));
+    
+    skia::textlayout::ParagraphStyle paraStyle;
+    paraStyle.setTextAlign(skia::textlayout::TextAlign::kLeft);
+    paraStyle.setTextStyle(tstyle);
+    paraStyle.setTextDirection(skia::textlayout::TextDirection(context->state->direction));
+    
+    auto builder = skia::textlayout::ParagraphBuilderImpl::make(paraStyle, fontCollection, SkUnicode::Make());
+    builder->addText(text, textLen);
+    auto paragraph = builder->Build();
+    paragraph.get()->layout(100000);
+
+    auto paragraphImpl = static_cast<skia::textlayout::ParagraphImpl *>(paragraph.get());
+
+    std::vector<skia::textlayout::LineMetrics> metrics_vec;
+    paragraph->getLineMetrics(metrics_vec);
+    if (metrics_vec.size() == 0) return 0;
+    
+    auto line_metrics = metrics_vec[0];
+    auto run = paragraphImpl->run(0);
+    auto font = run.font();
+    
+    SkFontMetrics font_metrics;
+    font.getMetrics(&font_metrics);
+    
+    SkRect bounds[textLen];
+    auto glyphs = run.glyphs();
+    auto glyphsSize = glyphs.size();
+    font.getBounds(glyphs.data(), textLen, &bounds[0], nullptr);
+    
+    auto textBox = paragraph->getRectsForRange(0, textLen, skia::textlayout::RectHeightStyle::kTight, skia::textlayout::RectWidthStyle::kTight);
+    auto lineWidth = 0.0;
+    auto firstCharBounds = bounds[0];
+    auto descent = firstCharBounds.fBottom;
+    auto ascent = firstCharBounds.fTop;
+    auto lastCharBounds = bounds[glyphsSize - 1];
+    auto lastCharPosX = run.positionX(glyphsSize - 1);
+    
+    for (auto &box : textBox) {
+      lineWidth += box.rect.width();
+    }
+    
+    for (size_t i = 1; i <= glyphsSize - 1; ++i) {
+      auto charBounds = bounds[i];
+      auto charBottom = charBounds.fBottom;
+      if (charBottom > descent) {
+        descent = charBottom;
+      }
+      auto charTop = charBounds.fTop;
+      if (charTop < ascent) {
+        ascent = charTop;
+      }
+    }
+    
+    auto alphaBaseline = paragraph->getAlphabeticBaseline();
+    auto cssBaseline = (CssBaseline) alphaBaseline;
+    
+    SkScalar baselineOffset = 0;
+    switch (cssBaseline) {
+    case CssBaseline::Top:
+      baselineOffset = -alphaBaseline - font_metrics.fAscent;
+      break;
+    case CssBaseline::Hanging:
+      baselineOffset = -alphaBaseline - (font_metrics.fAscent - font_metrics.fDescent) * 80 / 100.0;
+      break;
+    case CssBaseline::Middle:
+      baselineOffset = -paragraph->getHeight() / 2;
+      break;
+    case CssBaseline::Alphabetic:
+      baselineOffset = -alphaBaseline;
+      break;
+    case CssBaseline::Ideographic:
+      baselineOffset = -paragraph->getIdeographicBaseline();
+      break;
+    case CssBaseline::Bottom:
+      baselineOffset = -font_metrics.fStrikeoutPosition;
+      break;
+    }
+
+    if (out_metrics != nullptr) {
+      auto offset = -baselineOffset - alphaBaseline;
+      out_metrics->ascent = -ascent + offset;
+      out_metrics->descent = descent + offset;
+      out_metrics->left = line_metrics.fLeft - firstCharBounds.fLeft;
+      out_metrics->right = lastCharPosX + lastCharBounds.fRight - line_metrics.fLeft;
+      out_metrics->width = lineWidth;
+      out_metrics->font_ascent = -font_metrics.fAscent + offset;
+      out_metrics->font_descent = font_metrics.fDescent + offset;
+    } else {
+      auto line_center = lineWidth / 2.0f;
+      float paintX;
+      switch (context->state->textAlign) {
+      case TextAlign::kLeft:
+        paintX = x;
+        break;
+      case TextAlign::kCenter:
+        paintX = x - line_center;
+        break;
+      case TextAlign::kRight:
+        paintX = x - lineWidth;
+        break;
+      }
+      auto needScale = lineWidth > maxWidth;
+      if (needScale) {
+        context->canvas->save();
+        context->canvas->scale(maxWidth / lineWidth, 1.0);
+      }
+      auto paintY = y + baselineOffset;
+      paragraph.get()->paint(context->canvas, paintX, paintY);
+      if (needScale) {
+        context->canvas->restore();
+      }
+    }
+
+    return 1;
+  }
+
   void sk_context_fill_rect(sk_context* context, float x, float y, float width, float height) {
     auto canvas = SK_CANVAS(context->canvas);
-    auto paint = context->state->paint;
-    paint->setStroke(false);
-    paint->setColor(SkColorSetARGB(context->state->fillStyle.a, context->state->fillStyle.r, context->state->fillStyle.g, context->state->fillStyle.b));
-    canvas->drawRect(SkRect::MakeXYWH(x, y, width, height), *paint);
+    canvas->drawRect(SkRect::MakeXYWH(x, y, width, height), *sk_context_fill_paint(context->state));
   }
 
   void sk_context_stroke_rect(sk_context* context, float x, float y, float width, float height) {
     auto canvas = SK_CANVAS(context->canvas);
-    auto paint = context->state->paint;
-    paint->setStroke(true);
-    paint->setColor(SkColorSetARGB(context->state->strokeStyle.a, context->state->strokeStyle.r, context->state->strokeStyle.g, context->state->strokeStyle.b));
-    canvas->drawRect(SkRect::MakeXYWH(x, y, width, height), *paint);
+    canvas->drawRect(SkRect::MakeXYWH(x, y, width, height), *sk_context_stroke_paint(context->state));
   }
 
   void sk_context_draw_image(
@@ -711,9 +911,7 @@ extern "C" {
   void sk_context_fill(sk_context* context, SkPath* path, unsigned char rule) {
     if (path == nullptr) path = context->path;
     auto canvas = SK_CANVAS(context->canvas);
-    auto paint = context->state->paint;
-    paint->setStroke(false);
-    paint->setColor(SkColorSetARGB(context->state->fillStyle.a, context->state->fillStyle.r, context->state->fillStyle.g, context->state->fillStyle.b));
+    auto paint = sk_context_fill_paint(context->state);
     path->setFillType(rule == 1 ? SkPathFillType::kEvenOdd : SkPathFillType::kWinding);
     canvas->drawPath(*path, *paint);
   }
@@ -721,10 +919,7 @@ extern "C" {
   void sk_context_stroke(sk_context* context, SkPath* path) {
     if (path == nullptr) path = context->path;
     auto canvas = SK_CANVAS(context->canvas);
-    auto paint = context->state->paint;
-    paint->setStroke(true);
-    paint->setColor(SkColorSetARGB(context->state->strokeStyle.a, context->state->strokeStyle.r, context->state->strokeStyle.g, context->state->strokeStyle.b));
-    canvas->drawPath(*path, *paint);
+    canvas->drawPath(*path, *sk_context_stroke_paint(context->state));
   }
 
   float sk_context_get_line_width(sk_context* context) {

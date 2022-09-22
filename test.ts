@@ -4,6 +4,11 @@ const canvas = new Canvas(300, 300);
 
 const ctx = canvas.getContext("2d");
 
+ctx.fillStyle = "white";
+ctx.fillRect(0, 0, 300, 300);
+
+ctx.fillStyle = "black";
+
 // Set line width
 ctx.lineWidth = 10;
 
@@ -35,4 +40,10 @@ ctx.drawImage(
   img.height,
 );
 
+ctx.fillStyle = "skyblue";
+ctx.font = "30px DejaVu Sans";
+console.log(ctx.measureText("hello"));
+ctx.fillText("hello, skia text", 10, 10);
+
 canvas.save("./testdata/test.png");
+console.log("done");

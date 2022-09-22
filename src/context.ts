@@ -1,6 +1,7 @@
 import { Canvas } from "./canvas.ts";
 import ffi, { cstr } from "./ffi.ts";
 import { Image } from "./image.ts";
+import { parseFont } from "./parse_font.ts";
 import { Path2D } from "./path.ts";
 
 const {
@@ -57,6 +58,7 @@ const {
   sk_context_set_text_baseline,
   sk_context_set_text_direction,
   sk_context_draw_image,
+  sk_context_text,
 } = ffi;
 
 const CONTEXT_FINALIZER = new FinalizationRegistry((ptr: Deno.PointerValue) => {
@@ -100,6 +102,9 @@ export type TextBaseline = keyof typeof CTextBaseline;
 export type LineCap = keyof typeof CLineCap;
 export type LineJoin = keyof typeof CLineJoin;
 export type CanvasImageSource = Canvas | Image;
+
+const METRICS = new Float32Array(7);
+const METRICS_PTR = Number(Deno.UnsafePointer.of(METRICS));
 
 export class Context {
   #canvas: Canvas;
@@ -262,7 +267,24 @@ export class Context {
   }
 
   set font(value: string) {
-    throw new Error("unimplemented");
+    const font = parseFont(value);
+    if (font) {
+      if (
+        sk_context_set_font(
+          this.#ptr,
+          font.size,
+          cstr(font.family),
+          font.weight,
+          font.style,
+          font.variant,
+          font.stretch,
+        )
+      ) {
+        this.#font = value;
+      }
+    } else {
+      throw new Error("Invalid font");
+    }
   }
 
   get font() {
@@ -448,15 +470,63 @@ export class Context {
   }
 
   fillText(text: string, x: number, y: number, maxWidth?: number) {
-    throw new Error("unimplemented");
+    if (
+      !sk_context_text(
+        this.#ptr,
+        cstr(text),
+        text.length,
+        x,
+        y,
+        maxWidth ?? 100_000,
+        1,
+        0,
+      )
+    ) {
+      throw new Error("failed to fill text");
+    }
   }
 
   strokeText(text: string, x: number, y: number, maxWidth?: number) {
-    throw new Error("unimplemented");
+    if (
+      !sk_context_text(
+        this.#ptr,
+        cstr(text),
+        text.length,
+        x,
+        y,
+        maxWidth ?? 100_000,
+        0,
+        0,
+      )
+    ) {
+      throw new Error("failed to stroke text");
+    }
   }
 
   measureText(text: string) {
-    throw new Error("unimplemented");
+    if (
+      !sk_context_text(
+        this.#ptr,
+        cstr(text),
+        text.length,
+        0,
+        0,
+        100_000,
+        1,
+        METRICS_PTR,
+      )
+    ) {
+      throw new Error("failed to measure text");
+    }
+    return {
+      ascent: METRICS[0],
+      descent: METRICS[1],
+      left: METRICS[2],
+      right: METRICS[3],
+      width: METRICS[4],
+      fontAscent: METRICS[5],
+      fontDescent: METRICS[6],
+    };
   }
 
   drawImage(image: CanvasImageSource, dx: number, dy: number): void;

@@ -434,7 +434,61 @@ const lib = Deno.dlopen(
     sk_image_destroy: {
       parameters: ["pointer"],
       result: "void",
-    }
+    },
+
+    setup_font_collection: {
+      parameters: [],
+      result: "void",
+    },
+
+    load_system_fonts: {
+      parameters: [],
+      result: "i32",
+    },
+
+    fonts_register_path: {
+      parameters: ["buffer"],
+      result: "i32",
+    },
+
+    fonts_register_memory: {
+      parameters: ["buffer", "u32", "buffer"],
+      result: "i32",
+    },
+
+    fonts_register_dir: {
+      parameters: ["buffer"],
+      result: "i32",
+    },
+
+    fonts_set_alias: {
+      parameters: ["buffer", "buffer"],
+      result: "void",
+    },
+
+    fonts_count: {
+      parameters: [],
+      result: "i32",
+    },
+
+    fonts_family: {
+      parameters: ["i32"],
+      result: "pointer",
+    },
+
+    sk_context_text: {
+      parameters: [
+        "pointer",
+        "buffer",
+        "i32",
+        "f32",
+        "f32",
+        "f32",
+        "i32",
+        "pointer",
+      ],
+      result: "i32",
+    },
   } as const,
 ).symbols;
 
