@@ -113,7 +113,7 @@ export class Context {
   #fillStyle = "black";
   #strokeStyle = "black";
   #shadowColor = "black";
-  #font = "10px sans-serif";
+  #font = "";
 
   get _unsafePointer() {
     return this.#ptr;
@@ -504,6 +504,18 @@ export class Context {
   }
 
   measureText(text: string) {
+    if (text.length === 0) {
+      return {
+        width: 0,
+        actualBoundingBoxLeft: 0,
+        actualBoundingBoxRight: 0,
+        actualBoundingBoxAscent: 0,
+        actualBoundingBoxDescent: 0,
+        fontBoundingBoxAscent: 0,
+        fontBoundingBoxDescent: 0,
+      };
+    }
+
     if (
       !sk_context_text(
         this.#ptr,
@@ -519,13 +531,13 @@ export class Context {
       throw new Error("failed to measure text");
     }
     return {
-      ascent: METRICS[0],
-      descent: METRICS[1],
-      left: METRICS[2],
-      right: METRICS[3],
       width: METRICS[4],
-      fontAscent: METRICS[5],
-      fontDescent: METRICS[6],
+      actualBoundingBoxLeft: METRICS[2],
+      actualBoundingBoxRight: METRICS[3],
+      actualBoundingBoxAscent: METRICS[0],
+      actualBoundingBoxDescent: METRICS[1],
+      fontBoundingBoxAscent: METRICS[5],
+      fontBoundingBoxDescent: METRICS[6],
     };
   }
 

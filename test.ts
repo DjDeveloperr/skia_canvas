@@ -1,4 +1,4 @@
-import { Canvas, Image } from "./mod.ts";
+import { Canvas, Image, Path2D } from "./mod.ts";
 
 const canvas = new Canvas(300, 300);
 
@@ -44,6 +44,15 @@ ctx.fillStyle = "skyblue";
 ctx.font = "30px DejaVu Sans";
 console.log(ctx.measureText("hello"));
 ctx.fillText("hello, skia text", 10, 10);
+
+const path = new Path2D(
+  "M8 50H92C96.4183 50 100 53.5817 100 58V142C100 146.418 96.4183 150 92 150H8C3.58172 150 0 146.418 0 142V58C0 53.5817 3.58172 50 8 50Z",
+);
+ctx.strokeStyle = "blue";
+ctx.save();
+ctx.translate(10, 10);
+ctx.stroke(path);
+ctx.restore();
 
 canvas.save("./testdata/test.png");
 console.log("done");
