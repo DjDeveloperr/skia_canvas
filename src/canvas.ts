@@ -108,3 +108,7 @@ export class Canvas {
     }
   }
 }
+
+export function createCanvas(width: number, height: number) {
+  return new Canvas(width, height);
+}
