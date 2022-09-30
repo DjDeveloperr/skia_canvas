@@ -15,6 +15,7 @@ const {
   sk_path_bezier_curve_to,
   sk_path_ellipse,
   sk_path_quadratic_curve_to,
+  sk_path_round_rect,
 } = ffi;
 
 const PATH_FINALIZER = new FinalizationRegistry((ptr: Deno.PointerValue) => {
@@ -57,6 +58,16 @@ export class Path2D {
 
   rect(x: number, y: number, width: number, height: number) {
     sk_path_rect(this.#ptr, x, y, width, height);
+  }
+
+  roundRect(
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    r: number,
+  ) {
+    sk_path_round_rect(this.#ptr, x, y, width, height, r);
   }
 
   arcTo(x1: number, y1: number, x2: number, y2: number, radius: number) {

@@ -15,7 +15,10 @@ ctx.lineWidth = 10;
 ctx.strokeRect(75, 140, 150, 110);
 
 // Door
-ctx.fillRect(130, 190, 40, 60);
+ctx.beginPath();
+ctx.roundRect(130, 190, 40, 60, 8);
+ctx.closePath();
+ctx.fill();
 
 // Roof
 ctx.beginPath();

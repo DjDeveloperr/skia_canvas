@@ -13,6 +13,7 @@ extern "C" {
   void sk_path_move_to(SkPath* path, float x, float y);
   void sk_path_line_to(SkPath* path, float x, float y);
   void sk_path_rect(SkPath* path, float x, float y, float width, float height);
+  void sk_path_round_rect(SkPath* path, float x, float y, float width, float height, float r);
   void sk_path_close(SkPath* path);
   void sk_path_arc_to(SkPath* path, float x1, float y1, float x2, float y2, float radius);
   void sk_path_ellipse(SkPath* path, float x, float y, float radiusX, float radiusY, float rotation, float startAngle, float endAngle, bool clockwise);

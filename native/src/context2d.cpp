@@ -547,7 +547,10 @@ extern "C" {
     sk_path_rect(context->path, x, y, width, height);
   }
 
-  // TODO: Context.roundRect()
+  // Context.roundRect()
+  void sk_context_round_rect(sk_context* context, float x, float y, float width, float height, float r) {
+    sk_path_round_rect(context->path, x, y, width, height, r);
+  }
 
   /// Drawing paths
 

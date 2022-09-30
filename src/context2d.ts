@@ -2,7 +2,7 @@ import { Canvas } from "./canvas.ts";
 import ffi, { cstr } from "./ffi.ts";
 import { Image } from "./image.ts";
 import { parseFont } from "./parse_font.ts";
-import { Path2D } from "./path.ts";
+import { Path2D } from "./path2d.ts";
 
 const {
   sk_canvas_get_context,
@@ -68,6 +68,7 @@ const {
   sk_context_set_global_composite_operation,
   sk_context_get_image_smoothing_enabled,
   sk_context_set_image_smoothing_enabled,
+  sk_context_round_rect,
 } = ffi;
 
 const CONTEXT_FINALIZER = new FinalizationRegistry((ptr: Deno.PointerValue) => {
@@ -526,7 +527,16 @@ export class CanvasRenderingContext2D {
     sk_context_rect(this.#ptr, x, y, width, height);
   }
 
-  // TODO: Context.roundRect()
+  // TODO: Add support for specifying multiple radii for different corners
+  roundRect(
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    r: number,
+  ) {
+    sk_context_round_rect(this.#ptr, x, y, width, height, r);
+  }
 
   /// Drawing paths
 
