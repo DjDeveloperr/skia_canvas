@@ -66,21 +66,26 @@ void free_context_state(sk_context_state* state) {
   delete state;
 }
 
+// Utility
+
+SkPaint* sk_context_fill_paint(sk_context_state* state) {
+  SkPaint* paint = new SkPaint(*state->paint);
+  paint->setStyle(SkPaint::kFill_Style);
+  paint->setColor(SkColorSetARGB(state->fillStyle.a, state->fillStyle.r, state->fillStyle.g, state->fillStyle.b));
+  return paint;
+}
+
+SkPaint* sk_context_stroke_paint(sk_context_state* state) {
+  SkPaint* paint = new SkPaint(*state->paint);
+  paint->setStyle(SkPaint::kStroke_Style);
+  paint->setColor(SkColorSetARGB(state->strokeStyle.a, state->strokeStyle.r, state->strokeStyle.g, state->strokeStyle.b));
+  return paint;
+}
+
 extern "C" {
-  void sk_context_save(sk_context* context) {
-    context->states.push_back(*clone_context_state(context->state));
-    context->canvas->save();
-  }
+  /// Drawing rectangles
 
-  void sk_context_restore(sk_context* context) {
-    if (context->states.size() > 0) {
-      free_context_state(context->state);
-      context->state = &context->states.back();
-      context->states.pop_back();
-      context->canvas->restore();
-    }
-  }
-
+  // Context.clearRect()
   void sk_context_clear_rect(sk_context* context, float x, float y, float width, float height) {
     auto canvas = context->canvas;
     SkPaint paint;
@@ -88,152 +93,22 @@ extern "C" {
     canvas->drawRect(SkRect::MakeXYWH(x, y, width, height), paint);
   }
 
-  int sk_context_set_fill_style(sk_context* context, char* style) {
-    auto color = CSSColorParser::parse(std::string(style));
-    if (color) {
-      auto val = color.value();
-      context->state->fillStyle = {val.r, val.g, val.b, (uint8_t)(val.a * 255)};
-      return 1;
-    }
-    return 0;
+  // Context.fillRect()
+  void sk_context_fill_rect(sk_context* context, float x, float y, float width, float height) {
+    auto canvas = context->canvas;
+    canvas->drawRect(SkRect::MakeXYWH(x, y, width, height), *sk_context_fill_paint(context->state));
   }
 
-  SkPaint* sk_context_fill_paint(sk_context_state* state) {
-    SkPaint* paint = new SkPaint(*state->paint);
-    paint->setStyle(SkPaint::kFill_Style);
-    paint->setColor(SkColorSetARGB(state->fillStyle.a, state->fillStyle.r, state->fillStyle.g, state->fillStyle.b));
-    return paint;
+  // Context.strokeRect()
+  void sk_context_stroke_rect(sk_context* context, float x, float y, float width, float height) {
+    auto canvas = context->canvas;
+    canvas->drawRect(SkRect::MakeXYWH(x, y, width, height), *sk_context_stroke_paint(context->state));
   }
 
-  SkPaint* sk_context_stroke_paint(sk_context_state* state) {
-    SkPaint* paint = new SkPaint(*state->paint);
-    paint->setStyle(SkPaint::kStroke_Style);
-    paint->setColor(SkColorSetARGB(state->strokeStyle.a, state->strokeStyle.r, state->strokeStyle.g, state->strokeStyle.b));
-    return paint;
-  }
+  /// Drawing text
 
-  int sk_context_set_stroke_style(sk_context* context, char* style) {
-    auto color = CSSColorParser::parse(std::string(style));
-    if (color) {
-      auto val = color.value();
-      context->state->strokeStyle = {val.r, val.g, val.b, (uint8_t)(val.a * 255)};
-      return 1;
-    }
-    return 0;
-  }
-
-  int sk_context_set_shadow_color(sk_context* context, char* style) {
-    auto color = CSSColorParser::parse(std::string(style));
-    if (color) {
-      auto val = color.value();
-      context->state->shadowColor = {val.r, val.g, val.b, (uint8_t)(val.a * 255)};
-      return 1;
-    }
-    return 0;
-  }
-
-  int sk_context_get_line_cap(sk_context* context) {
-    auto cap = context->state->paint->getStrokeCap();
-    switch (cap) {
-      case SkPaint::kButt_Cap:
-        return 0;
-      case SkPaint::kRound_Cap:
-        return 1;
-      case SkPaint::kSquare_Cap:
-        return 2;
-    }
-  }
-
-  void sk_context_set_line_cap(sk_context* context, int cap) {
-    switch (cap) {
-      case 0:
-        context->state->paint->setStrokeCap(SkPaint::kButt_Cap);
-        break;
-      case 1:
-        context->state->paint->setStrokeCap(SkPaint::kRound_Cap);
-        break;
-      case 2:
-        context->state->paint->setStrokeCap(SkPaint::kSquare_Cap);
-        break;
-    }
-  }
-
-  float sk_context_get_line_dash_offset(sk_context* context) {
-    return context->state->lineDashOffset;
-  }
-
-  void sk_context_set_line_dash_offset(sk_context* context, float offset) {
-    context->state->lineDashOffset = offset;
-  }
-
-  int sk_context_get_text_direction(sk_context* context) {
-    return context->state->direction;
-  }
-
-  void sk_context_set_text_direction(sk_context* context, int direction) {
-    context->state->direction = TextDirection(direction);
-  }
-
-  int sk_context_get_text_align(sk_context* context) {
-    return context->state->textAlign;
-  }
-
-  void sk_context_set_text_align(sk_context* context, int align) {
-    context->state->textAlign = TextAlign(align);
-  }
-
-  int sk_context_get_text_baseline(sk_context* context) {
-    return context->state->textBaseline;
-  }
-
-  void sk_context_set_text_baseline(sk_context* context, int baseline) {
-    context->state->textBaseline = TextBaseline(baseline);
-  }
-
-  float sk_context_get_shadow_blur(sk_context* context) {
-    return context->state->shadowBlur;
-  }
-
-  void sk_context_set_shadow_blur(sk_context* context, float blur) {
-    context->state->shadowBlur = blur;
-  }
-
-  void sk_context_get_shadow_offset_x(sk_context* context, float* x) {
-    *x = context->state->shadowOffsetX;
-  }
-
-  void sk_context_set_shadow_offset_x(sk_context* context, float x) {
-    context->state->shadowOffsetX = x;
-  }
-
-  void sk_context_get_shadow_offset_y(sk_context* context, float* y) {
-    *y = context->state->shadowOffsetY;
-  }
-
-  void sk_context_set_shadow_offset_y(sk_context* context, float y) {
-    context->state->shadowOffsetY = y;
-  }
-
-  void sk_context_set_font(
-    sk_context* context,
-    float size,
-    char* family,
-    unsigned int weight,
-    int style,
-    int variant,
-    int stretch
-  ) {
-    context->state->font = new Font();
-    context->state->font->family = strdup(family);
-    context->state->font->size = size;
-    context->state->font->weight = weight;
-    context->state->font->style = FontStyle(style);
-    context->state->font->variant = FontVariant(variant);
-    context->state->font->stretch = FontStretch(stretch);
-  }
-
-  int sk_context_text(
-    sk_context* context,
+  // Helper function to fill/stroke/measure
+  int sk_context_text(sk_context* context,
     char* text,
     int textLen,
     float x,
@@ -381,16 +256,484 @@ extern "C" {
     return 1;
   }
 
-  void sk_context_fill_rect(sk_context* context, float x, float y, float width, float height) {
-    auto canvas = context->canvas;
-    canvas->drawRect(SkRect::MakeXYWH(x, y, width, height), *sk_context_fill_paint(context->state));
+  // Context.fillText() implementation in JS using sk_context_test
+  // Context.strokeText() implementation in JS using sk_context_test
+  // Context.measureText() implementation in JS using sk_context_test
+
+  /// Line styles
+
+  // Context.lineWidth getter
+  float sk_context_get_line_width(sk_context* context) {
+    return context->state->paint->getStrokeWidth();
   }
 
-  void sk_context_stroke_rect(sk_context* context, float x, float y, float width, float height) {
-    auto canvas = context->canvas;
-    canvas->drawRect(SkRect::MakeXYWH(x, y, width, height), *sk_context_stroke_paint(context->state));
+  // Context.lineWidth setter
+  void sk_context_set_line_width(sk_context* context, float width) {
+    context->state->paint->setStrokeWidth(width);
   }
 
+  // Context.lineCap getter
+  int sk_context_get_line_cap(sk_context* context) {
+    auto cap = context->state->paint->getStrokeCap();
+    switch (cap) {
+      case SkPaint::kButt_Cap:
+        return 0;
+      case SkPaint::kRound_Cap:
+        return 1;
+      case SkPaint::kSquare_Cap:
+        return 2;
+    }
+  }
+
+  // Context.lineCap setter
+  void sk_context_set_line_cap(sk_context* context, int cap) {
+    switch (cap) {
+      case 0:
+        context->state->paint->setStrokeCap(SkPaint::kButt_Cap);
+        break;
+      case 1:
+        context->state->paint->setStrokeCap(SkPaint::kRound_Cap);
+        break;
+      case 2:
+        context->state->paint->setStrokeCap(SkPaint::kSquare_Cap);
+        break;
+    }
+  }
+
+  // Context.lineJoin getter
+  int sk_context_get_line_join(sk_context* context) {
+    auto join = context->state->paint->getStrokeJoin();
+    switch (join) {
+      case SkPaint::kMiter_Join:
+        return 0;
+      case SkPaint::kRound_Join:
+        return 1;
+      case SkPaint::kBevel_Join:
+        return 2;
+    }
+  }
+
+  // Context.lineJoin setter
+  void sk_context_set_line_join(sk_context* context, int join) {
+    switch (join) {
+      case 0:
+        context->state->paint->setStrokeJoin(SkPaint::kMiter_Join);
+        break;
+      case 1:
+        context->state->paint->setStrokeJoin(SkPaint::kRound_Join);
+        break;
+      case 2:
+        context->state->paint->setStrokeJoin(SkPaint::kBevel_Join);
+        break;
+    }
+  }
+
+  // Context.miterLimit getter
+  float sk_context_get_miter_limit(sk_context* context) {
+    return context->state->paint->getStrokeMiter();
+  }
+
+  // Context.miterLimit setter
+  void sk_context_set_miter_limit(sk_context* context, float limit) {
+    context->state->paint->setStrokeMiter(limit);
+  }
+
+  // Context.getLineDash() value is cached in JS side
+
+  // Context.setLineDash()
+  void sk_context_set_line_dash(sk_context* context, float* dash, int count) {
+    context->state->lineDash = std::vector<float>(dash, dash + count);
+  }
+
+  // Context.lineDashOffset getter
+  float sk_context_get_line_dash_offset(sk_context* context) {
+    return context->state->lineDashOffset;
+  }
+
+  // Context.lineDashOffset setter
+  void sk_context_set_line_dash_offset(sk_context* context, float offset) {
+    context->state->lineDashOffset = offset;
+  }
+
+  /// Text styles
+
+  // Context.font getter value is cached in JS side
+
+  // Context.font setter (Font string parsed in JS side)
+  void sk_context_set_font(
+    sk_context* context,
+    float size,
+    char* family,
+    unsigned int weight,
+    int style,
+    int variant,
+    int stretch
+  ) {
+    context->state->font = new Font();
+    context->state->font->family = strdup(family);
+    context->state->font->size = size;
+    context->state->font->weight = weight;
+    context->state->font->style = FontStyle(style);
+    context->state->font->variant = FontVariant(variant);
+    context->state->font->stretch = FontStretch(stretch);
+  }
+
+  // Context.textAlign getter
+  int sk_context_get_text_align(sk_context* context) {
+    return context->state->textAlign;
+  }
+
+  // Context.textAlign setter
+  void sk_context_set_text_align(sk_context* context, int align) {
+    context->state->textAlign = TextAlign(align);
+  }
+
+  // Context.textBaseline getter
+  int sk_context_get_text_baseline(sk_context* context) {
+    return context->state->textBaseline;
+  }
+
+  // Context.textBaseline setter
+  void sk_context_set_text_baseline(sk_context* context, int baseline) {
+    context->state->textBaseline = TextBaseline(baseline);
+  }
+
+  // Context.direction getter
+  int sk_context_get_text_direction(sk_context* context) {
+    return context->state->direction;
+  }
+
+  // Context.direction setter
+  void sk_context_set_text_direction(sk_context* context, int direction) {
+    context->state->direction = TextDirection(direction);
+  }
+
+  // TODO: Context.letterSpacing
+  // TODO: Context.fontKerning
+  // TODO: Context.fontStretch
+  // TODO: Context.fontVariantCaps
+  // TODO: Context.textRendering
+  // TODO: Context.wordSpacing
+
+  /// Fill and stroke styles
+
+  // Context.fillStyle getter value is cached in JS side
+
+  // Context.fillStyle setter
+  int sk_context_set_fill_style(sk_context* context, char* style) {
+    auto color = CSSColorParser::parse(std::string(style));
+    if (color) {
+      auto val = color.value();
+      context->state->fillStyle = {val.r, val.g, val.b, (uint8_t)(val.a * 255)};
+      return 1;
+    }
+    return 0;
+  }
+
+  // Context.strokeStyle getter value is cached in JS side
+
+  // Context.strokeStyle setter
+  int sk_context_set_stroke_style(sk_context* context, char* style) {
+    auto color = CSSColorParser::parse(std::string(style));
+    if (color) {
+      auto val = color.value();
+      context->state->strokeStyle = {val.r, val.g, val.b, (uint8_t)(val.a * 255)};
+      return 1;
+    }
+    return 0;
+  }
+
+  /// Gradients and patterns
+
+  // TODO: Context.createConicGradient()
+  // TODO: Context.createLinearGradient()
+  // TODO: Context.createRadialGradient()
+  // TODO: Context.createPattern()
+
+  /// Shadows
+
+  // Context.shadowBlur getter
+  float sk_context_get_shadow_blur(sk_context* context) {
+    return context->state->shadowBlur;
+  }
+
+  // Context.shadowBlur setter
+  void sk_context_set_shadow_blur(sk_context* context, float blur) {
+    context->state->shadowBlur = blur;
+  }
+
+  // Context.shadowColor getter value is cached in JS side
+
+  // Context.shadowColor setter
+  int sk_context_set_shadow_color(sk_context* context, char* style) {
+    auto color = CSSColorParser::parse(std::string(style));
+    if (color) {
+      auto val = color.value();
+      context->state->shadowColor = {val.r, val.g, val.b, (uint8_t)(val.a * 255)};
+      return 1;
+    }
+    return 0;
+  }
+
+  // Context.shadowOffsetX getter
+  float sk_context_get_shadow_offset_x(sk_context* context) {
+    return context->state->shadowOffsetX;
+  }
+
+  // Context.shadowOffsetX setter
+  void sk_context_set_shadow_offset_x(sk_context* context, float x) {
+    context->state->shadowOffsetX = x;
+  }
+
+  // Context.shadowOffsetY getter
+  float sk_context_get_shadow_offset_y(sk_context* context) {
+    return context->state->shadowOffsetY;
+  }
+
+  // Context.shadowOffsetY setter
+  void sk_context_set_shadow_offset_y(sk_context* context, float y) {
+    context->state->shadowOffsetY = y;
+  }
+
+  /// Paths
+
+  // Context.beginPath()
+  void sk_context_begin_path(sk_context* context) {
+    sk_path_begin(context->path);
+  }
+
+  // Context.closePath()
+  void sk_context_close_path(sk_context* context) {
+    context->path->close();
+  }
+
+  // Context.moveTo()
+  void sk_context_move_to(sk_context* context, float x, float y) {
+    sk_path_move_to(context->path, x, y);
+  }
+
+  // Context.lineTo()
+  void sk_context_line_to(sk_context* context, float x, float y) {
+    sk_path_line_to(context->path, x, y);
+  }
+
+  // Context.bezierCurveTo()
+  void sk_context_bezier_curve_to(sk_context* context, float cp1x, float cp1y, float cp2x, float cp2y, float x, float y) {
+    sk_path_bezier_curve_to(context->path, cp1x, cp1y, cp2x, cp2y, x, y);
+  }
+
+  // Context.quadraticCurveTo()
+  void sk_context_quadratic_curve_to(sk_context* context, float cpx, float cpy, float x, float y) {
+    sk_path_quadratic_curve_to(context->path, cpx, cpy, x, y);
+  }
+  
+  // Context.arc()
+  void sk_context_arc(sk_context* context, float x, float y, float radius, float startAngle, float endAngle, bool clockwise) {
+    sk_path_arc(context->path, x, y, radius, startAngle, endAngle, clockwise);
+  }
+
+  // Context.arcTo()
+  void sk_context_arc_to(sk_context* context, float x1, float y1, float x2, float y2, float radius) {
+    sk_path_arc_to(context->path, x1, y1, x2, y2, radius);
+  }
+
+  // Context.ellipse()
+  void sk_context_ellipse(sk_context* context, float x, float y, float radiusX, float radiusY, float rotation, float startAngle, float endAngle, bool clockwise) {
+    sk_path_ellipse(context->path, x, y, radiusX, radiusY, rotation, startAngle, endAngle, clockwise);
+  }
+
+  // Context.rect()
+  void sk_context_rect(sk_context* context, float x, float y, float width, float height) {
+    sk_path_rect(context->path, x, y, width, height);
+  }
+
+  // TODO: Context.roundRect()
+
+  /// Drawing paths
+
+  // Context.fill()
+  void sk_context_fill(sk_context* context, SkPath* path, unsigned char rule) {
+    if (path == nullptr) path = context->path;
+    auto canvas = context->canvas;
+    auto paint = sk_context_fill_paint(context->state);
+    path->setFillType(rule == 1 ? SkPathFillType::kEvenOdd : SkPathFillType::kWinding);
+    canvas->drawPath(*path, *paint);
+  }
+
+  // Context.stroke()
+  void sk_context_stroke(sk_context* context, SkPath* path) {
+    if (path == nullptr) path = context->path;
+    auto canvas = context->canvas;
+    canvas->drawPath(*path, *sk_context_stroke_paint(context->state));
+  }
+
+  // TODO: Context.drawFocusIfNeeded() (should we support it?)
+  // TODO: Context.scrollPathIntoView() (should we support it?)
+
+  // Context.clip()
+  void sk_context_clip(sk_context* context, SkPath* path, unsigned char rule) {
+    if (path == nullptr) path = context->path;
+    // TODO: Should we clone?
+    // path = new SkPath(*path);
+    path->setFillType(rule == 1 ? SkPathFillType::kEvenOdd : SkPathFillType::kWinding);
+    context->canvas->clipPath(*path);
+  }
+
+  // Context.isPointInPath()
+  int sk_context_is_point_in_path(sk_context* context, float x, float y, SkPath* path, int rule) {
+    if (path == nullptr) path = context->path;
+    path->setFillType(rule == 1 ? SkPathFillType::kEvenOdd : SkPathFillType::kWinding);
+    return (int) path->contains(x, y);
+  }
+
+  // Context.isPointInStroke()
+  int sk_context_is_point_in_stroke(sk_context* context, float x, float y, SkPath* path) {
+    if (path == nullptr) path = context->path;
+    return (int) path->contains(x, y);
+  }
+
+  /// Transformations
+
+  // TODO: Context.getTransform()
+
+  // Context.rotate()
+  void sk_context_rotate(sk_context* context, float angle) {
+    auto s = context->state;
+    auto inverse = new SkMatrix();
+    inverse->setRotate(-DEGREES(angle), 0.0f, 0.0f);
+    context->path->transform(*inverse, SkApplyPerspectiveClip::kYes);
+    s->transform->preRotate(DEGREES(angle));
+    context->canvas->setMatrix(*s->transform);
+  }
+
+  // Context.scale()
+  void sk_context_scale(sk_context* context, float x, float y) {
+    auto s = context->state;
+    auto inverse = new SkMatrix();
+    inverse->preScale(1.0f / x, 1.0f / y);
+    context->path->transform(*inverse, SkApplyPerspectiveClip::kYes);
+    s->transform->preScale(x, y);
+    context->canvas->setMatrix(*s->transform);
+  }
+
+  // Context.translate()
+  void sk_context_translate(sk_context* context, float x, float y) {
+    auto s = context->state;
+    auto inverse = new SkMatrix();
+    inverse->setTranslate(-x, -y);
+    context->path->transform(*inverse, SkApplyPerspectiveClip::kYes);
+    s->transform->preTranslate(x, y);
+    context->canvas->setMatrix(*s->transform);
+  }
+
+  // Context.transform()
+  void sk_context_transform(sk_context* context, float a, float b, float c, float d, float e, float f) {
+    auto s = context->state;
+    auto ts = new SkMatrix();
+    ts->setAll(a, b, e, c, d, f, 0.0f, 0.0f, 1.0f);
+    context->path->transform(*ts, SkApplyPerspectiveClip::kYes);
+    auto mul = (*ts) * (*s->transform);
+    s->transform = &mul;
+    context->canvas->setMatrix(mul);
+  }
+
+  // Context.setTransform()
+  void sk_context_set_transform(sk_context* context, float a, float b, float c, float d, float e, float f) {
+    auto s = context->state;
+    auto ts = new SkMatrix();
+    ts->setAll(a, b, e, c, d, f, 0.0f, 0.0f, 1.0f);
+    s->transform = ts;
+    context->canvas->setMatrix(*s->transform);
+  }
+
+  // Context.resetTransform()
+  void sk_context_reset_transform(sk_context* context) {
+    auto s = context->state;
+    s->transform->reset();
+    context->canvas->setMatrix(*s->transform);
+  }
+
+  /// Compositing
+
+  // Context.globalAlpha getter
+  float sk_context_get_global_alpha(sk_context* context) {
+    return context->state->paint->getAlpha() / 255.0f;
+  }
+
+  // Context.globalAlpha setter
+  void sk_context_set_global_alpha(sk_context* context, float alpha) {
+    context->state->paint->setAlpha(alpha * 255);
+  }
+
+  // Context.globalCompositeOperation getter
+  int sk_context_get_global_composite_operation(sk_context* context) {
+    switch (context->state->paint->getBlendMode_or(SkBlendMode::kSrcOver)) {
+      case SkBlendMode::kSrcOver: return 0;
+      case SkBlendMode::kSrcIn: return 1;
+      case SkBlendMode::kSrcOut: return 2;
+      case SkBlendMode::kSrcATop: return 3;
+      case SkBlendMode::kDstOver: return 4;
+      case SkBlendMode::kDstIn: return 5;
+      case SkBlendMode::kDstOut: return 6;
+      case SkBlendMode::kDstATop: return 7;
+      case SkBlendMode::kXor: return 8;
+      case SkBlendMode::kPlus: return 9;
+      case SkBlendMode::kModulate: return 10;
+      case SkBlendMode::kScreen: return 11;
+      case SkBlendMode::kOverlay: return 12;
+      case SkBlendMode::kDarken: return 13;
+      case SkBlendMode::kLighten: return 14;
+      case SkBlendMode::kColorDodge: return 15;
+      case SkBlendMode::kColorBurn: return 16;
+      case SkBlendMode::kHardLight: return 17;
+      case SkBlendMode::kSoftLight: return 18;
+      case SkBlendMode::kDifference: return 19;
+      case SkBlendMode::kExclusion: return 20;
+      case SkBlendMode::kMultiply: return 21;
+      case SkBlendMode::kHue: return 22;
+      case SkBlendMode::kSaturation: return 23;
+      case SkBlendMode::kColor: return 24;
+      case SkBlendMode::kLuminosity: return 25;
+      default: return 0;
+    }
+  }
+
+  // Context.globalCompositeOperation setter
+  void sk_context_set_global_composite_operation(sk_context* context, unsigned char op) {
+    switch (op) {
+      case 0: context->state->paint->setBlendMode(SkBlendMode::kSrcOver); break;
+      case 1: context->state->paint->setBlendMode(SkBlendMode::kSrcIn); break;
+      case 2: context->state->paint->setBlendMode(SkBlendMode::kSrcOut); break;
+      case 3: context->state->paint->setBlendMode(SkBlendMode::kSrcATop); break;
+      case 4: context->state->paint->setBlendMode(SkBlendMode::kDstOver); break;
+      case 5: context->state->paint->setBlendMode(SkBlendMode::kDstIn); break;
+      case 6: context->state->paint->setBlendMode(SkBlendMode::kDstOut); break;
+      case 7: context->state->paint->setBlendMode(SkBlendMode::kDstATop); break;
+      case 8: context->state->paint->setBlendMode(SkBlendMode::kXor); break;
+      case 9: context->state->paint->setBlendMode(SkBlendMode::kPlus); break;
+      case 10: context->state->paint->setBlendMode(SkBlendMode::kModulate); break;
+      case 11: context->state->paint->setBlendMode(SkBlendMode::kScreen); break;
+      case 12: context->state->paint->setBlendMode(SkBlendMode::kOverlay); break;
+      case 13: context->state->paint->setBlendMode(SkBlendMode::kDarken); break;
+      case 14: context->state->paint->setBlendMode(SkBlendMode::kLighten); break;
+      case 15: context->state->paint->setBlendMode(SkBlendMode::kColorDodge); break;
+      case 16: context->state->paint->setBlendMode(SkBlendMode::kColorBurn); break;
+      case 17: context->state->paint->setBlendMode(SkBlendMode::kHardLight); break;
+      case 18: context->state->paint->setBlendMode(SkBlendMode::kSoftLight); break;
+      case 19: context->state->paint->setBlendMode(SkBlendMode::kDifference); break;
+      case 20: context->state->paint->setBlendMode(SkBlendMode::kExclusion); break;
+      case 21: context->state->paint->setBlendMode(SkBlendMode::kMultiply); break;
+      case 22: context->state->paint->setBlendMode(SkBlendMode::kHue); break;
+      case 23: context->state->paint->setBlendMode(SkBlendMode::kSaturation); break;
+      case 24: context->state->paint->setBlendMode(SkBlendMode::kColor); break;
+      case 25: context->state->paint->setBlendMode(SkBlendMode::kLuminosity); break;
+      default: context->state->paint->setBlendMode(SkBlendMode::kSrcOver); break;
+    }
+  }
+
+  /// Drawing images
+
+  // Context.drawImage()
   void sk_context_draw_image(
     sk_context* context,
     sk_canvas* canvas,
@@ -436,143 +779,52 @@ extern "C" {
     );
   }
 
-  void sk_context_begin_path(sk_context* context) {
-    sk_path_begin(context->path);
+  /// Pixel manipulation
+
+  // TODO: Context.createImageData()
+  // TODO: Context.getImageData()
+  // TODO: Context.putImageData()
+
+  /// Image smoothing
+
+  // Context.imageSmoothingEnabled getter
+  int sk_context_get_image_smoothing_enabled(sk_context* context) {
+    return (int) context->state->imageSmoothingEnabled;
   }
 
-  void sk_context_move_to(sk_context* context, float x, float y) {
-    sk_path_move_to(context->path, x, y);
+  // Context.imageSmoothingEnabled setter
+  void sk_context_set_image_smoothing_enabled(sk_context* context, int enabled) {
+    context->state->imageSmoothingEnabled = enabled == 1;
   }
 
-  void sk_context_line_to(sk_context* context, float x, float y) {
-    sk_path_line_to(context->path, x, y);
+  /// The canvas state
+
+  // Context.save()
+  void sk_context_save(sk_context* context) {
+    context->states.push_back(*clone_context_state(context->state));
+    context->canvas->save();
   }
 
-  void sk_context_rect(sk_context* context, float x, float y, float width, float height) {
-    sk_path_rect(context->path, x, y, width, height);
+  // Context.restore()
+  void sk_context_restore(sk_context* context) {
+    if (context->states.size() > 0) {
+      free_context_state(context->state);
+      context->state = &context->states.back();
+      context->states.pop_back();
+      context->canvas->restore();
+    }
   }
 
-  void sk_context_arc_to(sk_context* context, float x1, float y1, float x2, float y2, float radius) {
-    sk_path_arc_to(context->path, x1, y1, x2, y2, radius);
-  }
+  // Context.canvas getter implemented in JS side
+  // TODO: Context.getContextAttributes()
+  // TODO: Context.reset()
+  // Context.isContextLost() stubbed in JS
 
-  void sk_context_arc(sk_context* context, float x, float y, float radius, float startAngle, float endAngle, bool clockwise) {
-    sk_path_arc(context->path, x, y, radius, startAngle, endAngle, clockwise);
-  }
+  /// Filters
+  
+  // TODO: Context.filter
 
-  void sk_context_ellipse(sk_context* context, float x, float y, float radiusX, float radiusY, float rotation, float startAngle, float endAngle, bool clockwise) {
-    sk_path_ellipse(context->path, x, y, radiusX, radiusY, rotation, startAngle, endAngle, clockwise);
-  }
-
-  void sk_context_bezier_curve_to(sk_context* context, float cp1x, float cp1y, float cp2x, float cp2y, float x, float y) {
-    sk_path_bezier_curve_to(context->path, cp1x, cp1y, cp2x, cp2y, x, y);
-  }
-
-  void sk_context_quadratic_curve_to(sk_context* context, float cpx, float cpy, float x, float y) {
-    sk_path_quadratic_curve_to(context->path, cpx, cpy, x, y);
-  }
-
-  void sk_context_close_path(sk_context* context) {
-    context->path->close();
-  }
-
-  void sk_context_clip(sk_context* context, SkPath* path, unsigned char rule) {
-    if (path == nullptr) path = context->path;
-    // Should we clone?
-    // path = new SkPath(*path);
-    path->setFillType(rule == 1 ? SkPathFillType::kEvenOdd : SkPathFillType::kWinding);
-    context->canvas->clipPath(*path);
-  }
-
-  void sk_context_fill(sk_context* context, SkPath* path, unsigned char rule) {
-    if (path == nullptr) path = context->path;
-    auto canvas = context->canvas;
-    auto paint = sk_context_fill_paint(context->state);
-    path->setFillType(rule == 1 ? SkPathFillType::kEvenOdd : SkPathFillType::kWinding);
-    canvas->drawPath(*path, *paint);
-  }
-
-  void sk_context_stroke(sk_context* context, SkPath* path) {
-    if (path == nullptr) path = context->path;
-    auto canvas = context->canvas;
-    canvas->drawPath(*path, *sk_context_stroke_paint(context->state));
-  }
-
-  float sk_context_get_line_width(sk_context* context) {
-    return context->state->paint->getStrokeWidth();
-  }
-
-  void sk_context_set_line_width(sk_context* context, float width) {
-    context->state->paint->setStrokeWidth(width);
-  }
-
-  float sk_context_get_miter_limit(sk_context* context) {
-    return context->state->paint->getStrokeMiter();
-  }
-
-  void sk_context_set_miter_limit(sk_context* context, float limit) {
-    context->state->paint->setStrokeMiter(limit);
-  }
-
-  float sk_context_get_global_alpha(sk_context* context) {
-    return context->state->paint->getAlpha() / 255.0f;
-  }
-
-  void sk_context_set_global_alpha(sk_context* context, float alpha) {
-    context->state->paint->setAlpha(alpha * 255);
-  }
-
-  void sk_context_translate(sk_context* context, float x, float y) {
-    auto s = context->state;
-    auto inverse = new SkMatrix();
-    inverse->setTranslate(-x, -y);
-    context->path->transform(*inverse, SkApplyPerspectiveClip::kYes);
-    s->transform->preTranslate(x, y);
-    context->canvas->setMatrix(*s->transform);
-  }
-
-  void sk_context_rotate(sk_context* context, float angle) {
-    auto s = context->state;
-    auto inverse = new SkMatrix();
-    inverse->setRotate(-DEGREES(angle), 0.0f, 0.0f);
-    context->path->transform(*inverse, SkApplyPerspectiveClip::kYes);
-    s->transform->preRotate(DEGREES(angle));
-    context->canvas->setMatrix(*s->transform);
-  }
-
-  void sk_context_scale(sk_context* context, float x, float y) {
-    auto s = context->state;
-    auto inverse = new SkMatrix();
-    inverse->preScale(1.0f / x, 1.0f / y);
-    context->path->transform(*inverse, SkApplyPerspectiveClip::kYes);
-    s->transform->preScale(x, y);
-    context->canvas->setMatrix(*s->transform);
-  }
-
-  void sk_context_transform(sk_context* context, float a, float b, float c, float d, float e, float f) {
-    auto s = context->state;
-    auto ts = new SkMatrix();
-    ts->setAll(a, b, e, c, d, f, 0.0f, 0.0f, 1.0f);
-    context->path->transform(*ts, SkApplyPerspectiveClip::kYes);
-    auto mul = (*ts) * (*s->transform);
-    s->transform = &mul;
-    context->canvas->setMatrix(mul);
-  }
-
-  void sk_context_set_transform(sk_context* context, float a, float b, float c, float d, float e, float f) {
-    auto s = context->state;
-    auto ts = new SkMatrix();
-    ts->setAll(a, b, e, c, d, f, 0.0f, 0.0f, 1.0f);
-    s->transform = ts;
-    context->canvas->setMatrix(*s->transform);
-  }
-
-  void sk_context_reset_transform(sk_context* context) {
-    auto s = context->state;
-    s->transform->reset();
-    context->canvas->setMatrix(*s->transform);
-  }
-
+  /// CONTEXT_FINALIZER callback
   void sk_context_destroy(sk_context* context) {
     delete context->path;
     delete context->state;

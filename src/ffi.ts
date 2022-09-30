@@ -489,6 +489,51 @@ const lib = Deno.dlopen(
       ],
       result: "i32",
     },
+
+    sk_context_get_line_join: {
+      parameters: ["pointer"],
+      result: "i32",
+    },
+
+    sk_context_set_line_join: {
+      parameters: ["pointer", "i32"],
+      result: "void",
+    },
+
+    sk_context_set_line_dash: {
+      parameters: ["pointer", "buffer", "u32"],
+      result: "void",
+    },
+
+    sk_context_is_point_in_path: {
+      parameters: ["pointer", "f32", "f32", "pointer", "i32"],
+      result: "i32",
+    },
+
+    sk_context_is_point_in_stroke: {
+      parameters: ["pointer", "f32", "f32", "pointer"],
+      result: "i32",
+    },
+
+    sk_context_get_global_composite_operation: {
+      parameters: ["pointer"],
+      result: "i32",
+    },
+
+    sk_context_set_global_composite_operation: {
+      parameters: ["pointer", "i32"],
+      result: "void",
+    },
+
+    sk_context_get_image_smoothing_enabled: {
+      parameters: ["pointer"],
+      result: "i32",
+    },
+
+    sk_context_set_image_smoothing_enabled: {
+      parameters: ["pointer", "i32"],
+      result: "void",
+    },
   } as const,
 ).symbols;
 
