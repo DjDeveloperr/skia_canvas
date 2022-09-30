@@ -838,8 +838,8 @@ extern "C" {
   }
 
   // Context.canvas getter implemented in JS side
-  // TODO: Context.getContextAttributes()
-  // TODO: Context.reset()
+  // Context.getContextAttributes() stubbed in JS
+  // Context.reset() stubbed in JS
   // Context.isContextLost() stubbed in JS
 
   /// Filters

@@ -879,4 +879,8 @@ export class CanvasRenderingContext2D {
   isContextLost() {
     return false;
   }
+
+  /// Filters
+
+  // TODO: Context.filter
 }
