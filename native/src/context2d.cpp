@@ -5,6 +5,7 @@ extern sk_sp<skia::textlayout::FontCollection> fontCollection;
 sk_context_state* create_default_state() {
   sk_context_state* state = new sk_context_state();
   state->paint = new SkPaint();
+  state->paint->setAntiAlias(true);
   state->shadowOffsetX = 0;
   state->shadowOffsetY = 0;
   state->shadowBlur = 0;
