@@ -1,10 +1,4 @@
-import { createCanvas } from "https://deno.land/x/canvas@v1.4.1/mod.ts";
-
-Deno.bench("deno canvaskit-wasm", () => {
-  const canvas = createCanvas(1024, 768);
-
-  const ctx = canvas.getContext("2d")!;
-
+export function draw(ctx) {
   ctx.lineWidth = 10;
   ctx.strokeStyle = "#03a9f4";
   ctx.fillStyle = "#03a9f4";
@@ -22,6 +16,4 @@ Deno.bench("deno canvaskit-wasm", () => {
   ctx.lineTo(250, 140);
   ctx.closePath();
   ctx.stroke();
-
-  canvas.toBuffer("image/png");
-});
+}

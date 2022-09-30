@@ -6,10 +6,17 @@ set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_BUILD_TYPE Release)
 
 include(CTest)
-include_directories(../skia)
+include_directories(. ../skia)
 enable_testing()
 
-add_library(native_canvas SHARED native_canvas.cpp csscolorparser.cpp)
+add_library(native_canvas SHARED
+  deps/csscolorparser.cpp
+  src/common.cpp
+  src/canvas.cpp
+  src/context2d.cpp 
+  src/font.cpp
+  src/path2d.cpp
+  src/image.cpp)
 
 target_compile_options(native_canvas PRIVATE -Ofast -Wno-return-type -Wno-unused-result -Wno-write-strings -Wno-attributes)
 # target_compile_options(native_canvas PRIVATE -g)

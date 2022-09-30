@@ -11,6 +11,8 @@
   "license": "ISC",
   "dependencies": {
     "@napi-rs/canvas": "^0.1.29",
-    "mitata": "^0.1.6"
+    "canvas": "^2.10.1",
+    "mitata": "^0.1.6",
+    "skia-canvas": "^1.0.0"
   }
 }

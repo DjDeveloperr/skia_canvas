@@ -2,9 +2,8 @@
   "tasks": {
     "build": "cd native/build && cmake .. && make",
     "test": "deno run -A --unstable test.ts",
-    "bench": "deno bench -A --unstable bench/deno.ts",
+    "bench": "deno bench -A --unstable bench/deno.js",
     "bench-node": "node bench/node.mjs",
-    "bench-wasm": "deno bench -A --unstable bench/deno_wasm.ts",
     "build-skia": "deno run -A --unstable scripts/build_skia.ts fast"
   }
 }
