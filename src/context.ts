@@ -773,7 +773,13 @@ export class Context {
     return this.#canvas;
   }
 
-  // TODO: Context.getContextAttributes()
+  getContextAttributes() {
+    return {
+      alpha: true,
+      desynchronized: false,
+    };
+  }
+
   // TODO: Context.reset()
 
   isContextLost() {
