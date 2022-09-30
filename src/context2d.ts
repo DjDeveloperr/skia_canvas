@@ -69,6 +69,9 @@ const {
   sk_context_get_image_smoothing_enabled,
   sk_context_set_image_smoothing_enabled,
   sk_context_round_rect,
+  sk_context_get_transform,
+  sk_context_get_image_smoothing_quality,
+  sk_context_set_image_smoothing_quality,
 } = ffi;
 
 const CONTEXT_FINALIZER = new FinalizationRegistry((ptr: Deno.PointerValue) => {
@@ -106,34 +109,40 @@ enum CTextBaseline {
   bottom = 2,
 }
 
-// deno-fmt-ignore
-enum CGlobalCompositeOperation {
-  ["source-over"] = 0,
-  ["source-in"] = 1,
-  ["source-out"] = 2,
-  ["source-atop"] = 3,
-  ["destination-over"] = 4,
-  ["destination-in"] = 5,
-  ["destination-out"] = 6,
-  ["destination-atop"] = 7,
-  ["xor"] = 8,
-  ["copy"] = 10, // modulate (TODO: is this right)
-  ["screen"] = 11,
-  ["overlay"] = 12,
-  ["darken"] = 13,
-  ["lighten"] = 14,
-  ["color-dodge"] = 15,
-  ["color-burn"] = 16,
-  ["hard-light"] = 17,
-  ["soft-light"] = 18,
-  ["difference"] = 19,
-  ["exclusion"] = 20,
-  ["multiply"] = 21,
-  ["hue"] = 22,
-  ["saturation"] = 23,
-  ["color"] = 24,
-  ["luminosity"] = 25,
+enum CImageSmoothingQuality {
+  low = 1,
+  medium = 2,
+  high = 3,
 }
+
+// deno-fmt-ignore
+const CGlobalCompositeOperation = {
+  ["source-over"]: 0,
+  ["source-in"]: 1,
+  ["source-out"]: 2,
+  ["source-atop"]: 3,
+  ["destination-over"]: 4,
+  ["destination-in"]: 5,
+  ["destination-out"]: 6,
+  ["destination-atop"]: 7,
+  ["xor"]: 8,
+  ["copy"]: 10, // modulate (TODO: is this right)
+  ["screen"]: 11,
+  ["overlay"]: 12,
+  ["darken"]: 13,
+  ["lighten"]: 14,
+  ["color-dodge"]: 15,
+  ["color-burn"]: 16,
+  ["hard-light"]: 17,
+  ["soft-light"]: 18,
+  ["difference"]: 19,
+  ["exclusion"]: 20,
+  ["multiply"]: 21,
+  ["hue"]:22,
+  ["saturation"] : 23,
+  ["color"] : 24,
+  ["luminosity"] : 25,
+} as const;
 
 export type TextAlign = keyof typeof CTextAlign;
 export type TextDirection = keyof typeof CTextDirection;
@@ -142,6 +151,7 @@ export type LineCap = keyof typeof CLineCap;
 export type LineJoin = keyof typeof CLineJoin;
 export type CanvasImageSource = Canvas | Image;
 export type GlobalCompositeOperation = keyof typeof CGlobalCompositeOperation;
+export type ImageSmoothingQuality = keyof typeof CImageSmoothingQuality;
 
 const METRICS = new Float32Array(7);
 const METRICS_PTR = Number(Deno.UnsafePointer.of(METRICS));
@@ -397,10 +407,43 @@ export class CanvasRenderingContext2D {
 
   /// Gradients and patterns
 
-  // TODO: Context.createConicGradient()
-  // TODO: Context.createLinearGradient()
-  // TODO: Context.createRadialGradient()
-  // TODO: Context.createPattern()
+  createConicGradient(
+    x: number,
+    y: number,
+    angle: number,
+    stops: any,
+  ): any {
+    throw new Error("TODO: Context.createConicGradient()");
+  }
+
+  createLinearGradient(
+    x0: number,
+    y0: number,
+    x1: number,
+    y1: number,
+    stops: any,
+  ): any {
+    throw new Error("TODO: Context.createLinearGradient()");
+  }
+
+  createRadialGradient(
+    x0: number,
+    y0: number,
+    r0: number,
+    x1: number,
+    y1: number,
+    r1: number,
+    stops: any,
+  ): any {
+    throw new Error("TODO: Context.createRadialGradient()");
+  }
+
+  createPattern(
+    image: any,
+    repetition: any,
+  ): any {
+    throw new Error("TODO: Context.createPattern()");
+  }
 
   /// Shadows
 
@@ -557,8 +600,13 @@ export class CanvasRenderingContext2D {
     sk_context_stroke(this.#ptr, path ? path._unsafePointer : 0);
   }
 
-  // TODO: Context.drawFocusIfNeeded() (should we support it?)
-  // TODO: Context.scrollPathIntoView() (should we support it?)
+  drawFocusIfNeeded() {
+    throw new Error("Context.drawFocusIfNeeded() not implemented");
+  }
+
+  scrollPathIntoView() {
+    throw new Error("Context.scrollPathIntoView() not implemented");
+  }
 
   clip(): void;
   clip(path: Path2D): void;
@@ -635,7 +683,12 @@ export class CanvasRenderingContext2D {
 
   /// Transformations
 
-  // TODO: Context.getTransform()
+  getTransform() {
+    const f32 = new Float32Array(6);
+    sk_context_get_transform(this.#ptr, f32);
+    // TODO: return DOMMatrix
+    return f32;
+  }
 
   rotate(angle: number) {
     sk_context_rotate(this.#ptr, angle);
@@ -686,9 +739,10 @@ export class CanvasRenderingContext2D {
   }
 
   get globalCompositeOperation() {
-    return CGlobalCompositeOperation[
-      sk_context_get_global_composite_operation(this.#ptr)
-    ] as GlobalCompositeOperation;
+    const op = sk_context_get_global_composite_operation(this.#ptr);
+    return Object.entries(CGlobalCompositeOperation).find((e) =>
+      e[1] === op
+    )![0] as GlobalCompositeOperation;
   }
 
   set globalCompositeOperation(value: GlobalCompositeOperation) {
@@ -755,9 +809,25 @@ export class CanvasRenderingContext2D {
 
   /// Pixel manipulation
 
-  // TODO: Context.createImageData()
-  // TODO: Context.getImageData()
-  // TODO: Context.putImageData()
+  createImageData(sw: number, sh: number) {
+    throw new Error("TODO: Context.createImageData()");
+  }
+
+  getImageData(sx: number, sy: number, sw: number, sh: number) {
+    throw new Error("TODO: Context.getImageData()");
+  }
+
+  putImageData(
+    imagedata: any,
+    dx: number,
+    dy: number,
+    dirtyX?: number,
+    dirtyY?: number,
+    dirtyWidth?: number,
+    dirtyHeight?: number,
+  ) {
+    throw new Error("TODO: Context.putImageData()");
+  }
 
   /// Image smoothing
 
@@ -767,6 +837,18 @@ export class CanvasRenderingContext2D {
 
   set imageSmoothingEnabled(value: boolean) {
     sk_context_set_image_smoothing_enabled(this.#ptr, value ? 1 : 0);
+  }
+
+  get imageSmoothingQuality() {
+    const quality = sk_context_get_image_smoothing_quality(this.#ptr);
+    return CImageSmoothingQuality[quality] as ImageSmoothingQuality;
+  }
+
+  set imageSmoothingQuality(value: ImageSmoothingQuality) {
+    sk_context_set_image_smoothing_quality(
+      this.#ptr,
+      CImageSmoothingQuality[value],
+    );
   }
 
   /// The canvas state
@@ -790,7 +872,9 @@ export class CanvasRenderingContext2D {
     };
   }
 
-  // TODO: Context.reset()
+  reset() {
+    throw new Error("TODO: Context.reset()");
+  }
 
   isContextLost() {
     return false;

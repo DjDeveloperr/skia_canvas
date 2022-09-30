@@ -558,6 +558,21 @@ const lib = Deno.dlopen(
       ],
       result: "void",
     },
+
+    sk_context_get_transform: {
+      parameters: ["pointer", "buffer"],
+      result: "void",
+    },
+
+    sk_context_get_image_smoothing_quality: {
+      parameters: ["pointer"],
+      result: "i32",
+    },
+
+    sk_context_set_image_smoothing_quality: {
+      parameters: ["pointer", "i32"],
+      result: "void",
+    },
   } as const,
 ).symbols;
 

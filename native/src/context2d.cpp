@@ -597,7 +597,16 @@ extern "C" {
 
   /// Transformations
 
-  // TODO: Context.getTransform()
+  // Context.getTransform()
+  void sk_context_get_transform(sk_context* context, float* m) {
+    auto matrix = context->state->transform;
+    m[0] = matrix->getScaleX();
+    m[1] = matrix->getSkewY();
+    m[2] = matrix->getSkewX();
+    m[3] = matrix->getScaleY();
+    m[4] = matrix->getTranslateX();
+    m[5] = matrix->getTranslateY();
+  }
 
   // Context.rotate()
   void sk_context_rotate(sk_context* context, float angle) {
@@ -798,6 +807,16 @@ extern "C" {
   // Context.imageSmoothingEnabled setter
   void sk_context_set_image_smoothing_enabled(sk_context* context, int enabled) {
     context->state->imageSmoothingEnabled = enabled == 1;
+  }
+
+  // Context.imageSmoothingQuality getter
+  int sk_context_get_image_smoothing_quality(sk_context* context) {
+    return (int) context->state->imageSmoothingQuality;
+  }
+
+  // Context.imageSmoothingQuality setter
+  void sk_context_set_image_smoothing_quality(sk_context* context, int quality) {
+    context->state->imageSmoothingQuality = (FilterQuality) quality;
   }
 
   /// The canvas state
