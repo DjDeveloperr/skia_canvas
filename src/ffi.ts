@@ -2,7 +2,7 @@ const lib = Deno.dlopen(
   "./native/build/libnative_canvas.so",
   {
     sk_canvas_create: {
-      parameters: ["i32", "i32"],
+      parameters: ["i32", "i32", "buffer"],
       result: "pointer",
     },
 

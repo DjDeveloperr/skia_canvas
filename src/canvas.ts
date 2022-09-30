@@ -1,4 +1,4 @@
-import { Context } from "./context.ts";
+import { CanvasRenderingContext2D } from "./context2d.ts";
 import ffi, { cstr, getBuffer } from "./ffi.ts";
 
 const {
@@ -37,9 +37,14 @@ export class Canvas {
   #ptr: Deno.PointerValue;
   #width: number;
   #height: number;
+  #pixels: Uint8Array;
 
   get _unsafePointer() {
     return this.#ptr;
+  }
+
+  get pixels() {
+    return this.#pixels;
   }
 
   get width() {
@@ -51,7 +56,12 @@ export class Canvas {
   }
 
   constructor(width: number, height: number) {
-    this.#ptr = sk_canvas_create(width, height);
+    this.#pixels = new Uint8Array(width * height * 4);
+    this.#ptr = sk_canvas_create(
+      width,
+      height,
+      this.#pixels,
+    );
     if (this.#ptr === 0) {
       throw new Error("Failed to create canvas");
     }
@@ -75,15 +85,15 @@ export class Canvas {
       OUT_DATA_PTR,
     );
 
-    // if (bufptr === 0) {
-    //   throw new Error("Failed to encode canvas");
-    // }
+    if (bufptr === 0) {
+      throw new Error("Failed to encode canvas");
+    }
 
-    // const size = OUT_SIZE[0];
-    // const ptr = OUT_DATA[0];
-    // const buffer = new Uint8Array(getBuffer(bufptr, size));
-    // SK_DATA_FINALIZER.register(buffer, ptr);
-    // return buffer;
+    const size = OUT_SIZE[0];
+    const ptr = OUT_DATA[0];
+    const buffer = new Uint8Array(getBuffer(bufptr, size));
+    SK_DATA_FINALIZER.register(buffer, ptr);
+    return buffer;
   }
 
   readPixels(
@@ -100,11 +110,11 @@ export class Canvas {
     return pixels;
   }
 
-  getContext(type: "2d"): Context;
-  getContext(type: string): Context | null {
+  getContext(type: "2d"): CanvasRenderingContext2D;
+  getContext(type: string): CanvasRenderingContext2D | null {
     switch (type) {
       case "2d":
-        return new Context(this);
+        return new CanvasRenderingContext2D(this);
       default:
         return null;
     }

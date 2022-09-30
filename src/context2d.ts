@@ -116,7 +116,7 @@ enum CGlobalCompositeOperation {
   ["destination-out"] = 6,
   ["destination-atop"] = 7,
   ["xor"] = 8,
-  ["copy"] = 10, // modulate
+  ["copy"] = 10, // modulate (TODO: is this right)
   ["screen"] = 11,
   ["overlay"] = 12,
   ["darken"] = 13,
@@ -145,7 +145,7 @@ export type GlobalCompositeOperation = keyof typeof CGlobalCompositeOperation;
 const METRICS = new Float32Array(7);
 const METRICS_PTR = Number(Deno.UnsafePointer.of(METRICS));
 
-export class Context {
+export class CanvasRenderingContext2D {
   /// Internal State
 
   #canvas: Canvas;

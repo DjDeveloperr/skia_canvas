@@ -2,10 +2,14 @@
 #include "include/context2d.hpp"
 
 extern "C" {
-  sk_canvas* sk_canvas_create(int width, int height){
+  sk_canvas* sk_canvas_create(int width, int height, void* pixels){
     SkGraphics::Init();
     sk_canvas* canvas = new sk_canvas();
-    canvas->surface = SkSurface::MakeRasterN32Premul(width, height).release();
+    SkImageInfo info = SkImageInfo::MakeN32Premul(width, height);
+    size_t rowBytes = info.minRowBytes();
+    size_t size = info.computeByteSize(rowBytes);
+    canvas->pixels = pixels == nullptr ? malloc(size) : pixels;
+    canvas->surface = SkSurface::MakeRasterDirect(info, canvas->pixels, rowBytes).release();
     return canvas;
   }
 
