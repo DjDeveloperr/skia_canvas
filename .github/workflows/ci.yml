@@ -41,7 +41,7 @@ jobs:
         run: export PATH=$(pwd)/depot_tools:$PATH && deno task build-skia
 
       - name: Build Native Library
-        run: deno task build
+        run: mkdir ./native/build && deno task build
 
       - name: Run Tests
         run: deno task test
