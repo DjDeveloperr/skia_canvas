@@ -36,9 +36,14 @@ jobs:
 
       - name: Setup Depot Tools
         run: git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+
+      - name: Setup ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ github.job }}-ubuntu-latest
         
       - name: Build Skia
-        run: export PATH=$(pwd)/depot_tools:$PATH && deno task build-skia
+        run: export PATH=$(pwd)/depot_tools:$PATH && deno task build-skia ccache
 
       - name: Build Native Library
         run: mkdir ./native/build && deno task build

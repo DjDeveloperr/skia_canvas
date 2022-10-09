@@ -46,6 +46,10 @@ const BUILD_ARGS: Record<string, any> = {
   skia_use_libgifcodec: true,
 };
 
+if (Deno.args.includes("ccache")) {
+  BUILD_ARGS["cc_wrapper"] = "ccache";
+}
+
 Deno.chdir(new URL("../skia", import.meta.url));
 
 const $ = (cmd: string | URL, ...args: string[]) => {
