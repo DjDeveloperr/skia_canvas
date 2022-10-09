@@ -47,7 +47,7 @@ const BUILD_ARGS: Record<string, any> = {
 };
 
 if (Deno.args.includes("ccache")) {
-  BUILD_ARGS["cc_wrapper"] = "ccache";
+  BUILD_ARGS["cc_wrapper"] = `"ccache"`;
 }
 
 Deno.chdir(new URL("../skia", import.meta.url));
