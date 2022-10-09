@@ -48,20 +48,21 @@ const BUILD_ARGS: Record<string, any> = {
 
 Deno.chdir(new URL("../skia", import.meta.url));
 
-const $ = (cmd: string, ...args: string[]) => {
-  console.log(`%c$ ${cmd} ${args.join(" ")}`, "color: #888");
+const $ = (cmd: string | URL, ...args: string[]) => {
+  console.log(`%c$ ${cmd.toString()} ${args.join(" ")}`, "color: #888");
   Deno.spawnSync(cmd, {
     args,
+    cwd: new URL("../skia", import.meta.url),
     stdin: "null",
     stdout: "inherit",
     stderr: "inherit",
   });
 };
 
-if (!Deno.args.includes("fast")) $("python", "tools/git-sync-deps");
+if (!Deno.args.includes("fast")) $("python", "./tools/git-sync-deps");
 
 $(
-  "gn",
+  new URL("../skia/bin/gn", import.meta.url),
   "gen",
   "out/Release",
   "--args=" + Object.entries(BUILD_ARGS).map(([k, v]) => `${k}=${v}`).join(" "),
