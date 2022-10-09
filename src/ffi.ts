@@ -374,6 +374,7 @@ const lib = Deno.dlopen(
         "i32",
         "i32",
         "buffer",
+        "i32",
       ],
       result: "void",
     },
@@ -571,6 +572,38 @@ const lib = Deno.dlopen(
 
     sk_context_set_image_smoothing_quality: {
       parameters: ["pointer", "i32"],
+      result: "void",
+    },
+
+    sk_context_put_image_data: {
+      parameters: [
+        "pointer",
+        "i32",
+        "i32",
+        "buffer",
+        "i32",
+        "f32",
+        "f32",
+      ],
+      result: "void",
+    },
+
+    sk_context_put_image_data_dirty: {
+      parameters: [
+        "pointer",
+        "i32",
+        "i32",
+        "buffer",
+        "i32",
+        "i32",
+        "f32",
+        "f32",
+        "f32",
+        "f32",
+        "f32",
+        "f32",
+        "i32",
+      ],
       result: "void",
     },
   } as const,

@@ -1,5 +1,6 @@
 import { CanvasRenderingContext2D } from "./context2d.ts";
 import ffi, { cstr, getBuffer } from "./ffi.ts";
+import { ColorSpace } from "./image.ts";
 
 const {
   sk_canvas_create,
@@ -102,11 +103,20 @@ export class Canvas {
     width?: number,
     height?: number,
     into?: Uint8Array,
+    colorSpace: ColorSpace = "srgb",
   ) {
     width = width ?? this.#width;
     height = height ?? this.#height;
     const pixels = into ?? new Uint8Array(width * height * 4);
-    sk_canvas_read_pixels(this.#ptr, x, y, width, height, pixels);
+    sk_canvas_read_pixels(
+      this.#ptr,
+      x,
+      y,
+      width,
+      height,
+      pixels,
+      colorSpace === "srgb" ? 0 : 1,
+    );
     return pixels;
   }
 

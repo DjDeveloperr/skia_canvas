@@ -794,9 +794,30 @@ extern "C" {
 
   /// Pixel manipulation
 
-  // TODO: Context.createImageData()
-  // TODO: Context.getImageData()
-  // TODO: Context.putImageData()
+  // Context.createImageData() implemented in JS
+  
+  // Context.getImageData() implemented in JS
+  
+  // Context.putImageData()
+
+  void sk_context_put_image_data(sk_context* context, int width, int height, uint8_t *pixels, int row_bytes, float x, float y) {
+    SkImageInfo info = SkImageInfo::Make(width, height, SkColorType::kRGBA_8888_SkColorType, SkAlphaType::kUnpremul_SkAlphaType);
+    context->canvas->writePixels(info, pixels, row_bytes, x, y);
+  }
+
+  void sk_context_put_image_data_dirty(sk_context* context, int width, int height, uint8_t *pixels, int row_bytes, int length, float x, float y, float dirty_x, float dirty_y, float dirty_width, float dirty_height, uint8_t cs) {
+    SkImageInfo info = SkImageInfo::Make(width, height, SkColorType::kRGBA_8888_SkColorType, SkAlphaType::kUnpremul_SkAlphaType, cs == 0 ? SkColorSpace::MakeSRGB() : SkColorSpace::MakeRGB(SkNamedTransferFn::kSRGB, SkNamedGamut::kDisplayP3));
+    sk_sp<SkData> data = SkData::MakeFromMalloc(pixels, length);
+    sk_sp<SkImage> image = SkImage::MakeRasterData(info, data, row_bytes);
+    context->canvas->drawImageRect(
+      image,
+      SkRect::MakeXYWH(dirty_x, dirty_y, dirty_width, dirty_height),
+      SkRect::MakeXYWH(x + dirty_x, y + dirty_y, dirty_width, dirty_height),
+      SkSamplingOptions(SkCubicResampler::Mitchell()),
+      nullptr,
+      SkCanvas::kFast_SrcRectConstraint
+    );
+  }
 
   /// Image smoothing
 
