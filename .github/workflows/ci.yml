@@ -19,4 +19,21 @@ jobs:
           deno-version: 'v1.x'
 
       - name: Check Formatting
-        run: deno fmt --check --ignore=sqlite
+        run: deno fmt --check
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup repo
+        uses: actions/checkout@v2
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@main
+        with:
+          deno-version: 'v1.x'
+        
+      - name: Build Skia
+        run: deno task build-skia
+
+      - name: Run Tests
+        run: deno task test

@@ -8,7 +8,7 @@ const BUILD_ARGS: Record<string, any> = {
   skia_use_system_icu: false,
   skia_use_system_expat: false,
   skia_use_system_libjpeg_turbo: false,
-  extra_cflags_cc: `["-Ofast", "-march=skylake-avx512"]`,
+  extra_cflags_cc: `["-Ofast"]`,
   skia_use_lua: false,
   skia_use_piex: false,
   is_debug: false,
