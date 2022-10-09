@@ -33,9 +33,12 @@ jobs:
         uses: denoland/setup-deno@main
         with:
           deno-version: 'v1.x'
+
+      - name: Setup Depot Tools
+        run: git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
         
       - name: Build Skia
-        run: deno task build-skia
+        run: export PATH=$(pwd)/depot_tools:$PATH && deno task build-skia
 
       - name: Build Native Library
         run: deno task build
