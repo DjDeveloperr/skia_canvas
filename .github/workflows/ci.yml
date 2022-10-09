@@ -25,7 +25,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Setup repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+        with:
+          submodules: true
 
       - name: Setup Deno
         uses: denoland/setup-deno@main
@@ -34,6 +36,9 @@ jobs:
         
       - name: Build Skia
         run: deno task build-skia
+
+      - name: Build Native Library
+        run: deno task build
 
       - name: Run Tests
         run: deno task test
