@@ -1,6 +1,6 @@
 import { Canvas } from "./canvas.ts";
 import ffi, { cstr } from "./ffi.ts";
-import { Image } from "./image.ts";
+import { Image, ImageData } from "./image.ts";
 import { parseFont } from "./parse_font.ts";
 import { Path2D } from "./path2d.ts";
 
@@ -72,6 +72,8 @@ const {
   sk_context_get_transform,
   sk_context_get_image_smoothing_quality,
   sk_context_set_image_smoothing_quality,
+  sk_context_put_image_data_dirty,
+  sk_context_put_image_data,
 } = ffi;
 
 const CONTEXT_FINALIZER = new FinalizationRegistry((ptr: Deno.PointerValue) => {
@@ -809,16 +811,24 @@ export class CanvasRenderingContext2D {
 
   /// Pixel manipulation
 
-  createImageData(sw: number, sh: number) {
-    throw new Error("TODO: Context.createImageData()");
+  createImageData(sw: number, sh: number): ImageData;
+  createImageData(imagedata: ImageData): ImageData;
+  createImageData(sw: number | ImageData, sh?: number) {
+    if (typeof sw === "number") {
+      return new ImageData(sw, sh!);
+    } else {
+      return new ImageData(sw.width, sw.height);
+    }
   }
 
   getImageData(sx: number, sy: number, sw: number, sh: number) {
-    throw new Error("TODO: Context.getImageData()");
+    const data = new Uint8Array(sw * sh * 4);
+    this.#canvas.readPixels(sx, sy, sh, sh, data, "srgb");
+    return new ImageData(data, sw, sh);
   }
 
   putImageData(
-    imagedata: any,
+    imagedata: ImageData,
     dx: number,
     dy: number,
     dirtyX?: number,
@@ -826,7 +836,56 @@ export class CanvasRenderingContext2D {
     dirtyWidth?: number,
     dirtyHeight?: number,
   ) {
-    throw new Error("TODO: Context.putImageData()");
+    if (dirtyX !== undefined) {
+      dirtyX = dirtyX ?? 0;
+      dirtyY = dirtyY ?? 0;
+      dirtyWidth = dirtyWidth ?? imagedata.width;
+      dirtyHeight = dirtyHeight ?? imagedata.height;
+      if (dirtyWidth < 0) {
+        dirtyX += dirtyWidth;
+        dirtyWidth = Math.abs(dirtyWidth);
+      }
+      if (dirtyHeight < 0) {
+        dirtyY += dirtyHeight;
+        dirtyHeight = Math.abs(dirtyHeight);
+      }
+      if (dirtyX < 0) {
+        dirtyWidth += dirtyX;
+        dirtyX = 0;
+      }
+      if (dirtyY < 0) {
+        dirtyHeight += dirtyY;
+        dirtyY = 0;
+      }
+      if (dirtyWidth <= 0 || dirtyHeight <= 0) {
+        return;
+      }
+      sk_context_put_image_data_dirty(
+        this.#ptr,
+        imagedata.width,
+        imagedata.height,
+        imagedata.data,
+        imagedata.width * 4,
+        imagedata.data.byteLength,
+        dx,
+        dy,
+        dirtyX,
+        dirtyY,
+        dirtyWidth,
+        dirtyHeight,
+        imagedata.colorSpace === "srgb" ? 0 : 1,
+      );
+    } else {
+      sk_context_put_image_data(
+        this.#ptr,
+        imagedata.width,
+        imagedata.height,
+        imagedata.data,
+        imagedata.width * 4,
+        dx,
+        dy,
+      );
+    }
   }
 
   /// Image smoothing

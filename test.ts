@@ -56,5 +56,17 @@ ctx.translate(10, 10);
 ctx.stroke(path);
 ctx.restore();
 
+const data = ctx.getImageData(0, 0, 300, 300);
+console.log(data);
+ctx.putImageData(
+  data,
+  canvas.width - 100,
+  canvas.height - 100,
+  20,
+  20,
+  50,
+  50,
+);
+
 canvas.save("./testdata/test.png");
 console.log("done");

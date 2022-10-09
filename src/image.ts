@@ -48,3 +48,58 @@ export class Image {
     return `Image { width: ${this.width}, height: ${this.height} }`;
   }
 }
+
+export type ColorSpace = "srgb" | "rec2020" | "display-p3";
+
+export interface ImageDataSettings {
+  colorSpace?: ColorSpace;
+}
+
+export class ImageData {
+  #width: number;
+  #height: number;
+  #data: Uint8ClampedArray;
+  #colorSpace: ColorSpace;
+
+  constructor(width: number, height: number, settings?: ImageDataSettings);
+  constructor(
+    dataArray: Uint8ClampedArray | Uint8Array,
+    width: number,
+    height?: number,
+    settings?: ImageDataSettings,
+  );
+  constructor(
+    width: number | Uint8ClampedArray | Uint8Array,
+    height: number | ImageDataSettings,
+    settings?: ImageDataSettings | number,
+    settings2?: ImageDataSettings,
+  ) {
+    if (typeof width === "number") {
+      this.#width = width;
+      this.#height = height as number;
+      this.#data = new Uint8ClampedArray(width * (height as number) * 4);
+      this.#colorSpace = (settings as ImageDataSettings)?.colorSpace ?? "srgb";
+    } else {
+      this.#data = new Uint8ClampedArray(width.buffer);
+      this.#width = height as number;
+      this.#height = settings ? settings as number : this.#data.length / 4;
+      this.#colorSpace = settings2?.colorSpace ?? "srgb";
+    }
+  }
+
+  get width() {
+    return this.#width;
+  }
+
+  get height() {
+    return this.#height;
+  }
+
+  get data() {
+    return this.#data;
+  }
+
+  get colorSpace() {
+    return this.#colorSpace;
+  }
+}

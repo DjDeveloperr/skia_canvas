@@ -32,8 +32,8 @@ extern "C" {
     return 0;
   }
 
-  void sk_canvas_read_pixels(sk_canvas* canvas, int x, int y, int width, int height, void* pixels) {
-    canvas->surface->readPixels(SkImageInfo::MakeN32Premul(width, height), pixels, width * 4, x, y);
+  void sk_canvas_read_pixels(sk_canvas* canvas, int x, int y, int width, int height, void* pixels, int cs) {
+    canvas->surface->readPixels(SkImageInfo::Make(width, height, SkColorType::kRGBA_8888_SkColorType, SkAlphaType::kUnpremul_SkAlphaType, cs == 0 ? SkColorSpace::MakeSRGB() : SkColorSpace::MakeRGB(SkNamedTransferFn::kSRGB, SkNamedGamut::kDisplayP3)), pixels, width * 4, x, y);
   }
 
   const void* sk_canvas_encode_image(sk_canvas* canvas, int format, int quality, int* size, SkData** data) {
