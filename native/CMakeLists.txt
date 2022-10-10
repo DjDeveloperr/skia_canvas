@@ -21,12 +21,27 @@ add_library(native_canvas SHARED
 target_compile_options(native_canvas PRIVATE -Ofast -Wno-return-type -Wno-unused-result -Wno-write-strings -Wno-attributes)
 # target_compile_options(native_canvas PRIVATE -g)
 
+if(APPLE)
+  target_link_libraries(native_canvas "-framework CoreFoundation")
+  target_link_libraries(native_canvas "-framework CoreText")
+  target_link_libraries(native_canvas "-framework CoreGraphics")
+endif()
+
 set (SKIA_OUT ${CMAKE_CURRENT_SOURCE_DIR}/../skia/out/Release)
 
 target_link_directories(native_canvas PRIVATE ${SKIA_OUT})
 
+if(UNIX AND NOT APPLE)
+  target_link_libraries(native_canvas "-Wl,--whole-archive")
+endif()
+
+target_link_libraries(native_canvas skshaper)
+
+if(UNIX AND NOT APPLE)
+  target_link_libraries(native_canvas "-Wl,--no-whole-archive")
+endif()
+
 target_link_libraries(native_canvas skia)
-target_link_libraries(native_canvas "-Wl,--whole-archive ${SKIA_OUT}/libskshaper.a -Wl,--no-whole-archive")
 target_link_libraries(native_canvas harfbuzz)
 target_link_libraries(native_canvas pathkit)
 target_link_libraries(native_canvas svg)
@@ -40,7 +55,3 @@ target_link_libraries(native_canvas freetype2)
 target_link_libraries(native_canvas wuffs)
 target_link_libraries(native_canvas icu)
 target_link_libraries(native_canvas expat)
-
-set(CPACK_PROJECT_NAME ${PROJECT_NAME})
-set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
-include(CPack)

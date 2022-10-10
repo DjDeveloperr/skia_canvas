@@ -47,7 +47,16 @@ extern "C" {
 
   int load_system_fonts() {
     if (systemFontsLoaded == -1) {
-      systemFontsLoaded = fonts_register_dir("/usr/share/fonts/");
+      systemFontsLoaded = 0;
+      #if defined(__APPLE__)
+        systemFontsLoaded = fonts_register_dir("/System/Library/Fonts");
+      #endif
+      #if defined(__linux__)
+        systemFontsLoaded = fonts_register_dir("/usr/share/fonts");
+      #endif
+      #if defined(_WIN32)
+        systemFontsLoaded = fonts_register_dir("C:\\Windows\\Fonts");
+      #endif
     }
     return systemFontsLoaded;
   }

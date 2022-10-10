@@ -27,12 +27,12 @@
 
 #include <string>
 #include <cmath>
-#include <experimental/optional>
+#include <optional>
 
 namespace CSSColorParser {
 
 template <class T>
-using optional = std::experimental::optional<T>;
+using optional = std::optional<T>;
 
 struct Color {
     inline Color() {
