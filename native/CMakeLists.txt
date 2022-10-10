@@ -21,7 +21,7 @@ if (UNIX)
 endif()
 
 if (WIN32)
-  target_compile_options(native_canvas PRIVATE /O2 /W0)
+  target_compile_options(native_canvas PRIVATE /W0)
 endif()
 
 # target_compile_options(native_canvas PRIVATE -g)
