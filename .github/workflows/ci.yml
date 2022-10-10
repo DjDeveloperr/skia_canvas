@@ -70,10 +70,6 @@ jobs:
         if: runner.os == 'Linux'
         run: strip ./native/build/libnative_canvas.so
 
-      - name: Strip Native Library (MacOS)
-        if: runner.os == 'macOS'
-        run: strip ./native/build/libnative_canvas.dylib
-
       - name: Run Tests
         run: deno task test
 
