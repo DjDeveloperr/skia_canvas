@@ -22,7 +22,12 @@ jobs:
         run: deno fmt --check
 
   test:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        
+    runs-on: ${{ matrix.os }}
+
     steps:
       - name: Setup repo
         uses: actions/checkout@v3
@@ -40,7 +45,7 @@ jobs:
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@v1.2
         with:
-          key: ${{ github.job }}-ubuntu-latest
+          key: ${{ github.job }}-${{ matrix.os }}
         
       - name: Build Skia
         run: export PATH=$(pwd)/depot_tools:$PATH && deno task build-skia ccache
