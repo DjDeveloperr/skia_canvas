@@ -49,7 +49,10 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           curl -o depot_tools.zip https://storage.googleapis.com/chrome-infra/depot_tools.zip
-          7z x depot_tools.zip -o./depot_tools
+          mkdir depot_tools
+          cd depot_tools
+          7z x ../depot_tools.zip
+          cd ..
           echo "PATH=$(pwd)/depot_tools;$PATH" >> $GITHUB_ENV
 
       - name: Setup ccache
