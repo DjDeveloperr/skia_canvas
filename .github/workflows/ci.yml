@@ -63,13 +63,16 @@ jobs:
       - name: Build Skia
         run: deno task build-skia ccache
 
-      - name: Build Native Library (Unix)
-        if: runner.os != 'Windows'
+      - name: Build Native Library
         run: mkdir ./native/build && deno task build
-      
-      - name: Build Native Library (Windows)
-        if: runner.os == 'Windows'
-        run: mkdir ./native/build && deno task build-win
+
+      - name: Strip Native Library (Linux)
+        if: runner.os == 'Linux'
+        run: strip ./native/build/libnative_canvas.so
+
+      - name: Strip Native Library (MacOS)
+        if: runner.os == 'macOS'
+        run: strip ./native/build/libnative_canvas.dylib
 
       - name: Run Tests
         run: deno task test
