@@ -817,6 +817,8 @@ extern "C" {
       nullptr,
       SkCanvas::kFast_SrcRectConstraint
     );
+    // JS manages the memory of the pixels array
+    data.release();
   }
 
   /// Image smoothing
