@@ -63,8 +63,13 @@ jobs:
       - name: Build Skia
         run: deno task build-skia ccache
 
-      - name: Build Native Library
+      - name: Build Native Library (Unix)
+        if: runner.os != 'Windows'
         run: mkdir ./native/build && deno task build
+      
+      - name: Build Native Library (Windows)
+        if: runner.os == 'Windows'
+        run: mkdir ./native/build && deno task build-win
 
       - name: Run Tests
         run: deno task test
