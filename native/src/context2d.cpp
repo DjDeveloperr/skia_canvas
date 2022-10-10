@@ -1,5 +1,10 @@
 #include "include/context2d.hpp"
 
+#ifndef _USE_MATH_DEFINES
+#define _USE_MATH_DEFINES
+#include <math.h>
+#endif
+
 extern sk_sp<skia::textlayout::FontCollection> fontCollection;
 
 sk_context_state* create_default_state() {
