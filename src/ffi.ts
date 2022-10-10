@@ -1,5 +1,11 @@
 const lib = Deno.dlopen(
-  "./native/build/libnative_canvas.so",
+  `./native/build/libnative_canvas.${
+    Deno.build.os === "darwin"
+      ? "dylib"
+      : Deno.build.os === "windows"
+      ? "dll"
+      : "so"
+  }`,
   {
     sk_canvas_create: {
       parameters: ["i32", "i32", "buffer"],
