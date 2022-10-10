@@ -37,7 +37,7 @@ extern "C" {
       if (!std::filesystem::is_directory(i->path())) {
         auto ext = i->path().extension();
         if (ext == ".ttf" || ext == ".otf" || ext == ".ttc" || ext == ".pfb" || ext == ".woff" || ext == ".woff2") {
-          fonts_register_path(i->path().c_str(), nullptr);
+          fonts_register_path((const char*) i->path().c_str(), nullptr);
           count++;
         }
       }

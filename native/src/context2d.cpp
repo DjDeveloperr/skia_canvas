@@ -165,18 +165,18 @@ extern "C" {
     SkFontMetrics font_metrics;
     font.getMetrics(&font_metrics);
     
-    SkRect bounds[textLen];
+    SkRect* bounds = (SkRect*) malloc(sizeof(SkRect) * textLen);
     auto glyphs = run.glyphs();
     auto glyphsSize = glyphs.size();
     font.getBounds(glyphs.data(), textLen, &bounds[0], nullptr);
     
     auto textBox = paragraph->getRectsForRange(0, textLen, skia::textlayout::RectHeightStyle::kTight, skia::textlayout::RectWidthStyle::kTight);
-    auto lineWidth = 0.0;
-    auto firstCharBounds = bounds[0];
-    auto descent = firstCharBounds.fBottom;
-    auto ascent = firstCharBounds.fTop;
-    auto lastCharBounds = bounds[glyphsSize - 1];
-    auto lastCharPosX = run.positionX(glyphsSize - 1);
+    double lineWidth = 0.0;
+    SkRect firstCharBounds = bounds[0];
+    SkScalar descent = firstCharBounds.fBottom;
+    SkScalar ascent = firstCharBounds.fTop;
+    SkRect lastCharBounds = bounds[glyphsSize - 1];
+    float lastCharPosX = run.positionX(glyphsSize - 1);
     
     for (auto &box : textBox) {
       lineWidth += box.rect.width();
@@ -254,6 +254,7 @@ extern "C" {
       }
     }
 
+    free(bounds);
     return 1;
   }
 
