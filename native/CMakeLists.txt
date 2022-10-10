@@ -5,9 +5,7 @@ set (CMAKE_CXX_STANDARD 17)
 # set (CMAKE_BUILD_TYPE Debug)
 set (CMAKE_BUILD_TYPE Release)
 
-include(CTest)
 include_directories(. ../skia)
-enable_testing()
 
 add_library(native_canvas SHARED
   deps/csscolorparser.cpp
@@ -18,7 +16,14 @@ add_library(native_canvas SHARED
   src/path2d.cpp
   src/image.cpp)
 
-target_compile_options(native_canvas PRIVATE -Ofast -Wno-return-type -Wno-unused-result -Wno-write-strings -Wno-attributes)
+if (UNIX)
+  target_compile_options(native_canvas PRIVATE -Ofast -Wno-return-type -Wno-unused-result -Wno-write-strings -Wno-attributes)
+endif()
+
+if (WIN32)
+  target_compile_options(native_canvas PRIVATE /O2 /W0)
+endif()
+
 # target_compile_options(native_canvas PRIVATE -g)
 
 if(APPLE)
@@ -41,17 +46,18 @@ if(UNIX AND NOT APPLE)
   target_link_libraries(native_canvas "-Wl,--no-whole-archive")
 endif()
 
-target_link_libraries(native_canvas skia)
-target_link_libraries(native_canvas harfbuzz)
-target_link_libraries(native_canvas pathkit)
-target_link_libraries(native_canvas svg)
-target_link_libraries(native_canvas skresources)
-target_link_libraries(native_canvas skparagraph)
-target_link_libraries(native_canvas particles)
-target_link_libraries(native_canvas sktext)
-target_link_libraries(native_canvas skunicode)
-target_link_libraries(native_canvas skcms)
-target_link_libraries(native_canvas freetype2)
-target_link_libraries(native_canvas wuffs)
-target_link_libraries(native_canvas icu)
-target_link_libraries(native_canvas expat)
+target_link_libraries(native_canvas
+  skia
+  harfbuzz
+  svg
+  pathkit
+  skresources
+  skparagraph
+  particles
+  sktext
+  skunicode
+  skcms
+  freetype2
+  wuffs
+  icu
+  expat)

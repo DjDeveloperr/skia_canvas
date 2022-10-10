@@ -1,7 +1,7 @@
 {
   "tasks": {
     "build": "cd native/build && cmake .. && make",
-    "build-win": "cd native/build && cmake .. && mingw32-make -f Makefile",
+    "build-win": "cd native/build && cmake .. && ls && make",
     "test": "deno run -A --unstable test.ts",
     "bench": "deno bench -A --unstable bench/deno.js",
     "bench-node": "node bench/node.mjs",
