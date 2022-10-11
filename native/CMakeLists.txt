@@ -27,7 +27,7 @@ endif()
 
 if (WIN32)
   target_compile_options(native_canvas PRIVATE
-    /MD
+    /MT
     /W0)
 endif()
 
