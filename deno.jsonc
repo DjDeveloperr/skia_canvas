@@ -1,6 +1,6 @@
 {
   "tasks": {
-    "build": "cd native/build && cmake .. && cmake --build .",
+    "build": "cd native/build && cmake .. && cmake --build . --config Release",
     "test": "deno run -A --unstable test.ts",
     "bench": "deno bench -A --unstable bench/deno.js",
     "bench-node": "node bench/node.mjs",
