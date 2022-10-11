@@ -1,14 +1,15 @@
 #include "include/image.hpp"
+#include "include/common.hpp"
 
 extern "C" {
-  SkImage* sk_image_from_encoded(void* data, size_t length) {
+  SKIA_EXPORT SkImage* sk_image_from_encoded(void* data, size_t length) {
     auto skData = SkData::MakeFromMalloc(data, length);
     SkImage* image = SkImage::MakeFromEncoded(skData).release();
     skData.release();
     return image;
   }
 
-  SkImage* sk_image_from_file(char* path) {
+  SKIA_EXPORT SkImage* sk_image_from_file(char* path) {
     FILE* file = fopen(path, "rb");
     fseek(file, 0, SEEK_END);
     size_t length = ftell(file);
@@ -19,15 +20,15 @@ extern "C" {
     return sk_image_from_encoded(data, length);
   }
 
-  int sk_image_width(SkImage* image) {
+  SKIA_EXPORT int sk_image_width(SkImage* image) {
     return image->width();
   }
 
-  int sk_image_height(SkImage* image) {
+  SKIA_EXPORT int sk_image_height(SkImage* image) {
     return image->height();
   }
 
-  void sk_image_destroy(SkImage* image) {
+  SKIA_EXPORT void sk_image_destroy(SkImage* image) {
     image->unref();
   }
 }

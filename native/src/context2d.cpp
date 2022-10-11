@@ -92,7 +92,7 @@ extern "C" {
   /// Drawing rectangles
 
   // Context.clearRect()
-  void sk_context_clear_rect(sk_context* context, float x, float y, float width, float height) {
+  SKIA_EXPORT void sk_context_clear_rect(sk_context* context, float x, float y, float width, float height) {
     auto canvas = context->canvas;
     SkPaint paint;
     paint.setARGB(0, 0, 0, 0);
@@ -100,13 +100,13 @@ extern "C" {
   }
 
   // Context.fillRect()
-  void sk_context_fill_rect(sk_context* context, float x, float y, float width, float height) {
+  SKIA_EXPORT void sk_context_fill_rect(sk_context* context, float x, float y, float width, float height) {
     auto canvas = context->canvas;
     canvas->drawRect(SkRect::MakeXYWH(x, y, width, height), *sk_context_fill_paint(context->state));
   }
 
   // Context.strokeRect()
-  void sk_context_stroke_rect(sk_context* context, float x, float y, float width, float height) {
+  SKIA_EXPORT void sk_context_stroke_rect(sk_context* context, float x, float y, float width, float height) {
     auto canvas = context->canvas;
     canvas->drawRect(SkRect::MakeXYWH(x, y, width, height), *sk_context_stroke_paint(context->state));
   }
@@ -114,7 +114,7 @@ extern "C" {
   /// Drawing text
 
   // Helper function to fill/stroke/measure
-  int sk_context_text(sk_context* context,
+  SKIA_EXPORT int sk_context_text(sk_context* context,
     char* text,
     int textLen,
     float x,
@@ -263,24 +263,24 @@ extern "C" {
     return 1;
   }
 
-  // Context.fillText() implementation in JS using sk_context_test
-  // Context.strokeText() implementation in JS using sk_context_test
-  // Context.measureText() implementation in JS using sk_context_test
+  // Context.fillText() implementation in JS SKIA_EXPORT using sk_context_test
+  // Context.strokeText() implementation in JS SKIA_EXPORT using sk_context_test
+  // Context.measureText() implementation in JS SKIA_EXPORT using sk_context_test
 
   /// Line styles
 
   // Context.lineWidth getter
-  float sk_context_get_line_width(sk_context* context) {
+  SKIA_EXPORT float sk_context_get_line_width(sk_context* context) {
     return context->state->paint->getStrokeWidth();
   }
 
   // Context.lineWidth setter
-  void sk_context_set_line_width(sk_context* context, float width) {
+  SKIA_EXPORT void sk_context_set_line_width(sk_context* context, float width) {
     context->state->paint->setStrokeWidth(width);
   }
 
   // Context.lineCap getter
-  int sk_context_get_line_cap(sk_context* context) {
+  SKIA_EXPORT int sk_context_get_line_cap(sk_context* context) {
     auto cap = context->state->paint->getStrokeCap();
     switch (cap) {
       case SkPaint::kButt_Cap:
@@ -293,7 +293,7 @@ extern "C" {
   }
 
   // Context.lineCap setter
-  void sk_context_set_line_cap(sk_context* context, int cap) {
+  SKIA_EXPORT void sk_context_set_line_cap(sk_context* context, int cap) {
     switch (cap) {
       case 0:
         context->state->paint->setStrokeCap(SkPaint::kButt_Cap);
@@ -308,7 +308,7 @@ extern "C" {
   }
 
   // Context.lineJoin getter
-  int sk_context_get_line_join(sk_context* context) {
+  SKIA_EXPORT int sk_context_get_line_join(sk_context* context) {
     auto join = context->state->paint->getStrokeJoin();
     switch (join) {
       case SkPaint::kMiter_Join:
@@ -321,7 +321,7 @@ extern "C" {
   }
 
   // Context.lineJoin setter
-  void sk_context_set_line_join(sk_context* context, int join) {
+  SKIA_EXPORT void sk_context_set_line_join(sk_context* context, int join) {
     switch (join) {
       case 0:
         context->state->paint->setStrokeJoin(SkPaint::kMiter_Join);
@@ -336,29 +336,29 @@ extern "C" {
   }
 
   // Context.miterLimit getter
-  float sk_context_get_miter_limit(sk_context* context) {
+  SKIA_EXPORT float sk_context_get_miter_limit(sk_context* context) {
     return context->state->paint->getStrokeMiter();
   }
 
   // Context.miterLimit setter
-  void sk_context_set_miter_limit(sk_context* context, float limit) {
+  SKIA_EXPORT void sk_context_set_miter_limit(sk_context* context, float limit) {
     context->state->paint->setStrokeMiter(limit);
   }
 
   // Context.getLineDash() value is cached in JS side
 
   // Context.setLineDash()
-  void sk_context_set_line_dash(sk_context* context, float* dash, int count) {
+  SKIA_EXPORT void sk_context_set_line_dash(sk_context* context, float* dash, int count) {
     context->state->lineDash = std::vector<float>(dash, dash + count);
   }
 
   // Context.lineDashOffset getter
-  float sk_context_get_line_dash_offset(sk_context* context) {
+  SKIA_EXPORT float sk_context_get_line_dash_offset(sk_context* context) {
     return context->state->lineDashOffset;
   }
 
   // Context.lineDashOffset setter
-  void sk_context_set_line_dash_offset(sk_context* context, float offset) {
+  SKIA_EXPORT void sk_context_set_line_dash_offset(sk_context* context, float offset) {
     context->state->lineDashOffset = offset;
   }
 
@@ -367,7 +367,7 @@ extern "C" {
   // Context.font getter value is cached in JS side
 
   // Context.font setter (Font string parsed in JS side)
-  void sk_context_set_font(
+  SKIA_EXPORT void sk_context_set_font(
     sk_context* context,
     float size,
     char* family,
@@ -386,32 +386,32 @@ extern "C" {
   }
 
   // Context.textAlign getter
-  int sk_context_get_text_align(sk_context* context) {
+  SKIA_EXPORT int sk_context_get_text_align(sk_context* context) {
     return context->state->textAlign;
   }
 
   // Context.textAlign setter
-  void sk_context_set_text_align(sk_context* context, int align) {
+  SKIA_EXPORT void sk_context_set_text_align(sk_context* context, int align) {
     context->state->textAlign = TextAlign(align);
   }
 
   // Context.textBaseline getter
-  int sk_context_get_text_baseline(sk_context* context) {
+  SKIA_EXPORT int sk_context_get_text_baseline(sk_context* context) {
     return context->state->textBaseline;
   }
 
   // Context.textBaseline setter
-  void sk_context_set_text_baseline(sk_context* context, int baseline) {
+  SKIA_EXPORT void sk_context_set_text_baseline(sk_context* context, int baseline) {
     context->state->textBaseline = TextBaseline(baseline);
   }
 
   // Context.direction getter
-  int sk_context_get_text_direction(sk_context* context) {
+  SKIA_EXPORT int sk_context_get_text_direction(sk_context* context) {
     return context->state->direction;
   }
 
   // Context.direction setter
-  void sk_context_set_text_direction(sk_context* context, int direction) {
+  SKIA_EXPORT void sk_context_set_text_direction(sk_context* context, int direction) {
     context->state->direction = TextDirection(direction);
   }
 
@@ -427,7 +427,7 @@ extern "C" {
   // Context.fillStyle getter value is cached in JS side
 
   // Context.fillStyle setter
-  int sk_context_set_fill_style(sk_context* context, char* style) {
+  SKIA_EXPORT int sk_context_set_fill_style(sk_context* context, char* style) {
     auto color = CSSColorParser::parse(std::string(style));
     if (color) {
       auto val = color.value();
@@ -440,7 +440,7 @@ extern "C" {
   // Context.strokeStyle getter value is cached in JS side
 
   // Context.strokeStyle setter
-  int sk_context_set_stroke_style(sk_context* context, char* style) {
+  SKIA_EXPORT int sk_context_set_stroke_style(sk_context* context, char* style) {
     auto color = CSSColorParser::parse(std::string(style));
     if (color) {
       auto val = color.value();
@@ -460,19 +460,19 @@ extern "C" {
   /// Shadows
 
   // Context.shadowBlur getter
-  float sk_context_get_shadow_blur(sk_context* context) {
+  SKIA_EXPORT float sk_context_get_shadow_blur(sk_context* context) {
     return context->state->shadowBlur;
   }
 
   // Context.shadowBlur setter
-  void sk_context_set_shadow_blur(sk_context* context, float blur) {
+  SKIA_EXPORT void sk_context_set_shadow_blur(sk_context* context, float blur) {
     context->state->shadowBlur = blur;
   }
 
   // Context.shadowColor getter value is cached in JS side
 
   // Context.shadowColor setter
-  int sk_context_set_shadow_color(sk_context* context, char* style) {
+  SKIA_EXPORT int sk_context_set_shadow_color(sk_context* context, char* style) {
     auto color = CSSColorParser::parse(std::string(style));
     if (color) {
       auto val = color.value();
@@ -483,86 +483,86 @@ extern "C" {
   }
 
   // Context.shadowOffsetX getter
-  float sk_context_get_shadow_offset_x(sk_context* context) {
+  SKIA_EXPORT float sk_context_get_shadow_offset_x(sk_context* context) {
     return context->state->shadowOffsetX;
   }
 
   // Context.shadowOffsetX setter
-  void sk_context_set_shadow_offset_x(sk_context* context, float x) {
+  SKIA_EXPORT void sk_context_set_shadow_offset_x(sk_context* context, float x) {
     context->state->shadowOffsetX = x;
   }
 
   // Context.shadowOffsetY getter
-  float sk_context_get_shadow_offset_y(sk_context* context) {
+  SKIA_EXPORT float sk_context_get_shadow_offset_y(sk_context* context) {
     return context->state->shadowOffsetY;
   }
 
   // Context.shadowOffsetY setter
-  void sk_context_set_shadow_offset_y(sk_context* context, float y) {
+  SKIA_EXPORT void sk_context_set_shadow_offset_y(sk_context* context, float y) {
     context->state->shadowOffsetY = y;
   }
 
   /// Paths
 
   // Context.beginPath()
-  void sk_context_begin_path(sk_context* context) {
+  SKIA_EXPORT void sk_context_begin_path(sk_context* context) {
     sk_path_begin(context->path);
   }
 
   // Context.closePath()
-  void sk_context_close_path(sk_context* context) {
+  SKIA_EXPORT void sk_context_close_path(sk_context* context) {
     context->path->close();
   }
 
   // Context.moveTo()
-  void sk_context_move_to(sk_context* context, float x, float y) {
+  SKIA_EXPORT void sk_context_move_to(sk_context* context, float x, float y) {
     sk_path_move_to(context->path, x, y);
   }
 
   // Context.lineTo()
-  void sk_context_line_to(sk_context* context, float x, float y) {
+  SKIA_EXPORT void sk_context_line_to(sk_context* context, float x, float y) {
     sk_path_line_to(context->path, x, y);
   }
 
   // Context.bezierCurveTo()
-  void sk_context_bezier_curve_to(sk_context* context, float cp1x, float cp1y, float cp2x, float cp2y, float x, float y) {
+  SKIA_EXPORT void sk_context_bezier_curve_to(sk_context* context, float cp1x, float cp1y, float cp2x, float cp2y, float x, float y) {
     sk_path_bezier_curve_to(context->path, cp1x, cp1y, cp2x, cp2y, x, y);
   }
 
   // Context.quadraticCurveTo()
-  void sk_context_quadratic_curve_to(sk_context* context, float cpx, float cpy, float x, float y) {
+  SKIA_EXPORT void sk_context_quadratic_curve_to(sk_context* context, float cpx, float cpy, float x, float y) {
     sk_path_quadratic_curve_to(context->path, cpx, cpy, x, y);
   }
   
   // Context.arc()
-  void sk_context_arc(sk_context* context, float x, float y, float radius, float startAngle, float endAngle, bool clockwise) {
+  SKIA_EXPORT void sk_context_arc(sk_context* context, float x, float y, float radius, float startAngle, float endAngle, bool clockwise) {
     sk_path_arc(context->path, x, y, radius, startAngle, endAngle, clockwise);
   }
 
   // Context.arcTo()
-  void sk_context_arc_to(sk_context* context, float x1, float y1, float x2, float y2, float radius) {
+  SKIA_EXPORT void sk_context_arc_to(sk_context* context, float x1, float y1, float x2, float y2, float radius) {
     sk_path_arc_to(context->path, x1, y1, x2, y2, radius);
   }
 
   // Context.ellipse()
-  void sk_context_ellipse(sk_context* context, float x, float y, float radiusX, float radiusY, float rotation, float startAngle, float endAngle, bool clockwise) {
+  SKIA_EXPORT void sk_context_ellipse(sk_context* context, float x, float y, float radiusX, float radiusY, float rotation, float startAngle, float endAngle, bool clockwise) {
     sk_path_ellipse(context->path, x, y, radiusX, radiusY, rotation, startAngle, endAngle, clockwise);
   }
 
   // Context.rect()
-  void sk_context_rect(sk_context* context, float x, float y, float width, float height) {
+  SKIA_EXPORT void sk_context_rect(sk_context* context, float x, float y, float width, float height) {
     sk_path_rect(context->path, x, y, width, height);
   }
 
   // Context.roundRect()
-  void sk_context_round_rect(sk_context* context, float x, float y, float width, float height, float r) {
+  SKIA_EXPORT void sk_context_round_rect(sk_context* context, float x, float y, float width, float height, float r) {
     sk_path_round_rect(context->path, x, y, width, height, r);
   }
 
   /// Drawing paths
 
   // Context.fill()
-  void sk_context_fill(sk_context* context, SkPath* path, unsigned char rule) {
+  SKIA_EXPORT void sk_context_fill(sk_context* context, SkPath* path, unsigned char rule) {
     if (path == nullptr) path = context->path;
     auto canvas = context->canvas;
     auto paint = sk_context_fill_paint(context->state);
@@ -571,7 +571,7 @@ extern "C" {
   }
 
   // Context.stroke()
-  void sk_context_stroke(sk_context* context, SkPath* path) {
+  SKIA_EXPORT void sk_context_stroke(sk_context* context, SkPath* path) {
     if (path == nullptr) path = context->path;
     auto canvas = context->canvas;
     canvas->drawPath(*path, *sk_context_stroke_paint(context->state));
@@ -581,7 +581,7 @@ extern "C" {
   // TODO: Context.scrollPathIntoView() (should we support it?)
 
   // Context.clip()
-  void sk_context_clip(sk_context* context, SkPath* path, unsigned char rule) {
+  SKIA_EXPORT void sk_context_clip(sk_context* context, SkPath* path, unsigned char rule) {
     if (path == nullptr) path = context->path;
     // TODO: Should we clone?
     // path = new SkPath(*path);
@@ -590,14 +590,14 @@ extern "C" {
   }
 
   // Context.isPointInPath()
-  int sk_context_is_point_in_path(sk_context* context, float x, float y, SkPath* path, int rule) {
+  SKIA_EXPORT int sk_context_is_point_in_path(sk_context* context, float x, float y, SkPath* path, int rule) {
     if (path == nullptr) path = context->path;
     path->setFillType(rule == 1 ? SkPathFillType::kEvenOdd : SkPathFillType::kWinding);
     return (int) path->contains(x, y);
   }
 
   // Context.isPointInStroke()
-  int sk_context_is_point_in_stroke(sk_context* context, float x, float y, SkPath* path) {
+  SKIA_EXPORT int sk_context_is_point_in_stroke(sk_context* context, float x, float y, SkPath* path) {
     if (path == nullptr) path = context->path;
     return (int) path->contains(x, y);
   }
@@ -605,7 +605,7 @@ extern "C" {
   /// Transformations
 
   // Context.getTransform()
-  void sk_context_get_transform(sk_context* context, float* m) {
+  SKIA_EXPORT void sk_context_get_transform(sk_context* context, float* m) {
     auto matrix = context->state->transform;
     m[0] = matrix->getScaleX();
     m[1] = matrix->getSkewY();
@@ -616,7 +616,7 @@ extern "C" {
   }
 
   // Context.rotate()
-  void sk_context_rotate(sk_context* context, float angle) {
+  SKIA_EXPORT void sk_context_rotate(sk_context* context, float angle) {
     auto s = context->state;
     auto inverse = new SkMatrix();
     inverse->setRotate(-DEGREES(angle), 0.0f, 0.0f);
@@ -626,7 +626,7 @@ extern "C" {
   }
 
   // Context.scale()
-  void sk_context_scale(sk_context* context, float x, float y) {
+  SKIA_EXPORT void sk_context_scale(sk_context* context, float x, float y) {
     auto s = context->state;
     auto inverse = new SkMatrix();
     inverse->preScale(1.0f / x, 1.0f / y);
@@ -636,7 +636,7 @@ extern "C" {
   }
 
   // Context.translate()
-  void sk_context_translate(sk_context* context, float x, float y) {
+  SKIA_EXPORT void sk_context_translate(sk_context* context, float x, float y) {
     auto s = context->state;
     auto inverse = new SkMatrix();
     inverse->setTranslate(-x, -y);
@@ -646,7 +646,7 @@ extern "C" {
   }
 
   // Context.transform()
-  void sk_context_transform(sk_context* context, float a, float b, float c, float d, float e, float f) {
+  SKIA_EXPORT void sk_context_transform(sk_context* context, float a, float b, float c, float d, float e, float f) {
     auto s = context->state;
     auto ts = new SkMatrix();
     ts->setAll(a, b, e, c, d, f, 0.0f, 0.0f, 1.0f);
@@ -657,7 +657,7 @@ extern "C" {
   }
 
   // Context.setTransform()
-  void sk_context_set_transform(sk_context* context, float a, float b, float c, float d, float e, float f) {
+  SKIA_EXPORT void sk_context_set_transform(sk_context* context, float a, float b, float c, float d, float e, float f) {
     auto s = context->state;
     auto ts = new SkMatrix();
     ts->setAll(a, b, e, c, d, f, 0.0f, 0.0f, 1.0f);
@@ -666,7 +666,7 @@ extern "C" {
   }
 
   // Context.resetTransform()
-  void sk_context_reset_transform(sk_context* context) {
+  SKIA_EXPORT void sk_context_reset_transform(sk_context* context) {
     auto s = context->state;
     s->transform->reset();
     context->canvas->setMatrix(*s->transform);
@@ -675,17 +675,17 @@ extern "C" {
   /// Compositing
 
   // Context.globalAlpha getter
-  float sk_context_get_global_alpha(sk_context* context) {
+  SKIA_EXPORT float sk_context_get_global_alpha(sk_context* context) {
     return context->state->paint->getAlpha() / 255.0f;
   }
 
   // Context.globalAlpha setter
-  void sk_context_set_global_alpha(sk_context* context, float alpha) {
+  SKIA_EXPORT void sk_context_set_global_alpha(sk_context* context, float alpha) {
     context->state->paint->setAlpha(alpha * 255);
   }
 
   // Context.globalCompositeOperation getter
-  int sk_context_get_global_composite_operation(sk_context* context) {
+  SKIA_EXPORT int sk_context_get_global_composite_operation(sk_context* context) {
     switch (context->state->paint->getBlendMode_or(SkBlendMode::kSrcOver)) {
       case SkBlendMode::kSrcOver: return 0;
       case SkBlendMode::kSrcIn: return 1;
@@ -718,7 +718,7 @@ extern "C" {
   }
 
   // Context.globalCompositeOperation setter
-  void sk_context_set_global_composite_operation(sk_context* context, unsigned char op) {
+  SKIA_EXPORT void sk_context_set_global_composite_operation(sk_context* context, unsigned char op) {
     switch (op) {
       case 0: context->state->paint->setBlendMode(SkBlendMode::kSrcOver); break;
       case 1: context->state->paint->setBlendMode(SkBlendMode::kSrcIn); break;
@@ -753,7 +753,7 @@ extern "C" {
   /// Drawing images
 
   // Context.drawImage()
-  void sk_context_draw_image(
+  SKIA_EXPORT void sk_context_draw_image(
     sk_context* context,
     sk_canvas* canvas,
     SkImage* image,
@@ -806,12 +806,12 @@ extern "C" {
   
   // Context.putImageData()
 
-  void sk_context_put_image_data(sk_context* context, int width, int height, uint8_t *pixels, int row_bytes, float x, float y) {
+  SKIA_EXPORT void sk_context_put_image_data(sk_context* context, int width, int height, uint8_t *pixels, int row_bytes, float x, float y) {
     SkImageInfo info = SkImageInfo::Make(width, height, SkColorType::kRGBA_8888_SkColorType, SkAlphaType::kUnpremul_SkAlphaType);
     context->canvas->writePixels(info, pixels, row_bytes, x, y);
   }
 
-  void sk_context_put_image_data_dirty(sk_context* context, int width, int height, uint8_t *pixels, int row_bytes, int length, float x, float y, float dirty_x, float dirty_y, float dirty_width, float dirty_height, uint8_t cs) {
+  SKIA_EXPORT void sk_context_put_image_data_dirty(sk_context* context, int width, int height, uint8_t *pixels, int row_bytes, int length, float x, float y, float dirty_x, float dirty_y, float dirty_width, float dirty_height, uint8_t cs) {
     SkImageInfo info = SkImageInfo::Make(width, height, SkColorType::kRGBA_8888_SkColorType, SkAlphaType::kUnpremul_SkAlphaType, cs == 0 ? SkColorSpace::MakeSRGB() : SkColorSpace::MakeRGB(SkNamedTransferFn::kSRGB, SkNamedGamut::kDisplayP3));
     sk_sp<SkData> data = SkData::MakeFromMalloc(pixels, length);
     sk_sp<SkImage> image = SkImage::MakeRasterData(info, data, row_bytes);
@@ -830,35 +830,35 @@ extern "C" {
   /// Image smoothing
 
   // Context.imageSmoothingEnabled getter
-  int sk_context_get_image_smoothing_enabled(sk_context* context) {
+  SKIA_EXPORT int sk_context_get_image_smoothing_enabled(sk_context* context) {
     return (int) context->state->imageSmoothingEnabled;
   }
 
   // Context.imageSmoothingEnabled setter
-  void sk_context_set_image_smoothing_enabled(sk_context* context, int enabled) {
+  SKIA_EXPORT void sk_context_set_image_smoothing_enabled(sk_context* context, int enabled) {
     context->state->imageSmoothingEnabled = enabled == 1;
   }
 
   // Context.imageSmoothingQuality getter
-  int sk_context_get_image_smoothing_quality(sk_context* context) {
+  SKIA_EXPORT int sk_context_get_image_smoothing_quality(sk_context* context) {
     return (int) context->state->imageSmoothingQuality;
   }
 
   // Context.imageSmoothingQuality setter
-  void sk_context_set_image_smoothing_quality(sk_context* context, int quality) {
+  SKIA_EXPORT void sk_context_set_image_smoothing_quality(sk_context* context, int quality) {
     context->state->imageSmoothingQuality = (FilterQuality) quality;
   }
 
   /// The canvas state
 
   // Context.save()
-  void sk_context_save(sk_context* context) {
+  SKIA_EXPORT void sk_context_save(sk_context* context) {
     context->states.push_back(*clone_context_state(context->state));
     context->canvas->save();
   }
 
   // Context.restore()
-  void sk_context_restore(sk_context* context) {
+  SKIA_EXPORT void sk_context_restore(sk_context* context) {
     if (context->states.size() > 0) {
       free_context_state(context->state);
       context->state = &context->states.back();
@@ -877,7 +877,7 @@ extern "C" {
   // TODO: Context.filter
 
   /// CONTEXT_FINALIZER callback
-  void sk_context_destroy(sk_context* context) {
+  SKIA_EXPORT void sk_context_destroy(sk_context* context) {
     delete context->path;
     delete context->state;
     delete context;

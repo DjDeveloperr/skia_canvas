@@ -7,6 +7,14 @@
 
 #include "include/core/SkEncodedImageFormat.h"
 
+#ifndef SKIA_EXPORT
+  #if defined(_WIN32)
+    #define SKIA_EXPORT __declspec(dllexport)
+  #else
+    #define SKIA_EXPORT
+  #endif
+#endif
+
 typedef struct RGBA {
   uint8_t r;
   uint8_t g;

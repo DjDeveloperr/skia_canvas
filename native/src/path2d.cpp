@@ -6,49 +6,49 @@
 #endif
 
 extern "C" {
-  SkPath* sk_path_create() {
+  SKIA_EXPORT SkPath* sk_path_create() {
     return new SkPath();
   }
 
-  SkPath* sk_path_create_copy(SkPath* path) {
+  SKIA_EXPORT SkPath* sk_path_create_copy(SkPath* path) {
     return new SkPath(*path);
   }
 
-  SkPath* sk_path_from_svg_string(char* svg) {
+  SKIA_EXPORT SkPath* sk_path_from_svg_string(char* svg) {
     SkPath* path = new SkPath();
     SkParsePath::FromSVGString(svg, path);
     return path;
   }
 
-  void sk_path_begin(SkPath* path) {
+  SKIA_EXPORT void sk_path_begin(SkPath* path) {
     path->reset();
   }
 
-  void sk_path_move_to(SkPath* path, float x, float y) {
+  SKIA_EXPORT void sk_path_move_to(SkPath* path, float x, float y) {
     path->moveTo(x, y);
   }
 
-  void sk_path_line_to(SkPath* path, float x, float y) {
+  SKIA_EXPORT void sk_path_line_to(SkPath* path, float x, float y) {
     path->lineTo(x, y);
   }
 
-  void sk_path_rect(SkPath* path, float x, float y, float width, float height) {
+  SKIA_EXPORT void sk_path_rect(SkPath* path, float x, float y, float width, float height) {
     path->addRect(SkRect::MakeXYWH(x, y, width, height));
   }
 
-  void sk_path_round_rect(SkPath* path, float x, float y, float width, float height, float r) {
+  SKIA_EXPORT void sk_path_round_rect(SkPath* path, float x, float y, float width, float height, float r) {
     path->addRoundRect(SkRect::MakeXYWH(x, y, width, height), r, r);
   }
 
-  void sk_path_close(SkPath* path) {
+  SKIA_EXPORT void sk_path_close(SkPath* path) {
     path->close();
   }
 
-  void sk_path_arc_to(SkPath* path, float x1, float y1, float x2, float y2, float radius) {
+  SKIA_EXPORT void sk_path_arc_to(SkPath* path, float x1, float y1, float x2, float y2, float radius) {
     path->arcTo(x1, y1, x2, y2, radius);
   }
 
-  void sk_path_ellipse(SkPath* path, float x, float y, float radiusX, float radiusY, float rotation, float startAngle, float endAngle, bool clockwise) {
+  SKIA_EXPORT void sk_path_ellipse(SkPath* path, float x, float y, float radiusX, float radiusY, float rotation, float startAngle, float endAngle, bool clockwise) {
     float tau = 2 * M_PI;
     float newStartAngle = fmod(startAngle, tau);
     if (newStartAngle < 0) {
@@ -101,19 +101,19 @@ extern "C" {
     path->transform(*rotated, SkApplyPerspectiveClip::kYes);
   }
 
-  void sk_path_arc(SkPath* path, float x, float y, float radius, float startAngle, float endAngle, bool clockwise) {
+  SKIA_EXPORT void sk_path_arc(SkPath* path, float x, float y, float radius, float startAngle, float endAngle, bool clockwise) {
     sk_path_ellipse(path, x, y, radius, radius, 0, startAngle, endAngle, clockwise);
   }
 
-  void sk_path_bezier_curve_to(SkPath* path, float cp1x, float cp1y, float cp2x, float cp2y, float x, float y) {
+  SKIA_EXPORT void sk_path_bezier_curve_to(SkPath* path, float cp1x, float cp1y, float cp2x, float cp2y, float x, float y) {
     path->cubicTo(cp1x, cp1y, cp2x, cp2y, x, y);
   }
 
-  void sk_path_quadratic_curve_to(SkPath* path, float cpx, float cpy, float x, float y) {
+  SKIA_EXPORT void sk_path_quadratic_curve_to(SkPath* path, float cpx, float cpy, float x, float y) {
     path->quadTo(cpx, cpy, x, y);
   }
 
-  void sk_path_destroy(SkPath* path) {
+  SKIA_EXPORT void sk_path_destroy(SkPath* path) {
     delete path;
   }
 }
