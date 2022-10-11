@@ -17,11 +17,18 @@ add_library(native_canvas SHARED
   src/image.cpp)
 
 if (UNIX)
-  target_compile_options(native_canvas PRIVATE -Ofast -Wno-return-type -Wno-unused-result -Wno-write-strings -Wno-attributes)
+  target_compile_options(native_canvas PRIVATE
+    -Ofast
+    -Wno-return-type
+    -Wno-unused-result
+    -Wno-write-strings
+    -Wno-attributes)
 endif()
 
 if (WIN32)
-  target_compile_options(native_canvas PRIVATE /W0)
+  target_compile_options(native_canvas PRIVATE
+    /MD
+    /W0)
 endif()
 
 # target_compile_options(native_canvas PRIVATE -g)
