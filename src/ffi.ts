@@ -1,5 +1,5 @@
 const lib = Deno.dlopen(
-  `./native/build/libnative_canvas.${
+  `./native/build/${Deno.build.os === "windows" ? "" : "lib"}native_canvas.${
     Deno.build.os === "darwin"
       ? "dylib"
       : Deno.build.os === "windows"
