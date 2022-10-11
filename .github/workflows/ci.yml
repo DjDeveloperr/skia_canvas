@@ -83,4 +83,4 @@ jobs:
           files: |
             native/build/libnative_canvas.so
             native/build/libnative_canvas.dylib
-            native/build/native_canvas.dll
+            native/build/Release/native_canvas.dll
