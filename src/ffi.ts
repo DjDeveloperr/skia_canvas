@@ -552,6 +552,9 @@ const lib = Deno.dlopen(
         "f32",
         "f32",
         "f32",
+        "f32",
+        "f32",
+        "f32",
       ],
       result: "void",
     },
@@ -559,6 +562,9 @@ const lib = Deno.dlopen(
     sk_path_round_rect: {
       parameters: [
         "pointer",
+        "f32",
+        "f32",
+        "f32",
         "f32",
         "f32",
         "f32",
