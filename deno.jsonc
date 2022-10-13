@@ -5,5 +5,11 @@
     "bench": "deno bench -A --unstable bench/deno.js",
     "bench-node": "node bench/node.mjs",
     "build-skia": "deno run -A --unstable scripts/build_skia.ts"
+  },
+
+  "fmt": {
+    "files": {
+      "exclude": ["skia", "bench/node_modules"]
+    }
   }
 }

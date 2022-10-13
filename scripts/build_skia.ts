@@ -66,7 +66,10 @@ const $ = (cmd: string | URL, ...args: string[]) => {
 if (!Deno.args.includes("fast")) $("python", "./tools/git-sync-deps");
 
 if (Deno.build.os === "windows") {
-  const SkLoadICU = new URL("../skia/third_party/icu/SkLoadICU.cpp", import.meta.url);
+  const SkLoadICU = new URL(
+    "../skia/third_party/icu/SkLoadICU.cpp",
+    import.meta.url,
+  );
   const original = Deno.readTextFileSync(SkLoadICU);
   Deno.writeTextFileSync(
     SkLoadICU,
