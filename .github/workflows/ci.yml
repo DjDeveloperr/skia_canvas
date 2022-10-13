@@ -87,6 +87,10 @@ jobs:
         if: runner.os == 'Linux'
         run: strip ./native/build/libnative_canvas.so
 
+      - name: Setup ICU Data
+        if: runner.os == 'Windows'
+        run: cp ./skia/out/Release/icudtl.dat ./native/build/icudtl.dat
+
       - name: Run Tests
         run: deno task test
 
@@ -98,6 +102,7 @@ jobs:
           tag_name: "release draft"
           draft: true
           files: |
+            skia/out/Release/icudtl.dat
             native/build/libnative_canvas.so
             native/build/libnative_canvas.dylib
             native/build/Release/native_canvas.dll
