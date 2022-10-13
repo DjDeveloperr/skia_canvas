@@ -68,7 +68,7 @@ jobs:
           key: ${{ runner.os }}-skia-build
 
       - name: Build Skia
-        run: deno task build-skia ccache
+        run: deno task build-skia
 
       - name: Setup Build Directory
         run: mkdir ./native/build
