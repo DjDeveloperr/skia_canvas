@@ -22,7 +22,12 @@ jobs:
         run: deno fmt --check
 
   test:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        
+    runs-on: ${{ matrix.os }}
+
     steps:
       - name: Setup repo
         uses: actions/checkout@v3
@@ -34,19 +39,70 @@ jobs:
         with:
           deno-version: 'v1.x'
 
-      - name: Setup Depot Tools
-        run: git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+      - name: Setup Depot Tools (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+          echo "PATH=$(pwd)/depot_tools:$PATH" >> $GITHUB_ENV
 
-      - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1.2
+      - name: Setup Depot Tools (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          curl -o depot_tools.zip https://storage.googleapis.com/chrome-infra/depot_tools.zip
+          mkdir depot_tools
+          cd depot_tools
+          7z x ../depot_tools.zip
+          cd ..
+          echo "PATH=$(pwd)/depot_tools;$PATH" >> $GITHUB_ENV
+
+      # - name: Setup ccache
+      #   uses: hendrikmuhs/ccache-action@v1.2
+      #   with:
+      #     key: ${{ github.job }}-${{ matrix.os }}
+      
+      - name: Cache Skia Build
+        id: cache-skia-build
+        uses: actions/cache@v3
         with:
-          key: ${{ github.job }}-ubuntu-latest
-        
+          path: ./skia/out/Release
+          key: ${{ runner.os }}-skia-build
+
       - name: Build Skia
-        run: export PATH=$(pwd)/depot_tools:$PATH && deno task build-skia ccache
+        run: deno task build-skia
+
+      - name: Setup Build Directory
+        run: mkdir ./native/build
+
+      - name: Cache Native Build
+        id: cache-native-build
+        uses: actions/cache@v3
+        with:
+          path: ./native/build
+          key: ${{ runner.os }}-cmake-build
 
       - name: Build Native Library
-        run: mkdir ./native/build && deno task build
+        run: deno task build
+
+      - name: Strip Native Library (Linux)
+        if: runner.os == 'Linux'
+        run: strip ./native/build/libnative_canvas.so
+
+      - name: Setup ICU Data
+        if: runner.os == 'Windows'
+        run: cp ./skia/out/Release/icudtl.dat ./native/build/Release/icudtl.dat
 
       - name: Run Tests
         run: deno task test
+
+      - name: Release
+        uses: softprops/action-gh-release@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: "release draft"
+          draft: true
+          files: |
+            skia/out/Release/icudtl.dat
+            native/build/libnative_canvas.so
+            native/build/libnative_canvas.dylib
+            native/build/Release/native_canvas.dll

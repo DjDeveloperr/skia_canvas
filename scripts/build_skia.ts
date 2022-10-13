@@ -8,7 +8,7 @@ const BUILD_ARGS: Record<string, any> = {
   skia_use_system_icu: false,
   skia_use_system_expat: false,
   skia_use_system_libjpeg_turbo: false,
-  extra_cflags_cc: `["-Ofast"]`,
+  extra_cflags_cc: Deno.build.os === "windows" ? `[]` : `["-Ofast"]`,
   skia_use_lua: false,
   skia_use_piex: false,
   is_debug: false,
@@ -16,7 +16,7 @@ const BUILD_ARGS: Record<string, any> = {
   skia_enable_gpu: false,
   skia_use_gl: false,
   // skia_use_harfbuzz: true,
-  // skia_use_icu: false,
+  skia_use_icu: true,
   skia_use_libjpeg_turbo_decode: true,
   skia_use_libjpeg_turbo_encode: true,
   skia_use_libheif: true,
@@ -64,6 +64,24 @@ const $ = (cmd: string | URL, ...args: string[]) => {
 };
 
 if (!Deno.args.includes("fast")) $("python", "./tools/git-sync-deps");
+
+if (Deno.build.os === "windows") {
+  const SkLoadICU = new URL(
+    "../skia/third_party/icu/SkLoadICU.cpp",
+    import.meta.url,
+  );
+  const original = Deno.readTextFileSync(SkLoadICU);
+  Deno.writeTextFileSync(
+    SkLoadICU,
+    original.replace(
+      `load_from(executable_directory()) || load_from(library_directory());`,
+      `load_from(library_directory()) || load_from(executable_directory());`,
+    ),
+  );
+  window.onunload = () => {
+    Deno.writeTextFileSync(SkLoadICU, original);
+  };
+}
 
 $(
   new URL("../skia/bin/gn", import.meta.url),

@@ -1,9 +1,15 @@
 {
   "tasks": {
-    "build": "cd native/build && cmake .. && make",
+    "build": "cd native/build && cmake .. && cmake --build . --config Release",
     "test": "deno run -A --unstable test.ts",
     "bench": "deno bench -A --unstable bench/deno.js",
     "bench-node": "node bench/node.mjs",
     "build-skia": "deno run -A --unstable scripts/build_skia.ts"
+  },
+
+  "fmt": {
+    "files": {
+      "exclude": ["skia", "bench/node_modules"]
+    }
   }
 }

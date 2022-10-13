@@ -1,4 +1,5 @@
 #include "include/font.hpp"
+#include "include/common.hpp"
 
 int systemFontsLoaded = -1;
 sk_sp<SkFontMgr> fontMgr = nullptr;
@@ -37,7 +38,7 @@ extern "C" {
       if (!std::filesystem::is_directory(i->path())) {
         auto ext = i->path().extension();
         if (ext == ".ttf" || ext == ".otf" || ext == ".ttc" || ext == ".pfb" || ext == ".woff" || ext == ".woff2") {
-          fonts_register_path(i->path().c_str(), nullptr);
+          fonts_register_path((const char*) i->path().c_str(), nullptr);
           count++;
         }
       }
@@ -47,7 +48,16 @@ extern "C" {
 
   int load_system_fonts() {
     if (systemFontsLoaded == -1) {
-      systemFontsLoaded = fonts_register_dir("/usr/share/fonts/");
+      systemFontsLoaded = 0;
+      #if defined(__APPLE__)
+        systemFontsLoaded = fonts_register_dir("/System/Library/Fonts");
+      #endif
+      #if defined(__linux__)
+        systemFontsLoaded = fonts_register_dir("/usr/share/fonts");
+      #endif
+      #if defined(_WIN32)
+        systemFontsLoaded = fonts_register_dir("C:\\Windows\\Fonts");
+      #endif
     }
     return systemFontsLoaded;
   }

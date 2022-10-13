@@ -1,5 +1,10 @@
 #include "include/path2d.hpp"
 
+#ifndef _USE_MATH_DEFINES
+#define _USE_MATH_DEFINES
+#include <math.h>
+#endif
+
 extern "C" {
   SkPath* sk_path_create() {
     return new SkPath();

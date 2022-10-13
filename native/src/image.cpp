@@ -1,4 +1,5 @@
 #include "include/image.hpp"
+#include "include/common.hpp"
 
 extern "C" {
   SkImage* sk_image_from_encoded(void* data, size_t length) {
