@@ -16,7 +16,7 @@ const BUILD_ARGS: Record<string, any> = {
   skia_enable_gpu: false,
   skia_use_gl: false,
   // skia_use_harfbuzz: true,
-  // skia_use_icu: false,
+  skia_use_icu: false,
   skia_use_libjpeg_turbo_decode: true,
   skia_use_libjpeg_turbo_encode: true,
   skia_use_libheif: true,
