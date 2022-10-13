@@ -66,6 +66,8 @@ jobs:
         with:
           path: ./skia/out/Release
           key: ${{ runner.os }}-skia-build
+          restore-keys: |
+            ${{ runner.os }}-skia-build
 
       - name: Build Skia
         run: deno task build-skia
@@ -79,6 +81,8 @@ jobs:
         with:
           path: ./native/build
           key: ${{ runner.os }}-cmake-build
+          restore-keys: |
+            ${{ runner.os }}-cmake-build
 
       - name: Build Native Library
         run: deno task build
