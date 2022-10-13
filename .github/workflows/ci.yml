@@ -89,7 +89,7 @@ jobs:
 
       - name: Setup ICU Data
         if: runner.os == 'Windows'
-        run: cp ./skia/out/Release/icudtl.dat ./native/build/icudtl.dat
+        run: cp ./skia/out/Release/icudtl.dat ./native/build/Release/icudtl.dat
 
       - name: Run Tests
         run: deno task test
