@@ -36,8 +36,9 @@ extern "C" {
     path->addRect(SkRect::MakeXYWH(x, y, width, height));
   }
 
-  void sk_path_round_rect(SkPath* path, float x, float y, float width, float height, float r) {
-    path->addRoundRect(SkRect::MakeXYWH(x, y, width, height), r, r);
+  void sk_path_round_rect(SkPath* path, float x, float y, float width, float height, float tl, float tr, float br, float bl) {
+    SkScalar radii[4] = { tl, tr, br, bl };
+    path->addRoundRect(SkRect::MakeXYWH(x, y, width, height), radii);
   }
 
   void sk_path_close(SkPath* path) {

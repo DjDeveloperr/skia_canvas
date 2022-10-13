@@ -2,7 +2,7 @@ import { Canvas } from "./canvas.ts";
 import ffi, { cstr } from "./ffi.ts";
 import { Image, ImageData } from "./image.ts";
 import { parseFont } from "./parse_font.ts";
-import { Path2D } from "./path2d.ts";
+import { Path2D, RoundRectRadii, roundRectRadiiArg } from "./path2d.ts";
 
 const {
   sk_canvas_get_context,
@@ -572,15 +572,21 @@ export class CanvasRenderingContext2D {
     sk_context_rect(this.#ptr, x, y, width, height);
   }
 
-  // TODO: Add support for specifying multiple radii for different corners
   roundRect(
     x: number,
     y: number,
     width: number,
     height: number,
-    r: number,
+    r: RoundRectRadii,
   ) {
-    sk_context_round_rect(this.#ptr, x, y, width, height, r);
+    sk_context_round_rect(
+      this.#ptr,
+      x,
+      y,
+      width,
+      height,
+      ...roundRectRadiiArg(r),
+    );
   }
 
   /// Drawing paths

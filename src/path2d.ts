@@ -22,6 +22,33 @@ const PATH_FINALIZER = new FinalizationRegistry((ptr: Deno.PointerValue) => {
   sk_path_destroy(ptr);
 });
 
+export type RoundRectRadii =
+  | number
+  | [all_radii: number]
+  | [tl_br: number, tr_bl: number]
+  | [
+    tl: number,
+    tr_bl: number,
+    br: number,
+  ]
+  | [tl: number, tr: number, br: number, bl: number];
+
+export function roundRectRadiiArg(
+  v: RoundRectRadii,
+): [number, number, number, number] {
+  if (typeof v === "number") {
+    return [v, v, v, v];
+  } else if (v.length === 1) {
+    return [v[0], v[0], v[0], v[0]];
+  } else if (v.length === 2) {
+    return [v[0], v[1], v[0], v[1]];
+  } else if (v.length === 3) {
+    return [v[0], v[1], v[2], v[1]];
+  } else {
+    return [v[0], v[1], v[2], v[3]];
+  }
+}
+
 export class Path2D {
   #ptr: Deno.PointerValue;
 
@@ -65,9 +92,9 @@ export class Path2D {
     y: number,
     width: number,
     height: number,
-    r: number,
+    r: RoundRectRadii,
   ) {
-    sk_path_round_rect(this.#ptr, x, y, width, height, r);
+    sk_path_round_rect(this.#ptr, x, y, width, height, ...roundRectRadiiArg(r));
   }
 
   arcTo(x1: number, y1: number, x2: number, y2: number, radius: number) {

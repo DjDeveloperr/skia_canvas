@@ -92,7 +92,7 @@ extern "C" {
   SKIA_EXPORT void sk_context_arc_to(sk_context* context, float x1, float y1, float x2, float y2, float radius);
   SKIA_EXPORT void sk_context_ellipse(sk_context* context, float x, float y, float radiusX, float radiusY, float rotation, float startAngle, float endAngle, bool clockwise);
   SKIA_EXPORT void sk_context_rect(sk_context* context, float x, float y, float width, float height);
-  SKIA_EXPORT void sk_context_round_rect(sk_context* context, float x, float y, float width, float height, float r);
+  SKIA_EXPORT void sk_context_round_rect(sk_context* context, float x, float y, float width, float height, float tl, float tr, float br, float bl);
 
   SKIA_EXPORT void sk_context_fill(sk_context* context, SkPath* path, unsigned char rule);
   SKIA_EXPORT void sk_context_stroke(sk_context* context, SkPath* path);
