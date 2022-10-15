@@ -103,15 +103,10 @@ jobs:
         if: runner.os == 'Windows'
         run: cp ./skia/out/Release/icudtl.dat ./native/build/Release/icudtl.dat
 
-      - name: Run Tests (Unix)
-        if: runner.os != 'Windows'
-        run: DENO_SKIA_LOCAL=1 deno task test
-      
       - name: Run Tests (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          set DENO_SKIA_LOCAL=1
-          deno task test
+        env:
+          DENO_SKIA_LOCAL: 1
+        run: deno task test
 
       - name: Release
         uses: softprops/action-gh-release@master
