@@ -1,6 +1,6 @@
 const BUILD_ARGS: Record<string, any> = {
-  cc: Deno.build.os === "windows" ? '\\"clang-cl\\"' : '"clang"',
-  cxx: Deno.build.os === "windows" ? '\\"clang-cl\\"' : '"clang++"',
+  cc: Deno.build.os === "windows" ? '"clang-cl"' : '"clang"',
+  cxx: Deno.build.os === "windows" ? '"clang-cl"' : '"clang++"',
   is_official_build: false,
   skia_use_system_harfbuzz: false,
   werror: false,
