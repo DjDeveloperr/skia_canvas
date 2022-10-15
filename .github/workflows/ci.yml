@@ -86,7 +86,10 @@ jobs:
 
       - name: Build Native Library (Unix)
         if: runner.os != 'Windows'
-        run: deno task build
+        run: |
+          export CC=clang
+          export CXX=clang++
+          deno task build
         
       - name: Build Native Library (Windows)
         if: runner.os == 'Windows'
