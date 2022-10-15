@@ -1,4 +1,6 @@
 const BUILD_ARGS: Record<string, any> = {
+  cc: Deno.build.os === "windows" ? '\\"clang-cl\\"' : '"clang"',
+  cxx: Deno.build.os === "windows" ? '\\"clang-cl\\"' : '"clang++"',
   is_official_build: false,
   skia_use_system_harfbuzz: false,
   werror: false,
@@ -8,7 +10,6 @@ const BUILD_ARGS: Record<string, any> = {
   skia_use_system_icu: false,
   skia_use_system_expat: false,
   skia_use_system_libjpeg_turbo: false,
-  extra_cflags_cc: Deno.build.os === "windows" ? `[]` : `["-Ofast"]`,
   skia_use_lua: false,
   skia_use_piex: false,
   is_debug: false,
@@ -46,9 +47,53 @@ const BUILD_ARGS: Record<string, any> = {
   skia_use_libgifcodec: true,
 };
 
-if (Deno.args.includes("ccache")) {
-  BUILD_ARGS["cc_wrapper"] = `"ccache"`;
+BUILD_ARGS["extra_cflags_cc"] = "[";
+
+if (Deno.build.os === "windows") {
+  BUILD_ARGS["clang_win"] = '\\"C:\\\\Program Files\\\\LLVM\\"';
+
+  BUILD_ARGS["extra_cflags_cc"] += '\\"/std:c++17\\",' +
+    '\\"/MT\\",' +
+    '\\"-DSK_FORCE_RASTER_PIPELINE_BLITTER\\",' +
+    '\\"-DSK_ENABLE_SVG\\",' +
+    '\\"-DSK_RELEASE\\",' +
+    '\\"-DSK_DISABLE_TRACING\\",' +
+    '\\"-DSK_ENCODE_WEBP\\",' +
+    '\\"-DSK_CODEC_DECODES_WEBP\\",' +
+    '\\"-DSK_ENCODE_PNG\\",' +
+    '\\"-DSK_CODEC_DECODES_PNG\\",' +
+    '\\"-DSK_ENCODE_JPEG\\",' +
+    '\\"-DSK_CODEC_DECODES_JPEG\\",' +
+    '\\"-DSK_HAS_HEIF_LIBRARY\\",' +
+    '\\"-DSK_SHAPER_HARFBUZZ_AVAILABLE\\"';
+} else {
+  BUILD_ARGS["extra_cflags_cc"] += '"-std=c++17",' +
+    '"-fno-exceptions",' +
+    '"-DSK_FORCE_RASTER_PIPELINE_BLITTER",' +
+    '"-DSK_ENABLE_SVG",' +
+    '"-DSK_RELEASE",' +
+    '"-DSK_DISABLE_TRACING",' +
+    '"-DSK_ENCODE_WEBP",' +
+    '"-DSK_CODEC_DECODES_WEBP",' +
+    '"-DSK_ENCODE_PNG",' +
+    '"-DSK_CODEC_DECODES_PNG",' +
+    '"-DSK_ENCODE_JPEG",' +
+    '"-DSK_CODEC_DECODES_JPEG",' +
+    '"-DSK_HAS_HEIF_LIBRARY",' +
+    '"-DSK_SHAPER_HARFBUZZ_AVAILABLE"';
+
+  if (Deno.build.os === "darwin" && Deno.build.arch === "aarch64") {
+    BUILD_ARGS["target_cpu"] = `"arm64"`;
+    BUILD_ARGS["target_os"] = `"mac"`;
+    BUILD_ARGS["extra_cflags_cc"] += ', "--target=arm64-apple-macos"';
+    BUILD_ARGS["extra_ldflags"] = '"--target=arm64-apple-macos"';
+    BUILD_ARGS["extra_asmflags"] = '"--target=arm64-apple-macos"';
+    BUILD_ARGS["extra_cflags"] = '"--target=arm64-apple-macos"';
+    BUILD_ARGS["extra_cflags_c"] = '"--target=arm64-apple-macos"';
+  }
 }
+
+BUILD_ARGS["extra_cflags_cc"] += "]";
 
 Deno.chdir(new URL("../skia", import.meta.url));
 

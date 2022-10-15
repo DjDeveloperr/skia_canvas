@@ -4,7 +4,8 @@
   "verision": "0.1.0",
 
   "tasks": {
-    "build": "cd native/build && cmake .. && cmake --build . --config Release",
+    "build": "CC=clang CXX=clang++ rm -rf native/build && mkdir native/build && cd native/build && cmake .. && cmake --build . --config Release",
+    "build-win": "rm -rf native/build && mkdir native/build && cd native/build && cmake .. -G \"Visual Studio 17 2022\" -T ClangCL && cmake --build . --config Release",
     "test": "deno run -A --unstable test.ts",
     "bench": "deno bench -A --unstable bench/deno.js",
     "bench-node": "node bench/node.mjs",

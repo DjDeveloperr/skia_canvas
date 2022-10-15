@@ -84,8 +84,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cmake-build
 
-      - name: Build Native Library
+      - name: Build Native Library (Unix)
+        if: runner.os != 'Windows'
         run: deno task build
+        
+      - name: Build Native Library (Windows)
+        if: runner.os == 'Windows'
+        run: deno task build-win
 
       - name: Strip Native Library (Linux)
         if: runner.os == 'Linux'
@@ -95,11 +100,15 @@ jobs:
         if: runner.os == 'Windows'
         run: cp ./skia/out/Release/icudtl.dat ./native/build/Release/icudtl.dat
 
-      - name: Use Local Binary
-        run: echo "DENO_SKIA_LOCAL=1" >> $GITHUB_ENV
-
-      - name: Run Tests
-        run: deno task test
+      - name: Run Tests (Unix)
+        if: runner.os != 'Windows'
+        run: DENO_SKIA_LOCAL=1 deno task test
+      
+      - name: Run Tests (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          set DENO_SKIA_LOCAL=1
+          deno task test
 
       - name: Release
         uses: softprops/action-gh-release@master

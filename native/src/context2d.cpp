@@ -783,6 +783,9 @@ extern "C" {
         case FilterQuality::kHigh:
           options = SkSamplingOptions(SkCubicResampler{1 / 3.0f, 1 / 3.0f});
           break;
+        default:
+          options = SkSamplingOptions(SkFilterMode::kLinear, SkMipmapMode::kNone);
+          break;
       }
     } else {
       options = SkSamplingOptions(SkFilterMode::kNearest, SkMipmapMode::kNone);
