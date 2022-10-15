@@ -1,4 +1,8 @@
 {
+  "name": "skia_canvas",
+  "github": "https://github.com/DjDeveloperr/skia_canvas",
+  "verision": "0.1.0",
+
   "tasks": {
     "build": "cd native/build && cmake .. && cmake --build . --config Release",
     "test": "deno run -A --unstable test.ts",
@@ -9,7 +13,7 @@
 
   "fmt": {
     "files": {
-      "exclude": ["skia", "bench/node_modules"]
+      "exclude": ["skia", "bench/node_modules", "build"]
     }
   }
 }

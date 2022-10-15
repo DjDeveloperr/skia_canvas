@@ -95,6 +95,9 @@ jobs:
         if: runner.os == 'Windows'
         run: cp ./skia/out/Release/icudtl.dat ./native/build/Release/icudtl.dat
 
+      - name: Use Local Binary
+        run: echo "DENO_SKIA_LOCAL=1" >> $GITHUB_ENV
+
       - name: Run Tests
         run: deno task test
 
