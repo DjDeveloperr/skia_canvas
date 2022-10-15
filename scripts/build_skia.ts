@@ -50,22 +50,22 @@ const BUILD_ARGS: Record<string, any> = {
 BUILD_ARGS["extra_cflags_cc"] = "[";
 
 if (Deno.build.os === "windows") {
-  BUILD_ARGS["clang_win"] = '\\"C:\\\\Program Files\\\\LLVM\\"';
+  BUILD_ARGS["clang_win"] = '"C:\\\\Program Files\\\\LLVM"';
 
-  BUILD_ARGS["extra_cflags_cc"] += '\\"/std:c++17\\",' +
-    '\\"/MT\\",' +
-    '\\"-DSK_FORCE_RASTER_PIPELINE_BLITTER\\",' +
-    '\\"-DSK_ENABLE_SVG\\",' +
-    '\\"-DSK_RELEASE\\",' +
-    '\\"-DSK_DISABLE_TRACING\\",' +
-    '\\"-DSK_ENCODE_WEBP\\",' +
-    '\\"-DSK_CODEC_DECODES_WEBP\\",' +
-    '\\"-DSK_ENCODE_PNG\\",' +
-    '\\"-DSK_CODEC_DECODES_PNG\\",' +
-    '\\"-DSK_ENCODE_JPEG\\",' +
-    '\\"-DSK_CODEC_DECODES_JPEG\\",' +
-    '\\"-DSK_HAS_HEIF_LIBRARY\\",' +
-    '\\"-DSK_SHAPER_HARFBUZZ_AVAILABLE\\"';
+  BUILD_ARGS["extra_cflags_cc"] += '"/std:c++17",' +
+    '"/MT",' +
+    '"-DSK_FORCE_RASTER_PIPELINE_BLITTER",' +
+    '"-DSK_ENABLE_SVG",' +
+    '"-DSK_RELEASE",' +
+    '"-DSK_DISABLE_TRACING",' +
+    '"-DSK_ENCODE_WEBP",' +
+    '"-DSK_CODEC_DECODES_WEBP",' +
+    '"-DSK_ENCODE_PNG",' +
+    '"-DSK_CODEC_DECODES_PNG",' +
+    '"-DSK_ENCODE_JPEG",' +
+    '"-DSK_CODEC_DECODES_JPEG",' +
+    '"-DSK_HAS_HEIF_LIBRARY",' +
+    '"-DSK_SHAPER_HARFBUZZ_AVAILABLE"';
 } else {
   BUILD_ARGS["extra_cflags_cc"] += '"-std=c++17",' +
     '"-fno-exceptions",' +
