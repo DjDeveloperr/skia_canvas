@@ -646,9 +646,11 @@ extern "C" {
 
   /// Gradients and patterns
 
-  // TODO: Context.createConicGradient()
-  // TODO: Context.createLinearGradient()
-  // TODO: Context.createRadialGradient()
+  // Implemented in gradient.cpp
+  // Context.createConicGradient()
+  // Context.createLinearGradient()
+  // Context.createRadialGradient()
+
   // TODO: Context.createPattern()
 
   /// Shadows
@@ -786,13 +788,13 @@ extern "C" {
     canvas->drawPath(*path, *strokePaint);
   }
 
-  // TODO: Context.drawFocusIfNeeded() (should we support it?)
-  // TODO: Context.scrollPathIntoView() (should we support it?)
+  // TODO?: Context.drawFocusIfNeeded() (should we support it?)
+  // TODO?: Context.scrollPathIntoView() (should we support it?)
 
   // Context.clip()
   void sk_context_clip(sk_context* context, SkPath* path, unsigned char rule) {
     if (path == nullptr) path = context->path;
-    // TODO: Should we clone?
+    // TODO?: Should we clone?
     // path = new SkPath(*path);
     path->setFillType(rule == 1 ? SkPathFillType::kEvenOdd : SkPathFillType::kWinding);
     context->canvas->clipPath(*path);
