@@ -3,7 +3,15 @@ import { createCanvas, Image, Path2D } from "./mod.ts";
 const canvas = createCanvas(300, 300);
 const ctx = canvas.getContext("2d");
 
-ctx.fillStyle = "white";
+const gradient = ctx.createConicGradient(0, 150, 150);
+
+gradient.addColorStop(0, "red");
+gradient.addColorStop(0.25, "orange");
+gradient.addColorStop(0.5, "yellow");
+gradient.addColorStop(0.75, "green");
+gradient.addColorStop(1, "blue");
+
+ctx.fillStyle = gradient ?? "white";
 ctx.fillRect(0, 0, 300, 300);
 
 ctx.fillStyle = "black";

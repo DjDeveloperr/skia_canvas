@@ -624,6 +624,41 @@ const SYMBOLS = {
     ],
     result: "void",
   },
+
+  sk_gradient_create_linear: {
+    parameters: ["f32", "f32", "f32", "f32"],
+    result: "pointer",
+  },
+
+  sk_gradient_create_radial: {
+    parameters: ["f32", "f32", "f32", "f32", "f32", "f32"],
+    result: "pointer",
+  },
+
+  sk_gradient_create_conic: {
+    parameters: ["f32", "f32", "f32"],
+    result: "pointer",
+  },
+
+  sk_gradient_destroy: {
+    parameters: ["pointer"],
+    result: "void",
+  },
+
+  sk_gradient_add_color_stop: {
+    parameters: ["pointer", "f32", "buffer"],
+    result: "i32",
+  },
+
+  sk_context_set_fill_style_gradient: {
+    parameters: ["pointer", "pointer"],
+    result: "void",
+  },
+
+  sk_context_set_stroke_style_gradient: {
+    parameters: ["pointer", "pointer"],
+    result: "void",
+  },
 } as const;
 
 const LOCAL_BUILD = Deno.env.get("DENO_SKIA_LOCAL") === "1";

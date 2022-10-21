@@ -14,7 +14,8 @@ add_library(native_canvas SHARED
   src/context2d.cpp 
   src/font.cpp
   src/path2d.cpp
-  src/image.cpp)
+  src/image.cpp
+  src/gradient.cpp)
 
 if (UNIX)
   target_compile_options(native_canvas PRIVATE

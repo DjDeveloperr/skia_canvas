@@ -1,5 +1,6 @@
 import { Canvas } from "./canvas.ts";
 import ffi, { cstr } from "./ffi.ts";
+import { CanvasGradient } from "./gradient.ts";
 import { Image, ImageData } from "./image.ts";
 import { parseFont } from "./parse_font.ts";
 import { Path2D, RoundRectRadii, roundRectRadiiArg } from "./path2d.ts";
@@ -74,6 +75,11 @@ const {
   sk_context_set_image_smoothing_quality,
   sk_context_put_image_data_dirty,
   sk_context_put_image_data,
+  sk_gradient_create_conic,
+  sk_gradient_create_linear,
+  sk_gradient_create_radial,
+  sk_context_set_fill_style_gradient,
+  sk_context_set_stroke_style_gradient,
 } = ffi;
 
 const CONTEXT_FINALIZER = new FinalizationRegistry((ptr: Deno.PointerValue) => {
@@ -158,14 +164,16 @@ export type ImageSmoothingQuality = keyof typeof CImageSmoothingQuality;
 const METRICS = new Float32Array(7);
 const METRICS_PTR = Number(Deno.UnsafePointer.of(METRICS));
 
+export type Style = string | CanvasGradient;
+
 export class CanvasRenderingContext2D {
   /// Internal State
 
   #canvas: Canvas;
   #ptr: Deno.PointerValue;
 
-  #fillStyle = "black";
-  #strokeStyle = "black";
+  #fillStyle: Style = "black";
+  #strokeStyle: Style = "black";
   #shadowColor = "black";
   #font = "";
   #lineDash: number[] = [];
@@ -391,9 +399,18 @@ export class CanvasRenderingContext2D {
     return this.#fillStyle;
   }
 
-  set fillStyle(value: string) {
-    if (sk_context_set_fill_style(this.#ptr, cstr(value))) {
-      this.#fillStyle = value;
+  set fillStyle(value: Style) {
+    if (typeof value === "string") {
+      if (sk_context_set_fill_style(this.#ptr, cstr(value))) {
+        this.#fillStyle = value;
+      }
+    } else if (
+      typeof value === "object" && value !== null &&
+      value instanceof CanvasGradient
+    ) {
+      sk_context_set_fill_style_gradient(this.#ptr, value._unsafePointer);
+    } else {
+      throw new Error("Invalid fill style");
     }
   }
 
@@ -401,21 +418,29 @@ export class CanvasRenderingContext2D {
     return this.#strokeStyle;
   }
 
-  set strokeStyle(value: string) {
-    if (sk_context_set_stroke_style(this.#ptr, cstr(value))) {
-      this.#strokeStyle = value;
+  set strokeStyle(value: Style) {
+    if (typeof value === "string") {
+      if (sk_context_set_stroke_style(this.#ptr, cstr(value))) {
+        this.#strokeStyle = value;
+      }
+    } else if (
+      typeof value === "object" && value !== null &&
+      value instanceof CanvasGradient
+    ) {
+      sk_context_set_stroke_style_gradient(this.#ptr, value._unsafePointer);
+    } else {
+      throw new Error("Invalid stroke style");
     }
   }
 
   /// Gradients and patterns
 
   createConicGradient(
+    r: number,
     x: number,
     y: number,
-    angle: number,
-    stops: any,
-  ): any {
-    throw new Error("TODO: Context.createConicGradient()");
+  ) {
+    return new CanvasGradient(sk_gradient_create_conic(x, y, r));
   }
 
   createLinearGradient(
@@ -423,9 +448,8 @@ export class CanvasRenderingContext2D {
     y0: number,
     x1: number,
     y1: number,
-    stops: any,
-  ): any {
-    throw new Error("TODO: Context.createLinearGradient()");
+  ) {
+    return new CanvasGradient(sk_gradient_create_linear(x0, y0, x1, y1));
   }
 
   createRadialGradient(
@@ -435,9 +459,10 @@ export class CanvasRenderingContext2D {
     x1: number,
     y1: number,
     r1: number,
-    stops: any,
-  ): any {
-    throw new Error("TODO: Context.createRadialGradient()");
+  ) {
+    return new CanvasGradient(
+      sk_gradient_create_radial(x0, y0, r0, x1, y1, r1),
+    );
   }
 
   createPattern(

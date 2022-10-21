@@ -20,8 +20,8 @@ typedef struct sk_context_state {
   std::vector<float> lineDash;
   float globalAlpha;
   float lineDashOffset;
-  RGBA fillStyle;
-  RGBA strokeStyle;
+  Style fillStyle;
+  Style strokeStyle;
   RGBA shadowColor;
   SkMatrix* transform;
   bool imageSmoothingEnabled;

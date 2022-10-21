@@ -17,8 +17,12 @@ sk_context_state* create_default_state() {
   state->lineDash = std::vector<float>();
   state->globalAlpha = 1;
   state->lineDashOffset = 0;
-  state->fillStyle = {0, 0, 0, 255};
-  state->strokeStyle = {0, 0, 0, 255};
+  state->fillStyle = Style();
+  state->fillStyle.type = kStyleColor;
+  state->fillStyle.color = { 0, 0, 0, 255 };
+  state->strokeStyle = Style();
+  state->strokeStyle.type = kStyleColor;
+  state->strokeStyle.color = { 0, 0, 0, 255 };
   state->shadowColor = {0, 0, 0, 255};
   state->transform = new SkMatrix();
   state->transform->setIdentity();
@@ -66,6 +70,8 @@ sk_context_state* clone_context_state(sk_context_state* state) {
 }
 
 void free_context_state(sk_context_state* state) {
+  if (state->fillStyle.shader) state->fillStyle.shader.~sk_sp();
+  if (state->strokeStyle.shader) state->strokeStyle.shader.~sk_sp();
   delete state->paint;
   delete state->transform;
   free(state->font);
@@ -77,14 +83,25 @@ void free_context_state(sk_context_state* state) {
 SkPaint* sk_context_fill_paint(sk_context_state* state) {
   SkPaint* paint = new SkPaint(*state->paint);
   paint->setStyle(SkPaint::kFill_Style);
-  paint->setColor(SkColorSetARGB(state->fillStyle.a, state->fillStyle.r, state->fillStyle.g, state->fillStyle.b));
+  if (state->fillStyle.type == kStyleColor) {
+    auto color = state->fillStyle.color;
+    paint->setColor(SkColorSetARGB(color.a, color.r, color.g, color.b));
+  } else if (state->fillStyle.type == kStyleShader) {
+    paint->setColor(SkColorSetARGB(255, 0, 0, 0));
+    paint->setShader(state->fillStyle.shader);
+  }
   return paint;
 }
 
 SkPaint* sk_context_stroke_paint(sk_context_state* state) {
   SkPaint* paint = new SkPaint(*state->paint);
   paint->setStyle(SkPaint::kStroke_Style);
-  paint->setColor(SkColorSetARGB(state->strokeStyle.a, state->strokeStyle.r, state->strokeStyle.g, state->strokeStyle.b));
+  if (state->strokeStyle.type == kStyleColor) {
+    auto color = state->strokeStyle.color;
+    paint->setColor(SkColorSetARGB(color.a, color.r, color.g, color.b));
+  } else if (state->strokeStyle.type == kStyleShader) {
+    paint->setShader(state->strokeStyle.shader);
+  }
   return paint;
 }
 
@@ -431,10 +448,18 @@ extern "C" {
     auto color = CSSColorParser::parse(std::string(style));
     if (color) {
       auto val = color.value();
-      context->state->fillStyle = {val.r, val.g, val.b, (uint8_t)(val.a * 255)};
+      context->state->fillStyle = Style();
+      context->state->fillStyle.type = kStyleColor;
+      context->state->fillStyle.color = {val.r, val.g, val.b, (uint8_t)(val.a * 255)};
       return 1;
     }
     return 0;
+  }
+
+  void sk_context_set_fill_style_gradient(sk_context* context, sk_gradient* gradient) {
+    context->state->fillStyle = Style();
+    context->state->fillStyle.type = kStyleShader;
+    context->state->fillStyle.shader = sk_gradient_to_shader(gradient, context->state->transform);
   }
 
   // Context.strokeStyle getter value is cached in JS side
@@ -444,10 +469,18 @@ extern "C" {
     auto color = CSSColorParser::parse(std::string(style));
     if (color) {
       auto val = color.value();
-      context->state->strokeStyle = {val.r, val.g, val.b, (uint8_t)(val.a * 255)};
+      context->state->strokeStyle = Style();
+      context->state->strokeStyle.type = kStyleColor;
+      context->state->strokeStyle.color = {val.r, val.g, val.b, (uint8_t)(val.a * 255)};
       return 1;
     }
     return 0;
+  }
+
+  void sk_context_set_stroke_style_gradient(sk_context* context, sk_gradient* gradient) {
+    context->state->strokeStyle = Style();
+    context->state->strokeStyle.type = kStyleShader;
+    context->state->strokeStyle.shader = sk_gradient_to_shader(gradient, context->state->transform);
   }
 
   /// Gradients and patterns
