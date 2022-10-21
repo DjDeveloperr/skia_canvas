@@ -2,8 +2,11 @@
 #include "include/context2d.hpp"
 
 extern "C" {
-  sk_canvas* sk_canvas_create(int width, int height, void* pixels) {
+  void sk_init() {
     SkGraphics::Init();
+  }
+
+  sk_canvas* sk_canvas_create(int width, int height, void* pixels) {
     sk_canvas* canvas = new sk_canvas();
     SkImageInfo info = SkImageInfo::MakeN32Premul(width, height);
     size_t rowBytes = info.minRowBytes();

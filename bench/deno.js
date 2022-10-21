@@ -6,7 +6,7 @@ Deno.bench("deno skia_canvas", () => {
   const canvas = createCanvas(1024, 768);
   const ctx = canvas.getContext("2d");
   draw(ctx);
-  canvas.encode("png", 100);
+  canvas.encode("png");
 });
 
 // Deno.bench("deno canvaskit-wasm", () => {

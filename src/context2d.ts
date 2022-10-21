@@ -314,11 +314,11 @@ export class CanvasRenderingContext2D {
     sk_context_set_miter_limit(this.#ptr, value);
   }
 
-  get lineDash() {
+  getLineDash() {
     return this.#lineDash;
   }
 
-  set lineDash(value: number[]) {
+  setLineDash(value: number[]) {
     this.#lineDash = value;
     sk_context_set_line_dash(this.#ptr, new Float32Array(value), value.length);
   }

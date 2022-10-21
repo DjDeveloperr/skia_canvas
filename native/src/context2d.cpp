@@ -87,8 +87,16 @@ SkPaint* sk_context_fill_paint(sk_context_state* state) {
     auto color = state->fillStyle.color;
     paint->setColor(SkColorSetARGB(color.a, color.r, color.g, color.b));
   } else if (state->fillStyle.type == kStyleShader) {
-    paint->setColor(SkColorSetARGB(255, 0, 0, 0));
+    paint->setColor(SkColorSetARGB(paint->getAlpha(), 0, 0, 0));
     paint->setShader(state->fillStyle.shader);
+  }
+  if (!state->lineDash.empty()) {
+    auto effect = SkDashPathEffect::Make(
+      state->lineDash.data(),
+      state->lineDash.size(),
+      state->lineDashOffset
+    );
+    paint->setPathEffect(effect);
   }
   return paint;
 }
@@ -100,7 +108,16 @@ SkPaint* sk_context_stroke_paint(sk_context_state* state) {
     auto color = state->strokeStyle.color;
     paint->setColor(SkColorSetARGB(color.a, color.r, color.g, color.b));
   } else if (state->strokeStyle.type == kStyleShader) {
+    paint->setColor(SkColorSetARGB(paint->getAlpha(), 0, 0, 0));
     paint->setShader(state->strokeStyle.shader);
+  }
+  if (!state->lineDash.empty()) {
+    auto effect = SkDashPathEffect::Make(
+      state->lineDash.data(),
+      state->lineDash.size(),
+      state->lineDashOffset
+    );
+    paint->setPathEffect(effect);
   }
   return paint;
 }

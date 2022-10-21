@@ -1,5 +1,6 @@
 #include "include/gradient.hpp"
 #include <iostream>
+#include <vector>
 
 extern "C" {
   sk_gradient* sk_gradient_create_linear(float startX, float startY, float endX, float endY) {
@@ -63,7 +64,7 @@ extern "C" {
       case GradientType::Linear: {
         auto data = (sk_linear_gradient*)gradient->data;
         SkPoint points[] = {{data->start.x, data->start.y}, {data->end.x, data->end.y}};
-        auto g = SkGradientShader::MakeLinear(
+        return SkGradientShader::MakeLinear(
           points,
           colors,
           positions,
@@ -72,7 +73,6 @@ extern "C" {
           0,
           &gradient->transform
         );
-        return sk_sp(g.release());
       }
 
       case GradientType::Radial: {

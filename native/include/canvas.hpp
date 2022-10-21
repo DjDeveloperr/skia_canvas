@@ -40,6 +40,7 @@ typedef struct sk_context {
 } sk_context;
 
 extern "C" {
+  SKIA_EXPORT void sk_init();
   SKIA_EXPORT sk_canvas* sk_canvas_create(int width, int height, void* pixels);
   SKIA_EXPORT void sk_canvas_destroy(sk_canvas* canvas);
   SKIA_EXPORT int sk_canvas_save(sk_canvas* canvas, char* path, int format, int quality);

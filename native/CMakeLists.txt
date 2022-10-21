@@ -58,6 +58,7 @@ target_link_libraries(native_canvas
   skia
   harfbuzz
   svg
+  png
   pathkit
   skresources
   skparagraph

@@ -396,8 +396,8 @@ const SYMBOLS = {
       "pointer",
       "i32",
       "i32",
-      "pointer",
-      "pointer",
+      "buffer",
+      "buffer",
     ],
     result: "pointer",
   },
@@ -659,6 +659,11 @@ const SYMBOLS = {
     parameters: ["pointer", "pointer"],
     result: "void",
   },
+
+  sk_init: {
+    parameters: [],
+    result: "void",
+  },
 } as const;
 
 const LOCAL_BUILD = Deno.env.get("DENO_SKIA_LOCAL") === "1";
@@ -729,6 +734,8 @@ if (LOCAL_BUILD) {
 
   lib = (await dlopen(options, SYMBOLS)).symbols;
 }
+
+lib.sk_init();
 
 export default lib;
 
