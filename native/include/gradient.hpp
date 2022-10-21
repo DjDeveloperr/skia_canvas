@@ -6,6 +6,7 @@
 #include "include/core/SkTileMode.h"
 #include "deps/csscolorparser.hpp"
 #include "include/common.hpp"
+#include <vector>
 
 enum GradientType {
   Linear,

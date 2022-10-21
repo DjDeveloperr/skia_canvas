@@ -24,6 +24,7 @@
 #include "include/effects/SkTableColorFilter.h"
 #include "include/effects/SkTrimPathEffect.h"
 #include "include/core/SkPathEffect.h"
+#include "include/core/SkMaskFilter.h"
 #include "deps/csscolorparser.hpp"
 #include "include/common.hpp"
 #include "include/font.hpp"

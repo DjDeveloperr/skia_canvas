@@ -1,6 +1,5 @@
 #include "include/gradient.hpp"
 #include <iostream>
-#include <vector>
 
 extern "C" {
   sk_gradient* sk_gradient_create_linear(float startX, float startY, float endX, float endY) {
