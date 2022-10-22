@@ -5,7 +5,6 @@ extern "C" {
     sk_pattern* pattern = new sk_pattern();
     pattern->image = image;
     pattern->repeat = repeat;
-    SkBitmap;
     return pattern;
   }
 
