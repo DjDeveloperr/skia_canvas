@@ -1,5 +1,6 @@
 import { Canvas } from "./canvas.ts";
 import ffi, { cstr } from "./ffi.ts";
+import { parseFilterString } from "./filter.ts";
 import { CanvasGradient } from "./gradient.ts";
 import { Image, ImageData } from "./image.ts";
 import { parseFont } from "./parse_font.ts";
@@ -993,5 +994,12 @@ export class CanvasRenderingContext2D {
 
   /// Filters
 
-  // TODO: Context.filter
+  get filter() {
+    return "none";
+  }
+
+  set filter(value: string) {
+    const filters = parseFilterString(value);
+    throw new Error("TODO: Context.filter");
+  }
 }
