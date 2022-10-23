@@ -60,9 +60,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ./skia/out/Release
-          key: ${{ runner.os }}-skia-build
+          key: 1-${{ runner.os }}-skia-build
           restore-keys: |
-            ${{ runner.os }}-skia-build
+            1-${{ runner.os }}-skia-build
 
       - name: Build Skia
         run: deno task build-skia
@@ -75,9 +75,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ./native/build
-          key: ${{ runner.os }}-cmake-build
+          key: 1-${{ runner.os }}-cmake-build
           restore-keys: |
-            ${{ runner.os }}-cmake-build
+            1-${{ runner.os }}-cmake-build
 
       - name: Build Native Library (Unix)
         if: runner.os != 'Windows'

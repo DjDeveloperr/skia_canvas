@@ -3,20 +3,25 @@ import { createCanvas, Image, Path2D } from "./mod.ts";
 const canvas = createCanvas(300, 300);
 const ctx = canvas.getContext("2d");
 
+const img = new Image("./testdata/skia_logo.png");
+const pattern = ctx.createPattern(img, "repeat");
+
 // ctx.setLineDash([1, 2]);
 
 ctx.shadowBlur = 20;
 ctx.shadowColor = "black";
 
-const gradient = ctx.createConicGradient(0, 150, 150);
+// const gradient = ctx.createConicGradient(0, 150, 150);
 
-gradient.addColorStop(0, "red");
-gradient.addColorStop(0.25, "orange");
-gradient.addColorStop(0.5, "yellow");
-gradient.addColorStop(0.75, "green");
-gradient.addColorStop(1, "blue");
+// gradient.addColorStop(0, "red");
+// gradient.addColorStop(0.25, "orange");
+// gradient.addColorStop(0.5, "yellow");
+// gradient.addColorStop(0.75, "green");
+// gradient.addColorStop(1, "blue");
 
-ctx.fillStyle = gradient ?? "white";
+// ctx.fillStyle = gradient;
+
+ctx.fillStyle = pattern ?? "white";
 ctx.fillRect(0, 0, 300, 300);
 
 ctx.fillStyle = "black";
@@ -40,8 +45,6 @@ ctx.lineTo(150, 60);
 ctx.lineTo(250, 140);
 ctx.closePath();
 ctx.stroke();
-
-const img = new Image("./testdata/skia_logo.png");
 
 ctx.drawImage(
   img,

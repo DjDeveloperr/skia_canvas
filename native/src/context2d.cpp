@@ -623,6 +623,12 @@ extern "C" {
     context->state->fillStyle.shader = sk_gradient_to_shader(gradient, context->state->transform);
   }
 
+  void sk_context_set_fill_style_pattern(sk_context* context, sk_pattern* pattern) {
+    context->state->fillStyle = Style();
+    context->state->fillStyle.type = kStyleShader;
+    context->state->fillStyle.shader = sk_pattern_to_shader(pattern);
+  }
+
   // Context.strokeStyle getter value is cached in JS side
 
   // Context.strokeStyle setter
@@ -644,6 +650,12 @@ extern "C" {
     context->state->strokeStyle.shader = sk_gradient_to_shader(gradient, context->state->transform);
   }
 
+  void sk_context_set_stroke_style_pattern(sk_context* context, sk_pattern* pattern) {
+    context->state->strokeStyle = Style();
+    context->state->strokeStyle.type = kStyleShader;
+    context->state->strokeStyle.shader = sk_pattern_to_shader(pattern);
+  }
+
   /// Gradients and patterns
 
   // Implemented in gradient.cpp
@@ -651,7 +663,8 @@ extern "C" {
   // Context.createLinearGradient()
   // Context.createRadialGradient()
 
-  // TODO: Context.createPattern()
+  // Implemented in pattern.cpp
+  // Context.createPattern()
 
   /// Shadows
 

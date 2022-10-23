@@ -4,6 +4,11 @@ import { CanvasGradient } from "./gradient.ts";
 import { Image, ImageData } from "./image.ts";
 import { parseFont } from "./parse_font.ts";
 import { Path2D, RoundRectRadii, roundRectRadiiArg } from "./path2d.ts";
+import {
+  CanvasPattern,
+  CanvasPatternImage,
+  CanvasPatternRepeat,
+} from "./pattern.ts";
 
 const {
   sk_canvas_get_context,
@@ -80,6 +85,8 @@ const {
   sk_gradient_create_radial,
   sk_context_set_fill_style_gradient,
   sk_context_set_stroke_style_gradient,
+  sk_context_set_fill_style_pattern,
+  sk_context_set_stroke_style_pattern,
 } = ffi;
 
 const CONTEXT_FINALIZER = new FinalizationRegistry((ptr: Deno.PointerValue) => {
@@ -164,7 +171,7 @@ export type ImageSmoothingQuality = keyof typeof CImageSmoothingQuality;
 const METRICS = new Float32Array(7);
 const METRICS_PTR = Number(Deno.UnsafePointer.of(METRICS));
 
-export type Style = string | CanvasGradient;
+export type Style = string | CanvasGradient | CanvasPattern;
 
 export class CanvasRenderingContext2D {
   /// Internal State
@@ -409,6 +416,13 @@ export class CanvasRenderingContext2D {
       value instanceof CanvasGradient
     ) {
       sk_context_set_fill_style_gradient(this.#ptr, value._unsafePointer);
+      this.#fillStyle = value;
+    } else if (
+      typeof value === "object" && value !== null &&
+      value instanceof CanvasPattern
+    ) {
+      sk_context_set_fill_style_pattern(this.#ptr, value._unsafePointer);
+      this.#fillStyle = value;
     } else {
       throw new Error("Invalid fill style");
     }
@@ -428,6 +442,13 @@ export class CanvasRenderingContext2D {
       value instanceof CanvasGradient
     ) {
       sk_context_set_stroke_style_gradient(this.#ptr, value._unsafePointer);
+      this.#strokeStyle = value;
+    } else if (
+      typeof value === "object" && value !== null &&
+      value instanceof CanvasPattern
+    ) {
+      sk_context_set_stroke_style_pattern(this.#ptr, value._unsafePointer);
+      this.#strokeStyle = value;
     } else {
       throw new Error("Invalid stroke style");
     }
@@ -466,10 +487,10 @@ export class CanvasRenderingContext2D {
   }
 
   createPattern(
-    image: any,
-    repetition: any,
-  ): any {
-    throw new Error("TODO: Context.createPattern()");
+    image: CanvasPatternImage,
+    repetition?: CanvasPatternRepeat,
+  ): CanvasPattern {
+    return new CanvasPattern(image, repetition || "repeat");
   }
 
   /// Shadows

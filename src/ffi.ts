@@ -664,6 +664,31 @@ const SYMBOLS = {
     parameters: [],
     result: "void",
   },
+
+  sk_pattern_new_image: {
+    parameters: ["pointer", "i32"],
+    result: "pointer",
+  },
+
+  sk_pattern_destroy: {
+    parameters: ["pointer"],
+    result: "void",
+  },
+
+  sk_pattern_set_transform: {
+    parameters: ["pointer", "f64", "f64", "f64", "f64", "f64", "f64"],
+    result: "void",
+  },
+
+  sk_context_set_fill_style_pattern: {
+    parameters: ["pointer", "pointer"],
+    result: "void",
+  },
+
+  sk_context_set_stroke_style_pattern: {
+    parameters: ["pointer", "pointer"],
+    result: "void",
+  },
 } as const;
 
 const LOCAL_BUILD = Deno.env.get("DENO_SKIA_LOCAL") === "1";
