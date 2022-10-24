@@ -54,20 +54,15 @@ jobs:
           7z x ../depot_tools.zip
           cd ..
           echo "PATH=$(pwd)/depot_tools;$PATH" >> $GITHUB_ENV
-
-      # - name: Setup ccache
-      #   uses: hendrikmuhs/ccache-action@v1.2
-      #   with:
-      #     key: ${{ github.job }}-${{ matrix.os }}
       
       - name: Cache Skia Build
         id: cache-skia-build
         uses: actions/cache@v3
         with:
           path: ./skia/out/Release
-          key: ${{ runner.os }}-skia-build
+          key: 1-${{ runner.os }}-skia-build
           restore-keys: |
-            ${{ runner.os }}-skia-build
+            1-${{ runner.os }}-skia-build
 
       - name: Build Skia
         run: deno task build-skia
@@ -80,16 +75,13 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ./native/build
-          key: ${{ runner.os }}-cmake-build
+          key: 1-${{ runner.os }}-cmake-build
           restore-keys: |
-            ${{ runner.os }}-cmake-build
+            1-${{ runner.os }}-cmake-build
 
       - name: Build Native Library (Unix)
         if: runner.os != 'Windows'
-        run: |
-          export CC=clang
-          export CXX=clang++
-          deno task build
+        run: deno task build
         
       - name: Build Native Library (Windows)
         if: runner.os == 'Windows'
@@ -103,7 +95,7 @@ jobs:
         if: runner.os == 'Windows'
         run: cp ./skia/out/Release/icudtl.dat ./native/build/Release/icudtl.dat
 
-      - name: Run Tests (Windows)
+      - name: Run Tests
         env:
           DENO_SKIA_LOCAL: 1
         run: deno task test

@@ -396,8 +396,8 @@ const SYMBOLS = {
       "pointer",
       "i32",
       "i32",
-      "pointer",
-      "pointer",
+      "buffer",
+      "buffer",
     ],
     result: "pointer",
   },
@@ -624,6 +624,71 @@ const SYMBOLS = {
     ],
     result: "void",
   },
+
+  sk_gradient_create_linear: {
+    parameters: ["f32", "f32", "f32", "f32"],
+    result: "pointer",
+  },
+
+  sk_gradient_create_radial: {
+    parameters: ["f32", "f32", "f32", "f32", "f32", "f32"],
+    result: "pointer",
+  },
+
+  sk_gradient_create_conic: {
+    parameters: ["f32", "f32", "f32"],
+    result: "pointer",
+  },
+
+  sk_gradient_destroy: {
+    parameters: ["pointer"],
+    result: "void",
+  },
+
+  sk_gradient_add_color_stop: {
+    parameters: ["pointer", "f32", "buffer"],
+    result: "i32",
+  },
+
+  sk_context_set_fill_style_gradient: {
+    parameters: ["pointer", "pointer"],
+    result: "void",
+  },
+
+  sk_context_set_stroke_style_gradient: {
+    parameters: ["pointer", "pointer"],
+    result: "void",
+  },
+
+  sk_init: {
+    parameters: [],
+    result: "void",
+  },
+
+  sk_pattern_new_image: {
+    parameters: ["pointer", "i32"],
+    result: "pointer",
+  },
+
+  sk_pattern_destroy: {
+    parameters: ["pointer"],
+    result: "void",
+  },
+
+  sk_pattern_set_transform: {
+    parameters: ["pointer", "f64", "f64", "f64", "f64", "f64", "f64"],
+    result: "void",
+  },
+
+  sk_context_set_fill_style_pattern: {
+    parameters: ["pointer", "pointer"],
+    result: "void",
+  },
+
+  sk_context_set_stroke_style_pattern: {
+    parameters: ["pointer", "pointer"],
+    result: "void",
+  },
 } as const;
 
 const LOCAL_BUILD = Deno.env.get("DENO_SKIA_LOCAL") === "1";
@@ -694,6 +759,8 @@ if (LOCAL_BUILD) {
 
   lib = (await dlopen(options, SYMBOLS)).symbols;
 }
+
+lib.sk_init();
 
 export default lib;
 

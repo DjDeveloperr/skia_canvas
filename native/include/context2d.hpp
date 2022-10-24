@@ -18,11 +18,20 @@
 #include "modules/skparagraph/include/ParagraphBuilder.h"
 #include "modules/skparagraph/src/ParagraphBuilderImpl.h"
 #include "modules/skparagraph/src/ParagraphImpl.h"
+#include "include/effects/SkColorMatrix.h"
+#include "include/effects/SkDashPathEffect.h"
+#include "include/effects/SkImageFilters.h"
+#include "include/effects/SkTableColorFilter.h"
+#include "include/effects/SkTrimPathEffect.h"
+#include "include/core/SkPathEffect.h"
+#include "include/core/SkMaskFilter.h"
 #include "deps/csscolorparser.hpp"
 #include "include/common.hpp"
 #include "include/font.hpp"
 #include "include/canvas.hpp"
 #include "include/path2d.hpp"
+#include "include/gradient.hpp"
+#include "include/pattern.hpp"
 
 sk_context_state* create_default_state();
 sk_context_state* clone_context_state(sk_context_state* state);
@@ -72,7 +81,11 @@ extern "C" {
   SKIA_EXPORT void sk_context_set_text_direction(sk_context* context, int direction);
 
   SKIA_EXPORT int sk_context_set_fill_style(sk_context* context, char* style);
+  SKIA_EXPORT void sk_context_set_fill_style_gradient(sk_context* context, sk_gradient* gradient);
+  SKIA_EXPORT void sk_context_set_fill_style_pattern(sk_context* context, sk_pattern* pattern);
   SKIA_EXPORT int sk_context_set_stroke_style(sk_context* context, char* style);
+  SKIA_EXPORT void sk_context_set_stroke_style_gradient(sk_context* context, sk_gradient* gradient);
+  SKIA_EXPORT void sk_context_set_stroke_style_pattern(sk_context* context, sk_pattern* pattern);
 
   SKIA_EXPORT float sk_context_get_shadow_blur(sk_context* context);
   SKIA_EXPORT void sk_context_set_shadow_blur(sk_context* context, float blur);

@@ -17,8 +17,12 @@ sk_context_state* create_default_state() {
   state->lineDash = std::vector<float>();
   state->globalAlpha = 1;
   state->lineDashOffset = 0;
-  state->fillStyle = {0, 0, 0, 255};
-  state->strokeStyle = {0, 0, 0, 255};
+  state->fillStyle = Style();
+  state->fillStyle.type = kStyleColor;
+  state->fillStyle.color = { 0, 0, 0, 255 };
+  state->strokeStyle = Style();
+  state->strokeStyle.type = kStyleColor;
+  state->strokeStyle.color = { 0, 0, 0, 255 };
   state->shadowColor = {0, 0, 0, 255};
   state->transform = new SkMatrix();
   state->transform->setIdentity();
@@ -66,6 +70,8 @@ sk_context_state* clone_context_state(sk_context_state* state) {
 }
 
 void free_context_state(sk_context_state* state) {
+  if (state->fillStyle.shader) state->fillStyle.shader.~sk_sp();
+  if (state->strokeStyle.shader) state->strokeStyle.shader.~sk_sp();
   delete state->paint;
   delete state->transform;
   free(state->font);
@@ -77,15 +83,124 @@ void free_context_state(sk_context_state* state) {
 SkPaint* sk_context_fill_paint(sk_context_state* state) {
   SkPaint* paint = new SkPaint(*state->paint);
   paint->setStyle(SkPaint::kFill_Style);
-  paint->setColor(SkColorSetARGB(state->fillStyle.a, state->fillStyle.r, state->fillStyle.g, state->fillStyle.b));
+  if (state->fillStyle.type == kStyleColor) {
+    auto color = state->fillStyle.color;
+    paint->setColor(SkColorSetARGB(color.a, color.r, color.g, color.b));
+  } else if (state->fillStyle.type == kStyleShader) {
+    paint->setColor(SkColorSetARGB(paint->getAlpha(), 0, 0, 0));
+    paint->setShader(state->fillStyle.shader);
+  }
+  if (!state->lineDash.empty()) {
+    auto effect = SkDashPathEffect::Make(
+      state->lineDash.data(),
+      state->lineDash.size(),
+      state->lineDashOffset
+    );
+    paint->setPathEffect(effect);
+  }
   return paint;
 }
 
 SkPaint* sk_context_stroke_paint(sk_context_state* state) {
   SkPaint* paint = new SkPaint(*state->paint);
   paint->setStyle(SkPaint::kStroke_Style);
-  paint->setColor(SkColorSetARGB(state->strokeStyle.a, state->strokeStyle.r, state->strokeStyle.g, state->strokeStyle.b));
+  if (state->strokeStyle.type == kStyleColor) {
+    auto color = state->strokeStyle.color;
+    paint->setColor(SkColorSetARGB(color.a, color.r, color.g, color.b));
+  } else if (state->strokeStyle.type == kStyleShader) {
+    paint->setColor(SkColorSetARGB(paint->getAlpha(), 0, 0, 0));
+    paint->setShader(state->strokeStyle.shader);
+  }
+  if (!state->lineDash.empty()) {
+    auto effect = SkDashPathEffect::Make(
+      state->lineDash.data(),
+      state->lineDash.size(),
+      state->lineDashOffset
+    );
+    paint->setPathEffect(effect);
+  }
   return paint;
+}
+
+SkPaint* sk_context_drop_shadow_paint(sk_context* context, SkPaint* paint) {
+  auto alpha = paint->getAlpha();
+  auto lastState = context->state;
+  auto shadowColor = lastState->shadowColor;
+  auto shadowAlpha = shadowColor.a;
+  shadowAlpha = (uint8_t)((((float) shadowAlpha) * ((float) alpha)) / 255);
+  if (shadowAlpha == 0) return nullptr;
+  if (lastState->shadowBlur == 0 && lastState->shadowOffsetX == 0 && lastState->shadowOffsetY == 0) return nullptr;
+  auto result = new SkPaint(*paint);
+  auto a = shadowColor.a;
+  auto r = shadowColor.r;
+  auto g = shadowColor.g;
+  auto b = shadowColor.b;
+  auto ts = lastState->transform;
+  auto sigX = lastState->shadowBlur / (2.0f * ts->getScaleX());
+  auto sigY = lastState->shadowBlur / (2.0f * ts->getScaleY());
+  auto shadowEffect = SkImageFilters::DropShadowOnly(
+    lastState->shadowOffsetX,
+    lastState->shadowOffsetY,
+    sigX,
+    sigY,
+    SkColorSetARGB(a, r, g, b),
+    nullptr
+  );
+  result->setAlpha(shadowAlpha);
+  result->setImageFilter(shadowEffect);
+  return result;
+}
+
+RGBA multiplyByAlpha(RGBA* color, uint8_t globalAlpha) {
+  auto result = *color;
+  auto r_a_f = ((float) result.a) / 255.0f;
+  auto g_a_f = ((float) globalAlpha) / 255.0f;
+  result.a = (uint8_t)((std::max(0.0f, std::min(r_a_f * g_a_f, 1.0f)) * 255.0f));
+  return result;
+}
+
+SkPaint* sk_context_shadow_blur_paint(sk_context* context, SkPaint* paint) {
+  auto alpha = paint->getAlpha();
+  auto lastState = context->state;
+  auto shadowColor = multiplyByAlpha(&lastState->shadowColor, alpha);
+  auto shadowAlpha = shadowColor.a;
+  if (shadowAlpha == 0) return nullptr;
+  if (lastState->shadowBlur == 0 && lastState->shadowOffsetX == 0 && lastState->shadowOffsetY == 0) return nullptr;
+  auto result = new SkPaint(*paint);
+  auto a = shadowColor.a;
+  auto r = shadowColor.r;
+  auto g = shadowColor.g;
+  auto b = shadowColor.b;
+  auto ts = lastState->transform;
+  auto sigX = lastState->shadowBlur / (2.0f * ts->getScaleX());
+  auto sigY = lastState->shadowBlur / (2.0f * ts->getScaleY());
+  auto shadowEffect = SkImageFilters::DropShadow(
+    0.0f,
+    0.0f,
+    sigX,
+    sigY,
+    SkColorSetARGB(a, r, g, b),
+    nullptr
+  );
+  result->setAlpha(shadowAlpha);
+  result->setImageFilter(shadowEffect);
+  auto blurEffect = SkMaskFilter::MakeBlur(SkBlurStyle::kNormal_SkBlurStyle, lastState->shadowBlur / 2.0f, false);
+  result->setMaskFilter(blurEffect);
+  return result;
+}
+
+void applyShadowOffsetMatrix(sk_context* context) {
+  auto canvas = context->canvas;
+  auto shadowOffsetX = context->state->shadowOffsetX;
+  auto shadowOffsetY = context->state->shadowOffsetY;
+  auto cts = canvas->getTotalMatrix();
+  SkMatrix invert = SkMatrix::I();
+  cts.invert(&invert);
+  canvas->concat(invert);
+  auto shadowOffset = new SkMatrix(cts);
+  shadowOffset->preTranslate(shadowOffsetX, shadowOffsetY);
+  canvas->concat(*shadowOffset);
+  canvas->concat(cts);
 }
 
 extern "C" {
@@ -96,32 +211,54 @@ extern "C" {
     auto canvas = context->canvas;
     SkPaint paint;
     paint.setARGB(0, 0, 0, 0);
+    paint.setStyle(SkPaint::kFill_Style);
+    paint.setStrokeMiter(10.0f);
+    paint.setBlendMode(SkBlendMode::kClear);
     canvas->drawRect(SkRect::MakeXYWH(x, y, width, height), paint);
   }
 
   // Context.fillRect()
   void sk_context_fill_rect(sk_context* context, float x, float y, float width, float height) {
     auto canvas = context->canvas;
-    canvas->drawRect(SkRect::MakeXYWH(x, y, width, height), *sk_context_fill_paint(context->state));
+    auto rect = SkRect::MakeXYWH(x, y, width, height);
+    auto fillPaint = sk_context_fill_paint(context->state);
+    auto shadowPaint = sk_context_shadow_blur_paint(context, fillPaint);
+    if (shadowPaint != nullptr) {
+      canvas->save();
+      applyShadowOffsetMatrix(context);
+      canvas->drawRect(rect, *shadowPaint);
+      canvas->restore();
+    }
+    canvas->drawRect(rect, *fillPaint);
   }
 
   // Context.strokeRect()
   void sk_context_stroke_rect(sk_context* context, float x, float y, float width, float height) {
     auto canvas = context->canvas;
-    canvas->drawRect(SkRect::MakeXYWH(x, y, width, height), *sk_context_stroke_paint(context->state));
+    auto rect = SkRect::MakeXYWH(x, y, width, height);
+    auto strokePaint = sk_context_stroke_paint(context->state);
+    auto shadowPaint = sk_context_shadow_blur_paint(context, strokePaint);
+    if (shadowPaint != nullptr) {
+      canvas->save();
+      applyShadowOffsetMatrix(context);
+      canvas->drawRect(rect, *shadowPaint);
+      canvas->restore();
+    }
+    canvas->drawRect(rect, *strokePaint);
   }
 
   /// Drawing text
 
   // Helper function to fill/stroke/measure
-  int sk_context_text(sk_context* context,
+  int sk_context_text_base(sk_context* context,
     char* text,
     int textLen,
     float x,
     float y,
     float maxWidth,
     int fill,
-    sk_line_metrics* out_metrics
+    sk_line_metrics* out_metrics,
+    SkPaint* paint
   ) {
     SkTArray<SkString> families;
     SkStrSplit(context->state->font->family, ",", &families);
@@ -143,9 +280,7 @@ extern "C" {
       (SkFontStyle::Slant) context->state->font->style
     );
     tstyle.setFontStyle(fstyle);
-    
-    if (fill == 1) tstyle.setForegroundColor(*sk_context_fill_paint(context->state));
-    else tstyle.setForegroundColor(*sk_context_stroke_paint(context->state));
+    tstyle.setForegroundColor(*paint);
     
     skia::textlayout::ParagraphStyle paraStyle;
     paraStyle.setTextAlign(skia::textlayout::TextAlign::kLeft);
@@ -261,6 +396,49 @@ extern "C" {
 
     free(bounds);
     return 1;
+  }
+
+  int sk_context_text(sk_context* context,
+    char* text,
+    int textLen,
+    float x,
+    float y,
+    float maxWidth,
+    int fill,
+    sk_line_metrics* out_metrics
+  ) {
+    auto paint = fill == 1 ? sk_context_fill_paint(context->state) : sk_context_stroke_paint(context->state);
+    if (out_metrics == nullptr) {
+      auto shadowPaint = sk_context_shadow_blur_paint(context, paint);
+      if (shadowPaint != nullptr) {
+        context->canvas->save();
+        applyShadowOffsetMatrix(context);
+        auto res = sk_context_text_base(
+          context,
+          text,
+          textLen,
+          x,
+          y,
+          maxWidth,
+          fill,
+          nullptr,
+          shadowPaint
+        );
+        context->canvas->restore();
+        if (res == 0) return 0;
+      }
+    }
+    return sk_context_text_base(
+      context,
+      text,
+      textLen,
+      x,
+      y,
+      maxWidth,
+      fill,
+      out_metrics,
+      paint
+    );
   }
 
   // Context.fillText() implementation in JS using sk_context_test
@@ -431,10 +609,24 @@ extern "C" {
     auto color = CSSColorParser::parse(std::string(style));
     if (color) {
       auto val = color.value();
-      context->state->fillStyle = {val.r, val.g, val.b, (uint8_t)(val.a * 255)};
+      context->state->fillStyle = Style();
+      context->state->fillStyle.type = kStyleColor;
+      context->state->fillStyle.color = {val.r, val.g, val.b, (uint8_t)(val.a * 255)};
       return 1;
     }
     return 0;
+  }
+
+  void sk_context_set_fill_style_gradient(sk_context* context, sk_gradient* gradient) {
+    context->state->fillStyle = Style();
+    context->state->fillStyle.type = kStyleShader;
+    context->state->fillStyle.shader = sk_gradient_to_shader(gradient, context->state->transform);
+  }
+
+  void sk_context_set_fill_style_pattern(sk_context* context, sk_pattern* pattern) {
+    context->state->fillStyle = Style();
+    context->state->fillStyle.type = kStyleShader;
+    context->state->fillStyle.shader = sk_pattern_to_shader(pattern);
   }
 
   // Context.strokeStyle getter value is cached in JS side
@@ -444,18 +636,35 @@ extern "C" {
     auto color = CSSColorParser::parse(std::string(style));
     if (color) {
       auto val = color.value();
-      context->state->strokeStyle = {val.r, val.g, val.b, (uint8_t)(val.a * 255)};
+      context->state->strokeStyle = Style();
+      context->state->strokeStyle.type = kStyleColor;
+      context->state->strokeStyle.color = {val.r, val.g, val.b, (uint8_t)(val.a * 255)};
       return 1;
     }
     return 0;
   }
 
+  void sk_context_set_stroke_style_gradient(sk_context* context, sk_gradient* gradient) {
+    context->state->strokeStyle = Style();
+    context->state->strokeStyle.type = kStyleShader;
+    context->state->strokeStyle.shader = sk_gradient_to_shader(gradient, context->state->transform);
+  }
+
+  void sk_context_set_stroke_style_pattern(sk_context* context, sk_pattern* pattern) {
+    context->state->strokeStyle = Style();
+    context->state->strokeStyle.type = kStyleShader;
+    context->state->strokeStyle.shader = sk_pattern_to_shader(pattern);
+  }
+
   /// Gradients and patterns
 
-  // TODO: Context.createConicGradient()
-  // TODO: Context.createLinearGradient()
-  // TODO: Context.createRadialGradient()
-  // TODO: Context.createPattern()
+  // Implemented in gradient.cpp
+  // Context.createConicGradient()
+  // Context.createLinearGradient()
+  // Context.createRadialGradient()
+
+  // Implemented in pattern.cpp
+  // Context.createPattern()
 
   /// Shadows
 
@@ -567,6 +776,13 @@ extern "C" {
     auto canvas = context->canvas;
     auto paint = sk_context_fill_paint(context->state);
     path->setFillType(rule == 1 ? SkPathFillType::kEvenOdd : SkPathFillType::kWinding);
+    auto shadowPaint = sk_context_shadow_blur_paint(context, paint);
+    if (shadowPaint != nullptr) {
+      canvas->save();
+      applyShadowOffsetMatrix(context);
+      canvas->drawPath(*path, *shadowPaint);
+      canvas->restore();
+    }
     canvas->drawPath(*path, *paint);
   }
 
@@ -574,16 +790,24 @@ extern "C" {
   void sk_context_stroke(sk_context* context, SkPath* path) {
     if (path == nullptr) path = context->path;
     auto canvas = context->canvas;
-    canvas->drawPath(*path, *sk_context_stroke_paint(context->state));
+    auto strokePaint = sk_context_stroke_paint(context->state);
+    auto shadowPaint = sk_context_shadow_blur_paint(context, strokePaint);
+    if (shadowPaint != nullptr) {
+      canvas->save();
+      applyShadowOffsetMatrix(context);
+      canvas->drawPath(*path, *shadowPaint);
+      canvas->restore();
+    }
+    canvas->drawPath(*path, *strokePaint);
   }
 
-  // TODO: Context.drawFocusIfNeeded() (should we support it?)
-  // TODO: Context.scrollPathIntoView() (should we support it?)
+  // TODO?: Context.drawFocusIfNeeded() (should we support it?)
+  // TODO?: Context.scrollPathIntoView() (should we support it?)
 
   // Context.clip()
   void sk_context_clip(sk_context* context, SkPath* path, unsigned char rule) {
     if (path == nullptr) path = context->path;
-    // TODO: Should we clone?
+    // TODO?: Should we clone?
     // path = new SkPath(*path);
     path->setFillType(rule == 1 ? SkPathFillType::kEvenOdd : SkPathFillType::kWinding);
     context->canvas->clipPath(*path);
@@ -791,10 +1015,25 @@ extern "C" {
       options = SkSamplingOptions(SkFilterMode::kNearest, SkMipmapMode::kNone);
     }
 
+    auto srcrect = SkRect::MakeXYWH(sx, sy, sw, sh);
+    auto dstrect = SkRect::MakeXYWH(dx, dy, dw, dh);
+
+    auto shadowPaint = sk_context_drop_shadow_paint(context, context->state->paint);
+    if (shadowPaint != nullptr) {
+      context->canvas->drawImageRect(
+        image,
+        dstrect,
+        srcrect,
+        options,
+        shadowPaint,
+        SkCanvas::kFast_SrcRectConstraint
+      );
+    }
+
     context->canvas->drawImageRect(
       image,
-      SkRect::MakeXYWH(dx, dy, dw, dh),
-      SkRect::MakeXYWH(sx, sy, sw, sh),
+      dstrect,
+      srcrect,
       options,
       context->state->paint,
       SkCanvas::kFast_SrcRectConstraint

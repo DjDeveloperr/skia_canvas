@@ -24,9 +24,9 @@ enum CFormat {
 export type ImageFormat = keyof typeof CFormat;
 
 const OUT_SIZE = new Uint32Array(1);
-const OUT_SIZE_PTR = Number(Deno.UnsafePointer.of(OUT_SIZE));
+const OUT_SIZE_PTR = new Uint8Array(OUT_SIZE.buffer);
 const OUT_DATA = new BigUint64Array(1);
-const OUT_DATA_PTR = Number(Deno.UnsafePointer.of(OUT_DATA));
+const OUT_DATA_PTR = new Uint8Array(OUT_DATA.buffer);
 
 const SK_DATA_FINALIZER = new FinalizationRegistry(
   (ptr: Deno.PointerValue) => {

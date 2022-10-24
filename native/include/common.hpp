@@ -6,6 +6,7 @@
 #endif
 
 #include "include/core/SkEncodedImageFormat.h"
+#include "include/core/SkShader.h"
 
 #ifndef SKIA_EXPORT
   #if defined(_WIN32)
@@ -22,9 +23,15 @@ typedef struct RGBA {
   uint8_t a;
 } RGBA;
 
+enum StyleType {
+  kStyleColor,
+  kStyleShader,
+};
+
 typedef struct Style {
-  unsigned char type;
+  StyleType type;
   RGBA color;
+  sk_sp<SkShader> shader;
 } Style;
 
 enum TextAlign {
