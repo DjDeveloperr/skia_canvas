@@ -3,6 +3,8 @@ import { createCanvas, Image, Path2D } from "./mod.ts";
 const canvas = createCanvas(300, 300);
 const ctx = canvas.getContext("2d");
 
+ctx.filter = "brightness(70%) contrast(160%)";
+
 const img = new Image("./testdata/skia_logo.png");
 const pattern = ctx.createPattern(img, "repeat");
 
@@ -11,13 +13,13 @@ const pattern = ctx.createPattern(img, "repeat");
 ctx.shadowBlur = 20;
 ctx.shadowColor = "black";
 
-// const gradient = ctx.createConicGradient(0, 150, 150);
+const gradient = ctx.createConicGradient(0, 150, 150);
 
-// gradient.addColorStop(0, "red");
-// gradient.addColorStop(0.25, "orange");
-// gradient.addColorStop(0.5, "yellow");
-// gradient.addColorStop(0.75, "green");
-// gradient.addColorStop(1, "blue");
+gradient.addColorStop(0, "red");
+gradient.addColorStop(0.25, "orange");
+gradient.addColorStop(0.5, "yellow");
+gradient.addColorStop(0.75, "green");
+gradient.addColorStop(1, "blue");
 
 // ctx.fillStyle = gradient;
 
@@ -59,13 +61,13 @@ ctx.drawImage(
 );
 
 ctx.fillStyle = "skyblue";
-ctx.font = "30px DejaVu Sans";
+ctx.font = "40px sans-serif";
 ctx.fillText("hello, skia text", 10, 10);
 
 const path = new Path2D(
   "M8 50H92C96.4183 50 100 53.5817 100 58V142C100 146.418 96.4183 150 92 150H8C3.58172 150 0 146.418 0 142V58C0 53.5817 3.58172 50 8 50Z",
 );
-ctx.strokeStyle = "blue";
+ctx.strokeStyle = gradient;
 ctx.save();
 ctx.translate(10, 10);
 ctx.stroke(path);

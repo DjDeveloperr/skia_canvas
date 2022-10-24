@@ -1,6 +1,7 @@
 import { Canvas } from "./canvas.ts";
+import { DOMMatrix } from "./dommatrix.ts";
 import ffi, { cstr } from "./ffi.ts";
-import { parseFilterString } from "./filter.ts";
+import { FilterType, parseFilterString } from "./filter.ts";
 import { CanvasGradient } from "./gradient.ts";
 import { Image, ImageData } from "./image.ts";
 import { parseFont } from "./parse_font.ts";
@@ -88,6 +89,23 @@ const {
   sk_context_set_stroke_style_gradient,
   sk_context_set_fill_style_pattern,
   sk_context_set_stroke_style_pattern,
+  sk_context_filter_contrast,
+  sk_context_filter_invert,
+  sk_context_filter_brightness,
+  sk_context_filter_blur,
+  sk_context_filter_drop_shadow,
+  sk_context_filter_grayscale,
+  sk_context_filter_hue_rotate,
+  sk_context_filter_opacity,
+  sk_context_filter_reset,
+  sk_context_filter_saturated,
+  sk_context_filter_sepia,
+  sk_context_get_word_spacing,
+  sk_context_get_letter_spacing,
+  sk_context_set_word_spacing,
+  sk_context_set_letter_spacing,
+  sk_context_set_font_stretch,
+  sk_context_set_font_variant_caps,
 } = ffi;
 
 const CONTEXT_FINALIZER = new FinalizationRegistry((ptr: Deno.PointerValue) => {
@@ -174,6 +192,38 @@ const METRICS_PTR = Number(Deno.UnsafePointer.of(METRICS));
 
 export type Style = string | CanvasGradient | CanvasPattern;
 
+const CFontStretch = {
+  ["ultra-condensed"]: 1,
+  ["50%"]: 1,
+  ["extra-condensed"]: 2,
+  ["62.5%"]: 2,
+  ["condensed"]: 3,
+  ["75%"]: 3,
+  ["semi-condensed"]: 4,
+  ["87.5%"]: 4,
+  ["normal"]: 5,
+  ["100%"]: 5,
+  ["semi-expanded"]: 6,
+  ["112.5%"]: 6,
+  ["expanded"]: 7,
+  ["125%"]: 7,
+  ["extra-expanded"]: 8,
+  ["150%"]: 8,
+  ["ultra-expanded"]: 9,
+  ["200%"]: 9,
+} as const;
+
+const CFontVariantCaps = {
+  ["normal"]: 0,
+  ["small-caps"]: 1,
+} as const;
+
+export type FontStretch = keyof typeof CFontStretch;
+export type FontVariantCaps = keyof typeof CFontVariantCaps;
+
+/**
+ * @link https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D
+ */
 export class CanvasRenderingContext2D {
   /// Internal State
 
@@ -183,8 +233,11 @@ export class CanvasRenderingContext2D {
   #fillStyle: Style = "black";
   #strokeStyle: Style = "black";
   #shadowColor = "black";
-  #font = "";
+  #font = "10px sans-serif";
+  #fontStretch: FontStretch = "normal";
+  #fontVariantCaps: FontVariantCaps = "normal";
   #lineDash: number[] = [];
+  #filter = "none";
 
   /// For FFI interface
   get _unsafePointer() {
@@ -394,12 +447,67 @@ export class CanvasRenderingContext2D {
     sk_context_set_text_direction(this.#ptr, CTextDirection[value]);
   }
 
-  // TODO: Context.letterSpacing
-  // TODO: Context.fontKerning
-  // TODO: Context.fontStretch
-  // TODO: Context.fontVariantCaps
-  // TODO: Context.textRendering
-  // TODO: Context.wordSpacing
+  get letterSpacing() {
+    return sk_context_get_letter_spacing(this.#ptr);
+  }
+
+  set letterSpacing(value: number) {
+    sk_context_set_letter_spacing(this.#ptr, value);
+  }
+
+  get wordSpacing() {
+    return sk_context_get_word_spacing(this.#ptr);
+  }
+
+  set wordSpacing(value: number) {
+    sk_context_set_word_spacing(this.#ptr, value);
+  }
+
+  get fontKerning() {
+    return "auto";
+  }
+
+  set fontKerning(value: "auto") {
+    if (value !== "auto") {
+      throw new Error("fontKerning only supports 'auto'");
+    }
+  }
+
+  get fontStretch() {
+    return this.#fontStretch;
+  }
+
+  set fontStretch(value: FontStretch) {
+    const c = CFontStretch[value];
+    if (typeof c !== "number") {
+      throw new Error("invalid fontStretch");
+    }
+    this.#fontStretch = value;
+    sk_context_set_font_stretch(this.#ptr, c);
+  }
+
+  get fontVariantCaps() {
+    return this.#fontVariantCaps;
+  }
+
+  set fontVariant(value: FontVariantCaps) {
+    const c = CFontVariantCaps[value];
+    if (typeof c !== "number") {
+      throw new Error("invalid fontVariantCaps");
+    }
+    this.#fontVariantCaps = value;
+    sk_context_set_font_variant_caps(this.#ptr, c);
+  }
+
+  get textRendering() {
+    return "auto";
+  }
+
+  set textRendering(value: "auto") {
+    if (value !== "auto") {
+      throw new Error("textRendering only supports 'auto'");
+    }
+  }
 
   /// Fill and stroke styles
 
@@ -741,8 +849,7 @@ export class CanvasRenderingContext2D {
   getTransform() {
     const f32 = new Float32Array(6);
     sk_context_get_transform(this.#ptr, f32);
-    // TODO: return DOMMatrix
-    return f32;
+    return new DOMMatrix(f32[0], f32[1], f32[2], f32[3], f32[4], f32[5]);
   }
 
   rotate(angle: number) {
@@ -775,8 +882,21 @@ export class CanvasRenderingContext2D {
     d: number,
     e: number,
     f: number,
+  ): void;
+  setTransform(matrix: DOMMatrix): void;
+  setTransform(
+    a: number | DOMMatrix,
+    b?: number,
+    c?: number,
+    d?: number,
+    e?: number,
+    f?: number,
   ) {
-    sk_context_set_transform(this.#ptr, a, b, c, d, e, f);
+    if (typeof a === "number") {
+      sk_context_set_transform(this.#ptr, a, b!, c!, d!, e!, f!);
+    } else {
+      sk_context_set_transform(this.#ptr, a.a, a.b, a.c, a.d, a.e, a.f);
+    }
   }
 
   resetTransform() {
@@ -995,11 +1115,65 @@ export class CanvasRenderingContext2D {
   /// Filters
 
   get filter() {
-    return "none";
+    return this.#filter;
   }
 
   set filter(value: string) {
+    if (value === "none" || value === "") {
+      sk_context_filter_reset(this.#ptr);
+      this.#filter = value;
+      return;
+    }
     const filters = parseFilterString(value);
-    throw new Error("TODO: Context.filter");
+    this.#filter = value;
+    for (const filter of filters) {
+      switch (filter.type) {
+        case FilterType.Blur:
+          sk_context_filter_blur(this.#ptr, filter.value);
+          break;
+
+        case FilterType.Brightness:
+          sk_context_filter_brightness(this.#ptr, filter.value);
+          break;
+
+        case FilterType.Contrast:
+          sk_context_filter_contrast(this.#ptr, filter.value);
+          break;
+
+        case FilterType.DropShadow:
+          sk_context_filter_drop_shadow(
+            this.#ptr,
+            filter.dx,
+            filter.dy,
+            filter.radius,
+            cstr(filter.color),
+          );
+          break;
+
+        case FilterType.Grayscale:
+          sk_context_filter_grayscale(this.#ptr, filter.value);
+          break;
+
+        case FilterType.HueRotate:
+          sk_context_filter_hue_rotate(this.#ptr, filter.value);
+          break;
+
+        case FilterType.Invert:
+          sk_context_filter_invert(this.#ptr, filter.value);
+          break;
+
+        case FilterType.Opacity:
+          sk_context_filter_opacity(this.#ptr, filter.value);
+          break;
+
+        case FilterType.Saturate:
+          sk_context_filter_saturated(this.#ptr, filter.value);
+          break;
+
+        case FilterType.Sepia:
+          sk_context_filter_sepia(this.#ptr, filter.value);
+          break;
+      }
+    }
   }
 }

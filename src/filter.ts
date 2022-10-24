@@ -190,7 +190,7 @@ export function parseFilterString(filter: string): Filter[] {
         const num = parseFloat(
           arg.endsWith("%") ? arg.slice(0, arg.length - 1) : arg,
         );
-        if (num < 0 || num > 100 || isNaN(num)) {
+        if (num < 0 || isNaN(num)) {
           throw new Error(`Invalid percentage: ${arg}`);
         }
 

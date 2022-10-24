@@ -33,11 +33,14 @@ sk_context_state* create_default_state() {
   state->direction = kLTR;
   state->font = new Font();
   state->font->size = 10;
-  state->font->family = strdup("DejaVu Sans");
+  state->font->family = strdup("sans-serif");
   state->font->weight = 400;
   state->font->style = FontStyle::kNormalStyle;
   state->font->variant = FontVariant::kNormalVariant;
   state->font->stretch = FontStretch::kNormal;
+  state->filter = sk_sp((SkImageFilter*)(nullptr));
+  state->letterSpacing = 0;
+  state->wordSpacing = 0;
   return state;
 }
 
@@ -66,12 +69,16 @@ sk_context_state* clone_context_state(sk_context_state* state) {
   new_state->font->style = state->font->style;
   new_state->font->variant = state->font->variant;
   new_state->font->stretch = state->font->stretch;
+  new_state->filter = state->filter;
+  new_state->letterSpacing = state->letterSpacing;
+  new_state->wordSpacing = state->wordSpacing;
   return new_state;
 }
 
 void free_context_state(sk_context_state* state) {
   if (state->fillStyle.shader) state->fillStyle.shader.~sk_sp();
   if (state->strokeStyle.shader) state->strokeStyle.shader.~sk_sp();
+  if (state->filter.get() != nullptr) state->filter.~sk_sp();
   delete state->paint;
   delete state->transform;
   free(state->font);
@@ -98,6 +105,9 @@ SkPaint* sk_context_fill_paint(sk_context_state* state) {
     );
     paint->setPathEffect(effect);
   }
+  if (state->filter.get() != nullptr) {
+    paint->setImageFilter(state->filter);
+  }
   return paint;
 }
 
@@ -118,6 +128,9 @@ SkPaint* sk_context_stroke_paint(sk_context_state* state) {
       state->lineDashOffset
     );
     paint->setPathEffect(effect);
+  }
+  if (state->filter.get() != nullptr) {
+    paint->setImageFilter(state->filter);
   }
   return paint;
 }
@@ -271,7 +284,8 @@ extern "C" {
     tstyle.setTextBaseline(skia::textlayout::TextBaseline::kAlphabetic);
     tstyle.setFontFamilies(familyVec);
     tstyle.setFontSize(context->state->font->size);
-    tstyle.setWordSpacing(0);
+    tstyle.setWordSpacing(context->state->wordSpacing);
+    tstyle.setLetterSpacing(context->state->letterSpacing);
     tstyle.setHeight(1);
 
     auto fstyle = SkFontStyle(
@@ -593,12 +607,39 @@ extern "C" {
     context->state->direction = TextDirection(direction);
   }
 
-  // TODO: Context.letterSpacing
-  // TODO: Context.fontKerning
-  // TODO: Context.fontStretch
-  // TODO: Context.fontVariantCaps
-  // TODO: Context.textRendering
-  // TODO: Context.wordSpacing
+  // Context.letterSpacing getter
+  float sk_context_get_letter_spacing(sk_context* context) {
+    return context->state->letterSpacing;
+  }
+
+  // Context.letterSpacing setter
+  void sk_context_set_letter_spacing(sk_context* context, float spacing) {
+    context->state->letterSpacing = spacing;
+  }
+
+  // Context.fontKerning() stubbed in JS side
+
+  // Context.fontStretch setter
+  void sk_context_set_font_stretch(sk_context* context, int stretch) {
+    context->state->font->stretch = FontStretch(stretch);
+  }
+
+  // Context.fontVariantCaps setter
+  void sk_context_set_font_variant_caps(sk_context* context, int caps) {
+    context->state->font->variant = FontVariant(caps);
+  }
+
+  // Context.textRendering() stubbed in JS side
+  
+  // Context.wordSpacing getter
+  float sk_context_get_word_spacing(sk_context* context) {
+    return context->state->wordSpacing;
+  }
+
+  // Context.wordSpacing setter
+  void sk_context_set_word_spacing(sk_context* context, float spacing) {
+    context->state->wordSpacing = spacing;
+  }
 
   /// Fill and stroke styles
 
@@ -1116,7 +1157,118 @@ extern "C" {
 
   /// Filters
   
-  // TODO: Context.filter
+  void sk_context_filter_reset(sk_context* context) {
+    context->state->filter = sk_sp((SkImageFilter*) nullptr);
+  }
+
+  void sk_context_filter_blur(sk_context* context, float blur) {
+    context->state->filter = SkImageFilters::Blur(blur, blur, SkTileMode::kClamp, context->state->filter);
+  }
+
+  void sk_context_filter_brightness(sk_context* context, float brightness) {
+    const auto color_matrix = SkColorMatrix(
+      brightness, 0.0, 0.0, 0.0, 0.0,
+      0.0, brightness, 0.0, 0.0, 0.0,
+      0.0, 0.0, brightness, 0.0, 0.0,
+      0.0, 0.0, 0.0, 1.0, 0.0);
+    auto color_filter = SkColorFilters::Matrix(color_matrix);
+    context->state->filter = SkImageFilters::ColorFilter(color_filter, context->state->filter);
+  }
+
+  void sk_context_filter_contrast(sk_context* context, float contrast) {
+    contrast = std::max(contrast, 0.0f);
+    uint8_t table[256] = {0};
+    for (int i = 0; i < 256; i++) {
+      table[i] = (uint8_t) std::min(255.0f, std::max(0.0f, (i - 127) * contrast + 127));
+    }
+    auto color_filter = SkColorFilters::TableARGB(table, table, table, table);
+    context->state->filter = SkImageFilters::ColorFilter(color_filter, context->state->filter);
+  }
+
+  int sk_context_filter_drop_shadow(sk_context* context, float dx, float dy, float blur, char* style) {
+    if (dx == 0 && dy == 0 && blur == 0) {
+      return 1; // no-op
+    }
+    auto color = CSSColorParser::parse(std::string(style));
+    if (color) {
+      auto val = color.value();
+      uint8_t a = (uint8_t) (val.a * 255), r = val.r, g = val.g, b = val.b;
+      if (a == 0) {
+        return 1; // no-op
+      }
+      float sigma = blur / 2.0f;
+      context->state->filter = SkImageFilters::DropShadow(dx, dy, sigma, sigma, SkColorSetARGB(a, r, g, b), context->state->filter);
+      return 1;
+    }
+    return 0;
+  }
+
+  void sk_context_filter_grayscale(sk_context* context, float grayscale) {
+    grayscale = 1.0f - std::max(std::min(grayscale, 1.0f), 0.0f);
+    const auto color_matrix = SkColorMatrix(
+      0.2126 + 0.7874 * (grayscale), 0.7152 - 0.7152 * (grayscale), 0.0722 - 0.0722 * (grayscale), 0.0, 0.0,
+      0.2126 - 0.2126 * (grayscale), 0.7152 + 0.2848 * (grayscale), 0.0722 - 0.0722 * (grayscale), 0.0, 0.0,
+      0.2126 - 0.2126 * (grayscale), 0.7152 - 0.7152 * (grayscale), 0.0722 + 0.9278 * (grayscale), 0.0, 0.0,
+      0.0, 0.0, 0.0, 1.0, 0.0);
+    auto color_filter = SkColorFilters::Matrix(color_matrix);
+    context->state->filter = SkImageFilters::ColorFilter(color_filter, context->state->filter);
+  }
+
+  void sk_context_filter_hue_rotate(sk_context* context, float angle) {
+    angle = angle * M_PI / 180.0f;
+    float acos = std::cos(angle);
+    float asin = std::sin(angle);
+    const auto color_matrix = SkColorMatrix(
+      0.213 + 0.787 * acos - 0.213 * asin, 0.715 - 0.715 * acos - 0.715 * asin, 0.072 - 0.072 * acos + 0.928 * asin, 0.0, 0.0,
+      0.213 - 0.213 * acos + 0.143 * asin, 0.715 + 0.285 * acos + 0.140 * asin, 0.072 - 0.072 * acos - 0.283 * asin, 0.0, 0.0,
+      0.213 - 0.213 * acos - 0.787 * asin, 0.715 - 0.715 * acos + 0.715 * asin, 0.072 + 0.928 * acos + 0.072 * asin, 0.0, 0.0,
+      0.0, 0.0, 0.0, 1.0, 0.0);
+    auto color_filter = SkColorFilters::Matrix(color_matrix);
+    context->state->filter = SkImageFilters::ColorFilter(color_filter, context->state->filter);
+  }
+
+  void sk_context_filter_invert(sk_context* context, float invert) {
+    invert = std::max(std::min(invert, 1.0f), 0.0f);
+    const auto color_matrix = SkColorMatrix(
+      -1.0 * invert + 1.0, 0.0, 0.0, 0.0, 255.0 * invert,
+      0.0, -1.0 * invert + 1.0, 0.0, 0.0, 255.0 * invert,
+      0.0, 0.0, -1.0 * invert + 1.0, 0.0, 255.0 * invert,
+      0.0, 0.0, 0.0, 1.0, 0.0);
+    auto color_filter = SkColorFilters::Matrix(color_matrix);
+    context->state->filter = SkImageFilters::ColorFilter(color_filter, context->state->filter);
+  }
+
+  void sk_context_filter_opacity(sk_context* context, float opacity) {
+    const auto color_matrix = SkColorMatrix(
+      1.0, 0.0, 0.0, 0.0, 0.0,
+      0.0, 1.0, 0.0, 0.0, 0.0,
+      0.0, 0.0, 1.0, 0.0, 0.0,
+      0.0, 0.0, 0.0, opacity, 0.0);
+    auto color_filter = SkColorFilters::Matrix(color_matrix);
+    context->state->filter = SkImageFilters::ColorFilter(color_filter, context->state->filter);
+  }
+
+  void sk_context_filter_saturated(sk_context* context, float saturate) {
+    saturate = std::max(saturate, 0.0f);
+    const auto color_matrix = SkColorMatrix(
+      0.213 + 0.787 * saturate, 0.715 - 0.715 * saturate, 0.072 - 0.072 * saturate, 0.0, 0.0,
+      0.213 - 0.213 * saturate, 0.715 + 0.285 * saturate, 0.072 - 0.072 * saturate, 0.0, 0.0,
+      0.213 - 0.213 * saturate, 0.715 - 0.715 * saturate, 0.072 + 0.928 * saturate, 0.0, 0.0,
+      0.0, 0.0, 0.0, 1.0, 0.0);
+    auto color_filter = SkColorFilters::Matrix(color_matrix);
+    context->state->filter = SkImageFilters::ColorFilter(color_filter, context->state->filter);
+  }
+
+  void sk_context_filter_sepia(sk_context* context, float sepia) {
+    sepia = std::max(std::min(sepia, 1.0f), 0.0f);
+    const auto color_matrix = SkColorMatrix(
+      0.393 + 0.607 * (sepia), 0.769 - 0.769 * (sepia), 0.189 - 0.189 * (sepia), 0.0, 0.0,
+      0.349 - 0.349 * (sepia), 0.686 + 0.314 * (sepia), 0.168 - 0.168 * (sepia), 0.0, 0.0,
+      0.272 - 0.272 * (sepia), 0.534 - 0.534 * (sepia), 0.131 + 0.869 * (sepia), 0.0, 0.0,
+      0.0, 0.0, 0.0, 1.0, 0.0);
+    auto color_filter = SkColorFilters::Matrix(color_matrix);
+    context->state->filter = SkImageFilters::ColorFilter(color_filter, context->state->filter);
+  }
 
   /// CONTEXT_FINALIZER callback
   void sk_context_destroy(sk_context* context) {

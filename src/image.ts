@@ -31,8 +31,20 @@ export class Image {
     SK_IMAGE_FINALIZER.register(this, this.#ptr);
   }
 
-  static async load(path: string) {
-    const data = await Deno.readFile(path);
+  static async load(path: string | URL) {
+    const data = path instanceof URL || path.startsWith("http")
+      ? await fetch(path).then((e) => e.arrayBuffer()).then((e) =>
+        new Uint8Array(e)
+      )
+      : await Deno.readFile(path);
+    return new Image(data);
+  }
+
+  /**
+   * Load an image from a local file synchronously.
+   */
+  static loadSync(path: string) {
+    const data = Deno.readFileSync(path);
     return new Image(data);
   }
 
