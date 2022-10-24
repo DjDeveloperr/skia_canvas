@@ -33,7 +33,7 @@ sk_context_state* create_default_state() {
   state->direction = kLTR;
   state->font = new Font();
   state->font->size = 10;
-  state->font->family = strdup("DejaVu Sans");
+  state->font->family = strdup("sans-serif");
   state->font->weight = 400;
   state->font->style = FontStyle::kNormalStyle;
   state->font->variant = FontVariant::kNormalVariant;
