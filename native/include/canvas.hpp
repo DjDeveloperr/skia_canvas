@@ -33,6 +33,8 @@ typedef struct sk_context_state {
   TextDirection direction;
   Font* font;
   sk_sp<SkImageFilter> filter;
+  float letterSpacing;
+  float wordSpacing;
 } sk_context_state;
 
 typedef struct sk_context {

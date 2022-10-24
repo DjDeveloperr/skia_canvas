@@ -73,12 +73,18 @@ extern "C" {
     int variant,
     int stretch
   );
-  SKIA_EXPORT  int sk_context_get_text_align(sk_context* context);
-  SKIA_EXPORT void sk_context_set_text_align(sk_context* context, int align);
-  SKIA_EXPORT  int sk_context_get_text_baseline(sk_context* context);
-  SKIA_EXPORT void sk_context_set_text_baseline(sk_context* context, int baseline);
-  SKIA_EXPORT  int sk_context_get_text_direction(sk_context* context);
-  SKIA_EXPORT void sk_context_set_text_direction(sk_context* context, int direction);
+  SKIA_EXPORT   int sk_context_get_text_align(sk_context* context);
+  SKIA_EXPORT  void sk_context_set_text_align(sk_context* context, int align);
+  SKIA_EXPORT   int sk_context_get_text_baseline(sk_context* context);
+  SKIA_EXPORT  void sk_context_set_text_baseline(sk_context* context, int baseline);
+  SKIA_EXPORT   int sk_context_get_text_direction(sk_context* context);
+  SKIA_EXPORT  void sk_context_set_text_direction(sk_context* context, int direction);
+  SKIA_EXPORT float sk_context_get_letter_spacing(sk_context* context);
+  SKIA_EXPORT  void sk_context_set_letter_spacing(sk_context* context, float spacing);
+  SKIA_EXPORT  void sk_context_set_font_stretch(sk_context* context, int stretch);
+  SKIA_EXPORT  void sk_context_set_font_variant_caps(sk_context* context, int caps);
+  SKIA_EXPORT float sk_context_get_word_spacing(sk_context* context);
+  SKIA_EXPORT  void sk_context_set_word_spacing(sk_context* context, float spacing);
 
   SKIA_EXPORT  int sk_context_set_fill_style(sk_context* context, char* style);
   SKIA_EXPORT void sk_context_set_fill_style_gradient(sk_context* context, sk_gradient* gradient);

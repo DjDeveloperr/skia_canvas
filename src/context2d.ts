@@ -99,6 +99,12 @@ const {
   sk_context_filter_reset,
   sk_context_filter_saturated,
   sk_context_filter_sepia,
+  sk_context_get_word_spacing,
+  sk_context_get_letter_spacing,
+  sk_context_set_word_spacing,
+  sk_context_set_letter_spacing,
+  sk_context_set_font_stretch,
+  sk_context_set_font_variant_caps,
 } = ffi;
 
 const CONTEXT_FINALIZER = new FinalizationRegistry((ptr: Deno.PointerValue) => {
@@ -185,6 +191,35 @@ const METRICS_PTR = Number(Deno.UnsafePointer.of(METRICS));
 
 export type Style = string | CanvasGradient | CanvasPattern;
 
+const CFontStretch = {
+  ["ultra-condensed"]: 1,
+  ["50%"]: 1,
+  ["extra-condensed"]: 2,
+  ["62.5%"]: 2,
+  ["condensed"]: 3,
+  ["75%"]: 3,
+  ["semi-condensed"]: 4,
+  ["87.5%"]: 4,
+  ["normal"]: 5,
+  ["100%"]: 5,
+  ["semi-expanded"]: 6,
+  ["112.5%"]: 6,
+  ["expanded"]: 7,
+  ["125%"]: 7,
+  ["extra-expanded"]: 8,
+  ["150%"]: 8,
+  ["ultra-expanded"]: 9,
+  ["200%"]: 9,
+} as const;
+
+const CFontVariantCaps = {
+  ["normal"]: 0,
+  ["small-caps"]: 1,
+} as const;
+
+export type FontStretch = keyof typeof CFontStretch;
+export type FontVariantCaps = keyof typeof CFontVariantCaps;
+
 export class CanvasRenderingContext2D {
   /// Internal State
 
@@ -195,6 +230,8 @@ export class CanvasRenderingContext2D {
   #strokeStyle: Style = "black";
   #shadowColor = "black";
   #font = "10px sans-serif";
+  #fontStretch: FontStretch = "normal";
+  #fontVariantCaps: FontVariantCaps = "normal";
   #lineDash: number[] = [];
   #filter = "none";
 
@@ -406,12 +443,67 @@ export class CanvasRenderingContext2D {
     sk_context_set_text_direction(this.#ptr, CTextDirection[value]);
   }
 
-  // TODO: Context.letterSpacing
-  // TODO: Context.fontKerning
-  // TODO: Context.fontStretch
-  // TODO: Context.fontVariantCaps
-  // TODO: Context.textRendering
-  // TODO: Context.wordSpacing
+  get letterSpacing() {
+    return sk_context_get_letter_spacing(this.#ptr);
+  }
+
+  set letterSpacing(value: number) {
+    sk_context_set_letter_spacing(this.#ptr, value);
+  }
+
+  get wordSpacing() {
+    return sk_context_get_word_spacing(this.#ptr);
+  }
+
+  set wordSpacing(value: number) {
+    sk_context_set_word_spacing(this.#ptr, value);
+  }
+
+  get fontKerning() {
+    return "auto";
+  }
+
+  set fontKerning(value: "auto") {
+    if (value !== "auto") {
+      throw new Error("fontKerning only supports 'auto'");
+    }
+  }
+
+  get fontStretch() {
+    return this.#fontStretch;
+  }
+
+  set fontStretch(value: FontStretch) {
+    const c = CFontStretch[value];
+    if (typeof c !== "number") {
+      throw new Error("invalid fontStretch");
+    }
+    this.#fontStretch = value;
+    sk_context_set_font_stretch(this.#ptr, c);
+  }
+
+  get fontVariantCaps() {
+    return this.#fontVariantCaps;
+  }
+
+  set fontVariant(value: FontVariantCaps) {
+    const c = CFontVariantCaps[value];
+    if (typeof c !== "number") {
+      throw new Error("invalid fontVariantCaps");
+    }
+    this.#fontVariantCaps = value;
+    sk_context_set_font_variant_caps(this.#ptr, c);
+  }
+
+  get textRendering() {
+    return "auto";
+  }
+
+  set textRendering(value: "auto") {
+    if (value !== "auto") {
+      throw new Error("textRendering only supports 'auto'");
+    }
+  }
 
   /// Fill and stroke styles
 

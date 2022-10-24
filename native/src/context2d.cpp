@@ -39,6 +39,8 @@ sk_context_state* create_default_state() {
   state->font->variant = FontVariant::kNormalVariant;
   state->font->stretch = FontStretch::kNormal;
   state->filter = sk_sp((SkImageFilter*)(nullptr));
+  state->letterSpacing = 0;
+  state->wordSpacing = 0;
   return state;
 }
 
@@ -67,12 +69,16 @@ sk_context_state* clone_context_state(sk_context_state* state) {
   new_state->font->style = state->font->style;
   new_state->font->variant = state->font->variant;
   new_state->font->stretch = state->font->stretch;
+  new_state->filter = state->filter;
+  new_state->letterSpacing = state->letterSpacing;
+  new_state->wordSpacing = state->wordSpacing;
   return new_state;
 }
 
 void free_context_state(sk_context_state* state) {
   if (state->fillStyle.shader) state->fillStyle.shader.~sk_sp();
   if (state->strokeStyle.shader) state->strokeStyle.shader.~sk_sp();
+  if (state->filter.get() != nullptr) state->filter.~sk_sp();
   delete state->paint;
   delete state->transform;
   free(state->font);
@@ -278,7 +284,8 @@ extern "C" {
     tstyle.setTextBaseline(skia::textlayout::TextBaseline::kAlphabetic);
     tstyle.setFontFamilies(familyVec);
     tstyle.setFontSize(context->state->font->size);
-    tstyle.setWordSpacing(0);
+    tstyle.setWordSpacing(context->state->wordSpacing);
+    tstyle.setLetterSpacing(context->state->letterSpacing);
     tstyle.setHeight(1);
 
     auto fstyle = SkFontStyle(
@@ -600,12 +607,39 @@ extern "C" {
     context->state->direction = TextDirection(direction);
   }
 
-  // TODO: Context.letterSpacing
-  // TODO: Context.fontKerning
-  // TODO: Context.fontStretch
-  // TODO: Context.fontVariantCaps
-  // TODO: Context.textRendering
-  // TODO: Context.wordSpacing
+  // Context.letterSpacing getter
+  float sk_context_get_letter_spacing(sk_context* context) {
+    return context->state->letterSpacing;
+  }
+
+  // Context.letterSpacing setter
+  void sk_context_set_letter_spacing(sk_context* context, float spacing) {
+    context->state->letterSpacing = spacing;
+  }
+
+  // Context.fontKerning() stubbed in JS side
+
+  // Context.fontStretch setter
+  void sk_context_set_font_stretch(sk_context* context, int stretch) {
+    context->state->font->stretch = FontStretch(stretch);
+  }
+
+  // Context.fontVariantCaps setter
+  void sk_context_set_font_variant_caps(sk_context* context, int caps) {
+    context->state->font->variant = FontVariant(caps);
+  }
+
+  // Context.textRendering() stubbed in JS side
+  
+  // Context.wordSpacing getter
+  float sk_context_get_word_spacing(sk_context* context) {
+    return context->state->wordSpacing;
+  }
+
+  // Context.wordSpacing setter
+  void sk_context_set_word_spacing(sk_context* context, float spacing) {
+    context->state->wordSpacing = spacing;
+  }
 
   /// Fill and stroke styles
 

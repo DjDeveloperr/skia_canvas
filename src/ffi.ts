@@ -744,6 +744,36 @@ const SYMBOLS = {
     parameters: ["pointer", "f32"],
     result: "void",
   },
+
+  sk_context_get_letter_spacing: {
+    parameters: ["pointer"],
+    result: "f32",
+  },
+
+  sk_context_set_letter_spacing: {
+    parameters: ["pointer", "f32"],
+    result: "void",
+  },
+
+  sk_context_get_word_spacing: {
+    parameters: ["pointer"],
+    result: "f32",
+  },
+
+  sk_context_set_word_spacing: {
+    parameters: ["pointer", "f32"],
+    result: "void",
+  },
+
+  sk_context_set_font_stretch: {
+    parameters: ["pointer", "i32"],
+    result: "void",
+  },
+
+  sk_context_set_font_variant_caps: {
+    parameters: ["pointer", "i32"],
+    result: "void",
+  },
 } as const;
 
 const LOCAL_BUILD = Deno.env.get("DENO_SKIA_LOCAL") === "1";
