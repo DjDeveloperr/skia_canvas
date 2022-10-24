@@ -48,6 +48,37 @@ deno run --allow-ffi --allow-env --unstable <file>
 deno run -A --unstable <file>
 ```
 
+## API
+
+Check the
+[API reference here](https://doc.deno.land/https/deno.land/x/skia_canvas@0.1.0/mod.ts).
+
+Since this module implements the Canvas Web API, you can also refer to the
+[MDN docs](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D).
+
+For non-standard APIs (such as `Canvas#save`, `Image.load`, `Fonts.*`), refer to
+the API docs mentioned above.
+
+## Building
+
+First you need to
+[setup depot_tools](https://www.chromium.org/developers/how-tos/install-depot-tools/).
+
+Then, clone the repository with submodules.
+
+And run the following commands:
+
+```sh
+deno task build-skia
+deno task build
+```
+
+By default, the module will download and cache the prebuilt binaries for your
+platform. However this is not intended behavior when developing locally. To use
+locally built binaries, set `DENO_SKIA_LOCAL` environment variable to `1`. Or
+you can also set `DENO_SKIA_PATH` to a complete path to dynamic library built
+from the `native` directory.
+
 ## License
 
 [Apache-2.0](./LICENSE) licensed.

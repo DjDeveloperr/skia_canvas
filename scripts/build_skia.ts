@@ -86,10 +86,10 @@ if (Deno.build.os === "windows") {
     BUILD_ARGS["target_cpu"] = `"arm64"`;
     BUILD_ARGS["target_os"] = `"mac"`;
     BUILD_ARGS["extra_cflags_cc"] += ', "--target=arm64-apple-macos"';
-    BUILD_ARGS["extra_ldflags"] = '"--target=arm64-apple-macos"';
-    BUILD_ARGS["extra_asmflags"] = '"--target=arm64-apple-macos"';
-    BUILD_ARGS["extra_cflags"] = '"--target=arm64-apple-macos"';
-    BUILD_ARGS["extra_cflags_c"] = '"--target=arm64-apple-macos"';
+    BUILD_ARGS["extra_ldflags"] = '["--target=arm64-apple-macos"]';
+    BUILD_ARGS["extra_asmflags"] = '["--target=arm64-apple-macos"]';
+    BUILD_ARGS["extra_cflags"] = '["--target=arm64-apple-macos"]';
+    BUILD_ARGS["extra_cflags_c"] = '["--target=arm64-apple-macos"]';
   }
 }
 
@@ -108,7 +108,12 @@ const $ = (cmd: string | URL, ...args: string[]) => {
   });
 };
 
-if (!Deno.args.includes("fast")) $("python", "./tools/git-sync-deps");
+if (!Deno.args.includes("skip-sync-deps")) {
+  $(
+    Deno.build.os === "windows" ? "python" : "python3",
+    "./tools/git-sync-deps",
+  );
+}
 
 if (Deno.build.os === "windows") {
   const SkLoadICU = new URL(
