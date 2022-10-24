@@ -34,6 +34,16 @@ const SK_DATA_FINALIZER = new FinalizationRegistry(
   },
 );
 
+/**
+ * Canvas is an offscreen surface that can be drawn to.
+ *
+ * Internally it uses Skia's `SkSurface` and raster backend.
+ *
+ * API is mostly compatible with the Web's `OffscreenCanvas` API,
+ * however we also have some non-standard methods such as `save`.
+ *
+ * @link https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API
+ */
 export class Canvas {
   #ptr: Deno.PointerValue;
   #width: number;
@@ -44,6 +54,7 @@ export class Canvas {
     return this.#ptr;
   }
 
+  /** Zero-copy pixels buffer that gets drawn into */
   get pixels() {
     return this.#pixels;
   }
@@ -71,12 +82,23 @@ export class Canvas {
     this.#height = height;
   }
 
+  /**
+   * Save the canvas image to a file encoded in specified format
+   * and quality.
+   *
+   * Quality is a factor between 0 and 100, where 100 is the best quality.
+   * It represents different factors for different formats.
+   */
   save(path: string, format: ImageFormat = "png", quality = 100) {
     if (!sk_canvas_save(this.#ptr, cstr(path), CFormat[format], quality)) {
       throw new Error("Failed to save canvas");
     }
   }
 
+  /**
+   * Encode the canvas image into a buffer in specified format
+   * and quality.
+   */
   encode(format: ImageFormat = "png", quality = 100) {
     const bufptr = sk_canvas_encode_image(
       this.#ptr,
@@ -97,6 +119,9 @@ export class Canvas {
     return buffer;
   }
 
+  /**
+   * Read pixels from the canvas into a buffer.
+   */
   readPixels(
     x: number = 0,
     y: number = 0,
@@ -131,6 +156,9 @@ export class Canvas {
   }
 }
 
+/**
+ * Creates a new canvas with the given dimensions.
+ */
 export function createCanvas(width: number, height: number) {
   return new Canvas(width, height);
 }

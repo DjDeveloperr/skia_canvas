@@ -1,3 +1,4 @@
+import { DOMMatrix } from "./dommatrix.ts";
 import ffi from "./ffi.ts";
 import { Image } from "./image.ts";
 
@@ -33,7 +34,15 @@ export class CanvasPattern {
     PATTERN_FINALIZER.register(this, this.#ptr);
   }
 
-  setTransform(transform: [number, number, number, number, number, number]) {
-    sk_pattern_set_transform(this.#ptr, ...transform);
+  setTransform(transform: DOMMatrix) {
+    sk_pattern_set_transform(
+      this.#ptr,
+      transform.a,
+      transform.b,
+      transform.c,
+      transform.d,
+      transform.e,
+      transform.f,
+    );
   }
 }

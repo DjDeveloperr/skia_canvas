@@ -1,4 +1,5 @@
 import { Canvas } from "./canvas.ts";
+import { DOMMatrix } from "./dommatrix.ts";
 import ffi, { cstr } from "./ffi.ts";
 import { FilterType, parseFilterString } from "./filter.ts";
 import { CanvasGradient } from "./gradient.ts";
@@ -220,6 +221,9 @@ const CFontVariantCaps = {
 export type FontStretch = keyof typeof CFontStretch;
 export type FontVariantCaps = keyof typeof CFontVariantCaps;
 
+/**
+ * @link https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D
+ */
 export class CanvasRenderingContext2D {
   /// Internal State
 
@@ -845,8 +849,7 @@ export class CanvasRenderingContext2D {
   getTransform() {
     const f32 = new Float32Array(6);
     sk_context_get_transform(this.#ptr, f32);
-    // TODO: return DOMMatrix
-    return f32;
+    return new DOMMatrix(f32[0], f32[1], f32[2], f32[3], f32[4], f32[5]);
   }
 
   rotate(angle: number) {
@@ -879,8 +882,21 @@ export class CanvasRenderingContext2D {
     d: number,
     e: number,
     f: number,
+  ): void;
+  setTransform(matrix: DOMMatrix): void;
+  setTransform(
+    a: number | DOMMatrix,
+    b?: number,
+    c?: number,
+    d?: number,
+    e?: number,
+    f?: number,
   ) {
-    sk_context_set_transform(this.#ptr, a, b, c, d, e, f);
+    if (typeof a === "number") {
+      sk_context_set_transform(this.#ptr, a, b!, c!, d!, e!, f!);
+    } else {
+      sk_context_set_transform(this.#ptr, a.a, a.b, a.c, a.d, a.e, a.f);
+    }
   }
 
   resetTransform() {
