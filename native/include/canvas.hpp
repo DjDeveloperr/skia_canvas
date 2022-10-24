@@ -5,7 +5,9 @@
 #include "include/core/SkSurface.h"
 #include "include/core/SkData.h"
 #include "include/core/SkImageInfo.h"
+#include "include/core/SkImageFilter.h"
 #include "include/common.hpp"
+#include "include/effects/SkImageFilters.h"
 
 typedef struct sk_canvas {
   SkSurface* surface;
@@ -30,6 +32,7 @@ typedef struct sk_context_state {
   TextBaseline textBaseline;
   TextDirection direction;
   Font* font;
+  sk_sp<SkImageFilter> filter;
 } sk_context_state;
 
 typedef struct sk_context {

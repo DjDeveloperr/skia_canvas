@@ -3,6 +3,8 @@ import { createCanvas, Image, Path2D } from "./mod.ts";
 const canvas = createCanvas(300, 300);
 const ctx = canvas.getContext("2d");
 
+ctx.filter = "brightness(50%) contrast(200%)";
+
 const img = new Image("./testdata/skia_logo.png");
 const pattern = ctx.createPattern(img, "repeat");
 

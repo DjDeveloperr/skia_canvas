@@ -689,6 +689,61 @@ const SYMBOLS = {
     parameters: ["pointer", "pointer"],
     result: "void",
   },
+
+  sk_context_filter_reset: {
+    parameters: ["pointer"],
+    result: "void",
+  },
+
+  sk_context_filter_blur: {
+    parameters: ["pointer", "f32"],
+    result: "void",
+  },
+
+  sk_context_filter_brightness: {
+    parameters: ["pointer", "f32"],
+    result: "void",
+  },
+
+  sk_context_filter_contrast: {
+    parameters: ["pointer", "f32"],
+    result: "void",
+  },
+
+  sk_context_filter_drop_shadow: {
+    parameters: ["pointer", "f32", "f32", "f32", "buffer"],
+    result: "i32",
+  },
+
+  sk_context_filter_grayscale: {
+    parameters: ["pointer", "f32"],
+    result: "void",
+  },
+
+  sk_context_filter_hue_rotate: {
+    parameters: ["pointer", "f32"],
+    result: "void",
+  },
+
+  sk_context_filter_invert: {
+    parameters: ["pointer", "f32"],
+    result: "void",
+  },
+
+  sk_context_filter_opacity: {
+    parameters: ["pointer", "f32"],
+    result: "void",
+  },
+
+  sk_context_filter_saturated: {
+    parameters: ["pointer", "f32"],
+    result: "void",
+  },
+
+  sk_context_filter_sepia: {
+    parameters: ["pointer", "f32"],
+    result: "void",
+  },
 } as const;
 
 const LOCAL_BUILD = Deno.env.get("DENO_SKIA_LOCAL") === "1";
@@ -698,15 +753,18 @@ let lib!: Deno.DynamicLibrary<typeof SYMBOLS>["symbols"];
 
 if (LOCAL_BUILD) {
   lib = Deno.dlopen(
-    `./native/build/${
-      Deno.build.os === "windows" ? "Release/" : "lib"
-    }native_canvas.${
-      Deno.build.os === "darwin"
-        ? "dylib"
-        : Deno.build.os === "windows"
-        ? "dll"
-        : "so"
-    }`,
+    new URL(
+      `../native/build/${
+        Deno.build.os === "windows" ? "Release/" : "lib"
+      }native_canvas.${
+        Deno.build.os === "darwin"
+          ? "dylib"
+          : Deno.build.os === "windows"
+          ? "dll"
+          : "so"
+      }`,
+      import.meta.url,
+    ),
     SYMBOLS,
   ).symbols;
 } else if (CUSTOM_PATH) {

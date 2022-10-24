@@ -6,7 +6,7 @@
 [![License](https://img.shields.io/github/license/DjDeveloperr/skia_canvas)](https://github.com/DjDeveloperr/skia_canvas/blob/master/LICENSE)
 [![Sponsor](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/DjDeveloperr)
 
-Fast JavaScript Canvas backed by Skia using Deno FFI.
+Fast JavaScript Canvas using Skia
 
 ## Example
 

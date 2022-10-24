@@ -1,6 +1,6 @@
 import { Canvas } from "./canvas.ts";
 import ffi, { cstr } from "./ffi.ts";
-import { parseFilterString } from "./filter.ts";
+import { FilterType, parseFilterString } from "./filter.ts";
 import { CanvasGradient } from "./gradient.ts";
 import { Image, ImageData } from "./image.ts";
 import { parseFont } from "./parse_font.ts";
@@ -88,6 +88,17 @@ const {
   sk_context_set_stroke_style_gradient,
   sk_context_set_fill_style_pattern,
   sk_context_set_stroke_style_pattern,
+  sk_context_filter_contrast,
+  sk_context_filter_invert,
+  sk_context_filter_brightness,
+  sk_context_filter_blur,
+  sk_context_filter_drop_shadow,
+  sk_context_filter_grayscale,
+  sk_context_filter_hue_rotate,
+  sk_context_filter_opacity,
+  sk_context_filter_reset,
+  sk_context_filter_saturated,
+  sk_context_filter_sepia,
 } = ffi;
 
 const CONTEXT_FINALIZER = new FinalizationRegistry((ptr: Deno.PointerValue) => {
@@ -183,8 +194,9 @@ export class CanvasRenderingContext2D {
   #fillStyle: Style = "black";
   #strokeStyle: Style = "black";
   #shadowColor = "black";
-  #font = "";
+  #font = "10px sans-serif";
   #lineDash: number[] = [];
+  #filter = "none";
 
   /// For FFI interface
   get _unsafePointer() {
@@ -995,11 +1007,65 @@ export class CanvasRenderingContext2D {
   /// Filters
 
   get filter() {
-    return "none";
+    return this.#filter;
   }
 
   set filter(value: string) {
+    if (value === "none" || value === "") {
+      sk_context_filter_reset(this.#ptr);
+      this.#filter = value;
+      return;
+    }
     const filters = parseFilterString(value);
-    throw new Error("TODO: Context.filter");
+    this.#filter = value;
+    for (const filter of filters) {
+      switch (filter.type) {
+        case FilterType.Blur:
+          sk_context_filter_blur(this.#ptr, filter.value);
+          break;
+
+        case FilterType.Brightness:
+          sk_context_filter_brightness(this.#ptr, filter.value);
+          break;
+
+        case FilterType.Contrast:
+          sk_context_filter_contrast(this.#ptr, filter.value);
+          break;
+
+        case FilterType.DropShadow:
+          sk_context_filter_drop_shadow(
+            this.#ptr,
+            filter.dx,
+            filter.dy,
+            filter.radius,
+            cstr(filter.color),
+          );
+          break;
+
+        case FilterType.Grayscale:
+          sk_context_filter_grayscale(this.#ptr, filter.value);
+          break;
+
+        case FilterType.HueRotate:
+          sk_context_filter_hue_rotate(this.#ptr, filter.value);
+          break;
+
+        case FilterType.Invert:
+          sk_context_filter_invert(this.#ptr, filter.value);
+          break;
+
+        case FilterType.Opacity:
+          sk_context_filter_opacity(this.#ptr, filter.value);
+          break;
+
+        case FilterType.Saturate:
+          sk_context_filter_saturated(this.#ptr, filter.value);
+          break;
+
+        case FilterType.Sepia:
+          sk_context_filter_sepia(this.#ptr, filter.value);
+          break;
+      }
+    }
   }
 }
