@@ -7,12 +7,17 @@ extern "C" {
     } else {
       glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
     }
+    
     sk_window* window = glfwCreateWindow(width, height, title, NULL, NULL);
     if (window == NULL) {
       return nullptr;
     }
+
     glfwMakeContextCurrent(window);
+    // glEnable(GL_FRAMEBUFFER_SRGB);
+    
     glfwSwapInterval(1);
+    
     return window;
   }
 

@@ -13,7 +13,7 @@ extern "C" {
       glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
       glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
       glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-      glfwWindowHint(GLFW_SRGB_CAPABLE, GL_TRUE);
+      // glfwWindowHint(GLFW_SRGB_CAPABLE, GL_TRUE);
       glfwWindowHint(GLFW_STENCIL_BITS, 0);
       // glfwWindowHint(GLFW_ALPHA_BITS, 0);
       glfwWindowHint(GLFW_DEPTH_BITS, 0);
@@ -47,7 +47,7 @@ extern "C" {
 
     GrGLFramebufferInfo framebufferInfo;
 	  framebufferInfo.fFBOID = 0;
-    framebufferInfo.fFormat = GL_SRGB8_ALPHA8_EXT;
+    framebufferInfo.fFormat = GL_RGBA8;
 
     SkColorType colorType = kRGBA_8888_SkColorType;
 	  GrBackendRenderTarget backendRenderTarget(width, height, 0, 0, framebufferInfo);
@@ -57,7 +57,7 @@ extern "C" {
       backendRenderTarget,
       kBottomLeft_GrSurfaceOrigin,
       colorType,
-      SkColorSpace::MakeSRGB(),
+      nullptr, // SkColorSpace::MakeSRGB(),
       nullptr
     ).release();
 
