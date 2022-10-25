@@ -7,3 +7,5 @@ export * from "./src/font.ts";
 export * from "./src/dommatrix.ts";
 export * from "./src/gradient.ts";
 export * from "./src/pattern.ts";
+export * from "./src/pdfdocument.ts";
+export * from "./src/svgcanvas.ts";

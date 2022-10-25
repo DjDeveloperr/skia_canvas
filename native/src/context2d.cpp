@@ -82,7 +82,6 @@ void free_context_state(sk_context_state* state) {
   delete state->paint;
   delete state->transform;
   free(state->font);
-  delete state;
 }
 
 // Utility
@@ -1273,7 +1272,11 @@ extern "C" {
   /// CONTEXT_FINALIZER callback
   void sk_context_destroy(sk_context* context) {
     delete context->path;
+    free_context_state(context->state);
     delete context->state;
+    for (auto state : context->states) {
+      free_context_state(&state);
+    }
     delete context;
   }
 }
