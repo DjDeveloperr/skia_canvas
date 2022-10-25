@@ -1,17 +1,17 @@
 # Skia Canvas
 
 [![Tags](https://img.shields.io/github/release/DjDeveloperr/skia_canvas)](https://github.com/DjDeveloperr/skia_canvas/releases)
-[![Doc](https://doc.deno.land/badge.svg)](https://doc.deno.land/https/deno.land/x/skia_canvas@0.1.1/mod.ts)
+[![Doc](https://doc.deno.land/badge.svg)](https://doc.deno.land/https/deno.land/x/skia_canvas@0.2.0/mod.ts)
 [![Checks](https://github.com/DjDeveloperr/skia_canvas/actions/workflows/ci.yml/badge.svg)](https://github.com/DjDeveloperr/skia_canvas/actions/workflows/ci.yml)
 [![License](https://img.shields.io/github/license/DjDeveloperr/skia_canvas)](https://github.com/DjDeveloperr/skia_canvas/blob/master/LICENSE)
 [![Sponsor](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/DjDeveloperr)
 
-Fast JavaScript Canvas using Skia
+Fast HTML Canvas API implementation for Deno using Skia.
 
 ## Example
 
 ```ts
-import { createCanvas } from "https://deno.land/x/skia_canvas@0.1.1/mod.ts";
+import { createCanvas } from "https://deno.land/x/skia_canvas@0.2.0/mod.ts";
 
 const canvas = createCanvas(300, 300);
 const ctx = canvas.getContext("2d");
@@ -51,13 +51,23 @@ deno run -A --unstable <file>
 ## API
 
 Check the
-[API reference here](https://doc.deno.land/https/deno.land/x/skia_canvas@0.1.1/mod.ts).
+[API reference here](https://doc.deno.land/https/deno.land/x/skia_canvas@0.2.0/mod.ts).
 
 Since this module implements the Canvas Web API, you can also refer to the
 [MDN docs](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D).
 
-For non-standard APIs (such as `Canvas#save`, `Image.load`, `Fonts.*`), refer to
-the API docs mentioned above.
+For non-standard APIs, refer to the API docs mentioned above.
+
+### Non-standard APIs
+
+For non-standard APIs, refer to the API docs mentioned above.
+
+- `Canvas#save` - save canvas render as file
+- `Canvas#encode` - encode render into in-memory buffer
+- `Image` - provides utility to load image files for drawing on canvas
+- `Fonts` - provides utility to manage fonts used by Skia
+- `PdfDocument` - create PDF documents using 2D Canvas API
+- `SvgCanvas` - like `Canvas` but creates an SVG as output instead
 
 ## Building
 
