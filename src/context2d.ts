@@ -128,8 +128,8 @@ enum CLineJoin {
 
 enum CTextAlign {
   left = 0,
-  right = 1,
-  center = 2,
+  center = 1,
+  right = 2,
 }
 
 enum CTextDirection {
