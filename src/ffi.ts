@@ -774,6 +774,47 @@ const SYMBOLS = {
     parameters: ["pointer", "i32"],
     result: "void",
   },
+
+  sk_pdf_new: {
+    parameters: [
+      "buffer",
+      "buffer",
+      "buffer",
+      "buffer",
+      "buffer",
+      "buffer",
+      "buffer",
+      "buffer",
+      "bool",
+      "i32",
+    ],
+    result: "pointer",
+  },
+
+  sk_pdf_begin_page: {
+    parameters: ["pointer", "f32", "f32", "f32", "f32", "f32", "f32"],
+    result: "pointer",
+  },
+
+  sk_pdf_end_page: {
+    parameters: ["pointer"],
+    result: "void",
+  },
+
+  sk_pdf_write_file: {
+    parameters: ["pointer", "buffer"],
+    result: "i32",
+  },
+
+  sk_pdf_get_buffer: {
+    parameters: ["pointer", "buffer", "buffer"],
+    result: "pointer",
+  },
+
+  sk_pdf_destroy: {
+    parameters: ["pointer"],
+    result: "void",
+  },
 } as const;
 
 const LOCAL_BUILD = Deno.env.get("DENO_SKIA_LOCAL") === "1";

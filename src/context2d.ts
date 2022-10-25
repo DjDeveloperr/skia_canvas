@@ -13,7 +13,6 @@ import {
 } from "./pattern.ts";
 
 const {
-  sk_canvas_get_context,
   sk_context_destroy,
   sk_context_clear_rect,
   sk_context_set_fill_style,
@@ -244,9 +243,9 @@ export class CanvasRenderingContext2D {
     return this.#ptr;
   }
 
-  constructor(canvas: Canvas) {
+  constructor(canvas: Canvas, ptr: Deno.PointerValue) {
     this.#canvas = canvas;
-    this.#ptr = sk_canvas_get_context(canvas._unsafePointer);
+    this.#ptr = ptr;
     if (this.#ptr === 0) {
       throw new Error("Failed to create context");
     }
@@ -995,6 +994,9 @@ export class CanvasRenderingContext2D {
   }
 
   getImageData(sx: number, sy: number, sw: number, sh: number) {
+    if (!(this.#canvas instanceof Canvas)) {
+      throw new Error("getImageData is only supported on Canvas");
+    }
     const data = new Uint8Array(sw * sh * 4);
     this.#canvas.readPixels(sx, sy, sh, sh, data, "srgb");
     return new ImageData(data, sw, sh);

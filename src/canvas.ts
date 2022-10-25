@@ -9,6 +9,7 @@ const {
   sk_canvas_read_pixels,
   sk_canvas_encode_image,
   sk_data_free,
+  sk_canvas_get_context,
 } = ffi;
 
 const CANVAS_FINALIZER = new FinalizationRegistry((ptr: Deno.PointerValue) => {
@@ -148,8 +149,10 @@ export class Canvas {
   getContext(type: "2d"): CanvasRenderingContext2D;
   getContext(type: string): CanvasRenderingContext2D | null {
     switch (type) {
-      case "2d":
-        return new CanvasRenderingContext2D(this);
+      case "2d": {
+        const ptr = sk_canvas_get_context(this.#ptr);
+        return new CanvasRenderingContext2D(this, ptr);
+      }
       default:
         return null;
     }

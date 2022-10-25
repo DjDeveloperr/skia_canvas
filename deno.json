@@ -6,7 +6,8 @@
   "tasks": {
     "build": "cd native/build && CC=clang CXX=clang++ cmake .. && cmake --build . --config Release",
     "build-win": "rm -rf native/build && mkdir native/build && cd native/build && cmake .. -G \"Visual Studio 17 2022\" -T ClangCL && cmake --build . --config Release",
-    "test": "deno run -A --unstable test.ts",
+    "test": "deno run -A --unstable ./test/test.ts",
+    "test-pdf": "deno run -A --unstable ./test/pdf.ts",
     "bench": "deno bench -A --unstable bench/deno.js",
     "bench-node": "node bench/node.mjs",
     "build-skia": "deno run -A --unstable scripts/build_skia.ts"

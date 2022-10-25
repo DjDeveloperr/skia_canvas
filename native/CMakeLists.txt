@@ -16,7 +16,8 @@ add_library(native_canvas SHARED
   src/path2d.cpp
   src/image.cpp
   src/gradient.cpp
-  src/pattern.cpp)
+  src/pattern.cpp
+  src/pdfdocument.cpp)
 
 if (UNIX)
   target_compile_options(native_canvas PRIVATE
