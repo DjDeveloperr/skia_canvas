@@ -5,7 +5,7 @@ set (CMAKE_CXX_STANDARD 17)
 # set (CMAKE_BUILD_TYPE Debug)
 set (CMAKE_BUILD_TYPE Release)
 
-include_directories(. ../skia)
+include_directories(. ../skia ../glfw/include)
 
 add_library(native_canvas SHARED
   deps/csscolorparser.cpp
@@ -18,7 +18,8 @@ add_library(native_canvas SHARED
   src/gradient.cpp
   src/pattern.cpp
   src/pdfdocument.cpp
-  src/svgcanvas.cpp)
+  src/svgcanvas.cpp
+  src/window.cpp)
 
 if (UNIX)
   target_compile_options(native_canvas PRIVATE
@@ -44,8 +45,9 @@ if(APPLE)
 endif()
 
 set (SKIA_OUT ${CMAKE_CURRENT_SOURCE_DIR}/../skia/out/Release)
+set (GLFW_OUT ${CMAKE_CURRENT_SOURCE_DIR}/../glfw/build/src)
 
-target_link_directories(native_canvas PRIVATE ${SKIA_OUT})
+target_link_directories(native_canvas PRIVATE ${SKIA_OUT} ${GLFW_OUT})
 
 if(UNIX AND NOT APPLE)
   target_link_libraries(native_canvas "-Wl,--whole-archive")
@@ -71,4 +73,5 @@ target_link_libraries(native_canvas
   freetype2
   wuffs
   icu
-  expat)
+  expat
+  glfw3)

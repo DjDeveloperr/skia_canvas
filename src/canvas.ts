@@ -4,6 +4,7 @@ import { ColorSpace } from "./image.ts";
 
 const {
   sk_canvas_create,
+  sk_canvas_create_gl,
   sk_canvas_destroy,
   sk_canvas_save,
   sk_canvas_read_pixels,
@@ -49,7 +50,7 @@ export class Canvas {
   #ptr: Deno.PointerValue;
   #width: number;
   #height: number;
-  #pixels: Uint8Array;
+  #pixels: Uint8Array | null;
 
   get _unsafePointer() {
     return this.#ptr;
@@ -68,9 +69,9 @@ export class Canvas {
     return this.#height;
   }
 
-  constructor(width: number, height: number) {
-    this.#pixels = new Uint8Array(width * height * 4);
-    this.#ptr = sk_canvas_create(
+  constructor(width: number, height: number, gl = false) {
+    this.#pixels = gl ? null : new Uint8Array(width * height * 4);
+    this.#ptr = gl ? sk_canvas_create_gl(width, height) : sk_canvas_create(
       width,
       height,
       this.#pixels,

@@ -8,9 +8,15 @@
 #include "include/core/SkImageFilter.h"
 #include "include/common.hpp"
 #include "include/effects/SkImageFilters.h"
+#include "GLFW/glfw3.h"
+#define SK_GL
+#include "include/gpu/GrBackendSurface.h"
+#include "include/gpu/GrDirectContext.h"
+#include "include/gpu/gl/GrGLInterface.h"
 
 typedef struct sk_canvas {
   SkSurface* surface;
+  GrDirectContext* context;
   void* pixels;
 } sk_canvas;
 
@@ -47,6 +53,7 @@ typedef struct sk_context {
 extern "C" {
   SKIA_EXPORT void sk_init();
   SKIA_EXPORT sk_canvas* sk_canvas_create(int width, int height, void* pixels);
+  SKIA_EXPORT sk_canvas* sk_canvas_create_gl(int width, int height);
   SKIA_EXPORT void sk_canvas_destroy(sk_canvas* canvas);
   SKIA_EXPORT int sk_canvas_save(sk_canvas* canvas, char* path, int format, int quality);
   SKIA_EXPORT void sk_canvas_read_pixels(sk_canvas* canvas, int x, int y, int width, int height, void* pixels, int cs);

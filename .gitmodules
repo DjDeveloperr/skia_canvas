@@ -1,3 +1,6 @@
 [submodule "skia"]
 	path = skia
 	url = https://skia.googlesource.com/skia.git
+[submodule "glfw"]
+	path = glfw
+	url = https://github.com/glfw/glfw

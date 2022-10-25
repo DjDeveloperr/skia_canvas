@@ -79,6 +79,14 @@ jobs:
           restore-keys: |
             1-${{ runner.os }}-cmake-build
 
+      - name: Build GLFW (Unix)
+        if: runner.os != 'Windows'
+        run: deno task build-glfw
+        
+      - name: Build GLFW (Windows)
+        if: runner.os == 'Windows'
+        run: deno task build-glfw-win
+
       - name: Build Native Library (Unix)
         if: runner.os != 'Windows'
         run: deno task build
