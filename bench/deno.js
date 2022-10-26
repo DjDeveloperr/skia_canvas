@@ -33,11 +33,11 @@ Deno.bench("gradient: deno canvaskit-wasm", () => {
   canvas.toBuffer("image/png");
 });
 
-Deno.bench("images: deno skia_canvas", async () => {
+Deno.bench("images: deno skia_canvas", () => {
   const canvas = createCanvas(1000, 1400);
   const ctx = canvas.getContext("2d");
-  const skiaImage = await Image.load("./testdata/skia_logo.png");
-  const testImage = await Image.load("./testdata/test.png");
+  const skiaImage = new Image("./testdata/skia_logo.png");
+  const testImage = new Image("./testdata/test.png");
   drawImage(ctx, skiaImage, testImage);
   canvas.encode("png");
 });
