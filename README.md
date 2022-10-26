@@ -69,6 +69,10 @@ For non-standard APIs, refer to the API docs mentioned above.
 - `PdfDocument` - create PDF documents using 2D Canvas API
 - `SvgCanvas` - like `Canvas` but creates an SVG as output instead
 
+## Benchmarks
+
+![Benchmark Results](./testdata/test_results.png)
+
 ## Building
 
 First you need to

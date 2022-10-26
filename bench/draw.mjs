@@ -17,3 +17,29 @@ export function draw(ctx) {
   ctx.closePath();
   ctx.stroke();
 }
+
+export function drawGradient(ctx) {
+  // Linear gradient (left)
+  const linearGradient = ctx.createLinearGradient(20, 0, 220, 0);
+  linearGradient.addColorStop(0, "green");
+  linearGradient.addColorStop(0.5, "cyan");
+  linearGradient.addColorStop(1, "green");
+
+  ctx.fillStyle = linearGradient;
+  ctx.fillRect(0, 0, 512, 512);
+
+  // Radial gradient (right)
+  const radialGradient = ctx.createRadialGradient(110, 90, 30, 100, 100, 70);
+  radialGradient.addColorStop(0, "pink");
+  radialGradient.addColorStop(0.9, "white");
+  radialGradient.addColorStop(1, "green");
+
+  ctx.fillStyle = radialGradient;
+  ctx.fillRect(512, 0, 512, 512);
+}
+
+export function drawImage(ctx, skiaImage, testImage) {
+  ctx.drawImage(skiaImage, 0, 0);
+  ctx.drawImage(testImage, 0, 100);
+  ctx.drawImage(testImage, 0, 400, 1000, 1000);
+}
