@@ -38,7 +38,8 @@ if (WIN32)
   target_link_libraries(native_canvas
     gdi32
     user32
-    kernel32)
+    kernel32
+    opengl32)
 endif()
 
 # target_compile_options(native_canvas PRIVATE -g)
