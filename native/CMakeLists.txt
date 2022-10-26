@@ -7,6 +7,15 @@ set (CMAKE_BUILD_TYPE Release)
 
 include_directories(. ../skia ../glfw/include)
 
+find_package(OpenGL REQUIRED)
+
+include_directories(${OPENGL_INCLUDE_DIRS})
+
+set( GLFW_BUILD_DOCS OFF CACHE BOOL  "GLFW lib only")
+set( GLFW_INSTALL OFF CACHE BOOL  "GLFW lib only")
+
+add_subdirectory(glfw)
+
 add_library(native_canvas SHARED
   deps/csscolorparser.cpp
   src/common.cpp
@@ -83,4 +92,4 @@ target_link_libraries(native_canvas
   wuffs
   icu
   expat
-  glfw3)
+  glfw)
