@@ -78,6 +78,10 @@ jobs:
           key: 1-${{ runner.os }}-cmake-build
           restore-keys: |
             1-${{ runner.os }}-cmake-build
+            
+      - name: Install dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get install xorg-dev
 
       - name: Build GLFW (Unix)
         if: runner.os != 'Windows'
