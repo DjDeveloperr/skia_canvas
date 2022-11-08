@@ -52,6 +52,7 @@ export class Canvas {
   #width: number;
   #height: number;
   #pixels: Uint8Array | null;
+  #gpu = false;
 
   get _unsafePointer() {
     return this.#ptr;
@@ -70,9 +71,15 @@ export class Canvas {
     return this.#height;
   }
 
-  constructor(width: number, height: number, gl = false) {
-    this.#pixels = gl ? null : new Uint8Array(width * height * 4);
-    this.#ptr = gl ? sk_canvas_create_gl(width, height) : sk_canvas_create(
+  /** Whether Canvas is GPU backed */
+  get gpu() {
+    return this.#gpu;
+  }
+
+  constructor(width: number, height: number, gpu = false) {
+    this.#gpu = gpu;
+    this.#pixels = gpu ? null : new Uint8Array(width * height * 4);
+    this.#ptr = gpu ? sk_canvas_create_gl(width, height) : sk_canvas_create(
       width,
       height,
       this.#pixels,
@@ -160,6 +167,7 @@ export class Canvas {
     }
   }
 
+  /** Only for GPU backed: Flushes all draw calls, call before swap */
   flush() {
     sk_canvas_flush(this.#ptr);
   }
@@ -167,7 +175,9 @@ export class Canvas {
 
 /**
  * Creates a new canvas with the given dimensions.
+ * 
+ * Only pass `gpu = true` if you have an OpenGL context initialized already.
  */
-export function createCanvas(width: number, height: number) {
-  return new Canvas(width, height);
+export function createCanvas(width: number, height: number, gpu?: boolean) {
+  return new Canvas(width, height, gpu);
 }
