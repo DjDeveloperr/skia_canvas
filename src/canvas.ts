@@ -11,6 +11,7 @@ const {
   sk_canvas_encode_image,
   sk_data_free,
   sk_canvas_get_context,
+  sk_canvas_flush,
 } = ffi;
 
 const CANVAS_FINALIZER = new FinalizationRegistry((ptr: Deno.PointerValue) => {
@@ -157,6 +158,10 @@ export class Canvas {
       default:
         return null;
     }
+  }
+
+  flush() {
+    sk_canvas_flush(this.#ptr);
   }
 }
 

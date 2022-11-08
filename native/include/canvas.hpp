@@ -8,7 +8,7 @@
 #include "include/core/SkImageFilter.h"
 #include "include/common.hpp"
 #include "include/effects/SkImageFilters.h"
-#include "GLFW/glfw3.h"
+// #include "GLFW/glfw3.h"
 #define SK_GL
 #include "include/gpu/GrBackendSurface.h"
 #include "include/gpu/GrDirectContext.h"
@@ -60,4 +60,5 @@ extern "C" {
   SKIA_EXPORT const void* sk_canvas_encode_image(sk_canvas* canvas, int format, int quality, int* size, SkData** data);
   SKIA_EXPORT void sk_data_free(SkData* data);
   SKIA_EXPORT sk_context* sk_canvas_get_context(sk_canvas* canvas);
+  SKIA_EXPORT void sk_canvas_flush(sk_canvas* canvas);
 }

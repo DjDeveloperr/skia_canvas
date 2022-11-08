@@ -846,64 +846,8 @@ const SYMBOLS = {
     result: "pointer",
   },
 
-  sk_window_create: {
-    parameters: [
-      "i32",
-      "i32",
-      "buffer",
-      "bool",
-    ],
-    result: "pointer",
-  },
-
-  sk_window_destroy: {
+  sk_canvas_flush: {
     parameters: ["pointer"],
-    result: "void",
-  },
-
-  sk_window_show: {
-    parameters: ["pointer"],
-    result: "void",
-  },
-
-  sk_window_hide: {
-    parameters: ["pointer"],
-    result: "void",
-  },
-
-  sk_window_set_title: {
-    parameters: ["pointer", "buffer"],
-    result: "void",
-  },
-
-  sk_window_set_size: {
-    parameters: ["pointer", "i32", "i32"],
-    result: "void",
-  },
-
-  sk_window_set_position: {
-    parameters: ["pointer", "i32", "i32"],
-    result: "void",
-  },
-
-  sk_window_get_size: {
-    parameters: ["pointer", "buffer", "buffer"],
-    result: "void",
-  },
-
-  sk_window_get_position: {
-    parameters: ["pointer", "buffer", "buffer"],
-    result: "void",
-  },
-
-  sk_window_draw_begin: {
-    parameters: ["pointer"],
-    result: "bool",
-    callback: true,
-  },
-
-  sk_window_draw_end: {
-    parameters: ["pointer", "pointer"],
     result: "void",
   },
 } as const;

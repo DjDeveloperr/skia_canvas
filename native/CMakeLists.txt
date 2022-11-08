@@ -5,16 +5,17 @@ set (CMAKE_CXX_STANDARD 17)
 # set (CMAKE_BUILD_TYPE Debug)
 set (CMAKE_BUILD_TYPE Release)
 
-include_directories(. ../skia ../glfw/include)
+# include_directories(. ../skia ../glfw/include)
+include_directories(. ../skia)
 
-find_package(OpenGL REQUIRED)
+# find_package(OpenGL REQUIRED)
 
-include_directories(${OPENGL_INCLUDE_DIRS})
+# include_directories(${OPENGL_INCLUDE_DIRS})
 
-set( GLFW_BUILD_DOCS OFF CACHE BOOL  "GLFW lib only")
-set( GLFW_INSTALL OFF CACHE BOOL  "GLFW lib only")
+# set( GLFW_BUILD_DOCS OFF CACHE BOOL  "GLFW lib only")
+# set( GLFW_INSTALL OFF CACHE BOOL  "GLFW lib only")
 
-add_subdirectory(../glfw ./glfw)
+# add_subdirectory(../glfw ./glfw)
 
 add_library(native_canvas SHARED
   deps/csscolorparser.cpp
@@ -27,8 +28,7 @@ add_library(native_canvas SHARED
   src/gradient.cpp
   src/pattern.cpp
   src/pdfdocument.cpp
-  src/svgcanvas.cpp
-  src/window.cpp)
+  src/svgcanvas.cpp)
 
 if (UNIX)
   target_compile_options(native_canvas PRIVATE
@@ -63,9 +63,10 @@ if(APPLE)
 endif()
 
 set (SKIA_OUT ${CMAKE_CURRENT_SOURCE_DIR}/../skia/out/Release)
-set (GLFW_OUT ${CMAKE_CURRENT_SOURCE_DIR}/../glfw/build/src)
+# set (GLFW_OUT ${CMAKE_CURRENT_SOURCE_DIR}/../glfw/build/src)
 
-target_link_directories(native_canvas PRIVATE ${SKIA_OUT} ${GLFW_OUT})
+# target_link_directories(native_canvas PRIVATE ${SKIA_OUT} ${GLFW_OUT})
+target_link_directories(native_canvas PRIVATE ${SKIA_OUT})
 
 if(UNIX AND NOT APPLE)
   target_link_libraries(native_canvas "-Wl,--whole-archive")
@@ -91,5 +92,5 @@ target_link_libraries(native_canvas
   freetype2
   wuffs
   icu
-  expat
-  glfw)
+  expat)
+# glfw)
