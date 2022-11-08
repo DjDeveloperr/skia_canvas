@@ -175,7 +175,7 @@ export class Canvas {
 
 /**
  * Creates a new canvas with the given dimensions.
- * 
+ *
  * Only pass `gpu = true` if you have an OpenGL context initialized already.
  */
 export function createCanvas(width: number, height: number, gpu?: boolean) {
