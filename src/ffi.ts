@@ -379,26 +379,12 @@ const SYMBOLS = {
   },
 
   sk_canvas_read_pixels: {
-    parameters: [
-      "pointer",
-      "i32",
-      "i32",
-      "i32",
-      "i32",
-      "buffer",
-      "i32",
-    ],
+    parameters: ["pointer", "i32", "i32", "i32", "i32", "buffer", "i32"],
     result: "void",
   },
 
   sk_canvas_encode_image: {
-    parameters: [
-      "pointer",
-      "i32",
-      "i32",
-      "buffer",
-      "buffer",
-    ],
+    parameters: ["pointer", "i32", "i32", "buffer", "buffer"],
     result: "pointer",
   },
 
@@ -594,15 +580,7 @@ const SYMBOLS = {
   },
 
   sk_context_put_image_data: {
-    parameters: [
-      "pointer",
-      "i32",
-      "i32",
-      "buffer",
-      "i32",
-      "f32",
-      "f32",
-    ],
+    parameters: ["pointer", "i32", "i32", "buffer", "i32", "f32", "f32"],
     result: "void",
   },
 
@@ -859,9 +837,9 @@ if (LOCAL_BUILD) {
           ? "dll"
           : "so"
       }`,
-      import.meta.url,
+      import.meta.url
     ),
-    SYMBOLS,
+    SYMBOLS
   ).symbols;
 } else if (CUSTOM_PATH) {
   lib = Deno.dlopen(CUSTOM_PATH, SYMBOLS).symbols;
@@ -885,7 +863,8 @@ if (LOCAL_BUILD) {
     const durl = createDownloadURL(options);
     const directory = await ensureCacheLocation();
     const cacheBasePath = join(directory, await urlToFilename(durl));
-    const cacheIcuPath = join(directory, `https/github.com/icudtl.dat`);
+    const cacheIcuBasePath = join(directory, `https:/github.com`);
+    const cacheIcuPath = join(cacheIcuBasePath, `icudtl.dat`);
     const cacheFilePath = `${cacheBasePath}${extname(durl.pathname)}`;
     const cached = await isFile(cacheFilePath);
 
@@ -897,14 +876,16 @@ if (LOCAL_BUILD) {
           throw new Error(`Could not find ${url}`);
         } else {
           throw new Deno.errors.Http(
-            `${response.status} ${response.statusText}`,
+            `${response.status} ${response.statusText}`
           );
         }
       }
 
+      await ensureDir(dirname(cacheIcuBasePath));
+
       await Deno.writeFile(
         cacheIcuPath,
-        new Uint8Array(await response.arrayBuffer()),
+        new Uint8Array(await response.arrayBuffer())
       );
     }
 
@@ -918,7 +899,10 @@ lib.sk_init();
 
 export default lib;
 
-const { op_ffi_cstr_read, op_ffi_get_buf }: {
+const {
+  op_ffi_cstr_read,
+  op_ffi_get_buf,
+}: {
   op_ffi_cstr_read: (ptr: Deno.PointerValue) => string;
   op_ffi_get_buf: (ptr: Deno.PointerValue, size: number) => ArrayBuffer;
 } = (Deno as any).core.ops;
