@@ -837,9 +837,9 @@ if (LOCAL_BUILD) {
           ? "dll"
           : "so"
       }`,
-      import.meta.url
+      import.meta.url,
     ),
-    SYMBOLS
+    SYMBOLS,
   ).symbols;
 } else if (CUSTOM_PATH) {
   lib = Deno.dlopen(CUSTOM_PATH, SYMBOLS).symbols;
@@ -876,7 +876,7 @@ if (LOCAL_BUILD) {
           throw new Error(`Could not find ${url}`);
         } else {
           throw new Deno.errors.Http(
-            `${response.status} ${response.statusText}`
+            `${response.status} ${response.statusText}`,
           );
         }
       }
@@ -885,7 +885,7 @@ if (LOCAL_BUILD) {
 
       await Deno.writeFile(
         cacheIcuPath,
-        new Uint8Array(await response.arrayBuffer())
+        new Uint8Array(await response.arrayBuffer()),
       );
     }
 
