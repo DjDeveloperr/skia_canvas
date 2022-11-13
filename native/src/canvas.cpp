@@ -1,10 +1,6 @@
 #include "include/canvas.hpp"
 #include "include/context2d.hpp"
 
-void error_callback(int error, const char* description) {
-	std::cerr << "skia_canvas: glfw error (" << error << "): " << description << std::endl;
-}
-
 extern "C" {
   void sk_init() {
     SkGraphics::Init();

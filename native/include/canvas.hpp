@@ -8,7 +8,6 @@
 #include "include/core/SkImageFilter.h"
 #include "include/common.hpp"
 #include "include/effects/SkImageFilters.h"
-// #include "GLFW/glfw3.h"
 #define SK_GL
 #include "include/gpu/GrBackendSurface.h"
 #include "include/gpu/GrDirectContext.h"
