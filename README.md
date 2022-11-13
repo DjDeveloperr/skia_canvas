@@ -71,7 +71,7 @@ For non-standard APIs, refer to the API docs mentioned above.
 
 ## Benchmarks
 
-![Benchmark Results](./testdata/test_results.png)
+![Benchmark Results](./bench/results.png)
 
 ## Building
 
