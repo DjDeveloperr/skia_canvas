@@ -124,6 +124,8 @@ enum CTextAlign {
   left = 0,
   center = 1,
   right = 2,
+  start = 3,
+  end = 4,
 }
 
 enum CTextDirection {

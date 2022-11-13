@@ -1,16 +1,13 @@
 import { createCanvas } from "../mod.ts";
-// @deno-types="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/types/index.esm.d.ts"
-import {
-  Chart,
-  registerables,
-} from "https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.esm.js";
+import "https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js";
+import "https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0/dist/chartjs-plugin-datalabels.min.js";
 
-Chart.register(...registerables);
+Chart.register(ChartDataLabels);
 
 console.log("Running Deno benchmark...");
 const denoOut = new TextDecoder().decode(
   Deno.spawnSync(Deno.execPath(), {
-    args: ["task", "bench"],
+    args: ["task", "bench-deno"],
     env: {
       NO_COLOR: "1",
     },
@@ -120,6 +117,15 @@ const _chart = new Chart(ctx, {
       subtitle: {
         display: true,
         text: `(Lower is better)`,
+      },
+      datalabels: { // This code is used to display data values
+        anchor: "end",
+        align: "top",
+        formatter: Math.round,
+        font: {
+          weight: "normal",
+          size: 14,
+        },
       },
     },
     scales: {

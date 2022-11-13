@@ -9,8 +9,9 @@
     "test": "deno run -A --unstable ./test/test.ts",
     "test-pdf": "deno run -A --unstable ./test/pdf.ts",
     "test-svg": "deno run -A --unstable ./test/svg.ts",
-    "bench": "deno bench -A --unstable bench/deno.js",
+    "bench-deno": "deno bench -A --unstable bench/deno.js",
     "bench-node": "node bench/node.mjs",
+    "bench": "deno run -A --unstable bench/main.js",
     "build-skia": "deno run -A --unstable scripts/build_skia.ts"
   },
 

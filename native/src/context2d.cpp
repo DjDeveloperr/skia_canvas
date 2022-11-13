@@ -28,8 +28,8 @@ sk_context_state* create_default_state() {
   state->transform->setIdentity();
   state->imageSmoothingEnabled = true;
   state->imageSmoothingQuality = kLow;
-  state->textAlign = kLeft;
-  state->textBaseline = kTop;
+  state->textAlign = kStart;
+  state->textBaseline = kAlphabetic;
   state->direction = kLTR;
   state->font = new Font();
   state->font->size = 10;
@@ -393,6 +393,12 @@ extern "C" {
         break;
       case TextAlign::kRight:
         paintX = x - lineWidth;
+        break;
+      case TextAlign::kStart:
+        paintX = context->state->direction == TextDirection::kLTR ? x : x - lineWidth;
+        break;
+      case TextAlign::kEnd:
+        paintX = context->state->direction == TextDirection::kLTR ? x - lineWidth : x;
         break;
       }
       auto needScale = lineWidth > maxWidth;

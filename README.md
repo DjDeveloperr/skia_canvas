@@ -33,7 +33,7 @@ ctx.lineTo(250, 140);
 ctx.closePath();
 ctx.stroke();
 
-canvas.save("./image.png");
+canvas.save("image.png");
 ```
 
 ## Usage
@@ -72,6 +72,8 @@ For non-standard APIs, refer to the API docs mentioned above.
 ## Benchmarks
 
 ![Benchmark Results](./bench/results.png)
+
+Source: [bench/main.js](./bench/main.js)
 
 ## Building
 
