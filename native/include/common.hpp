@@ -42,8 +42,11 @@ enum TextAlign {
 
 enum TextBaseline {
   kTop,
+  kHanging,
   kMiddle,
-  kBottom
+  kAlphabetic,
+  kIdeographic,
+  kBottom,
 };
 
 enum TextDirection {

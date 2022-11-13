@@ -12,6 +12,7 @@ const {
   sk_data_free,
   sk_canvas_get_context,
   sk_canvas_flush,
+  sk_canvas_set_size,
 } = ffi;
 
 const CANVAS_FINALIZER = new FinalizationRegistry((ptr: Deno.PointerValue) => {
@@ -51,24 +52,27 @@ export class Canvas {
   #ptr: Deno.PointerValue;
   #width: number;
   #height: number;
-  #pixels: Uint8Array | null;
   #gpu = false;
+  #ctx: CanvasRenderingContext2D;
 
   get _unsafePointer() {
     return this.#ptr;
-  }
-
-  /** Zero-copy pixels buffer that gets drawn into */
-  get pixels() {
-    return this.#pixels;
   }
 
   get width() {
     return this.#width;
   }
 
+  set width(width: number) {
+    sk_canvas_set_size(this.#ptr, width, this.#height);
+  }
+
   get height() {
     return this.#height;
+  }
+
+  set height(height: number) {
+    sk_canvas_set_size(this.#ptr, this.#width, height);
   }
 
   /** Whether Canvas is GPU backed */
@@ -78,11 +82,9 @@ export class Canvas {
 
   constructor(width: number, height: number, gpu = false) {
     this.#gpu = gpu;
-    this.#pixels = gpu ? null : new Uint8Array(width * height * 4);
     this.#ptr = gpu ? sk_canvas_create_gl(width, height) : sk_canvas_create(
       width,
       height,
-      this.#pixels,
     );
     if (this.#ptr === 0) {
       throw new Error("Failed to create canvas");
@@ -90,6 +92,12 @@ export class Canvas {
     CANVAS_FINALIZER.register(this, this.#ptr);
     this.#width = width;
     this.#height = height;
+    this.#ctx = new CanvasRenderingContext2D(
+      this,
+      sk_canvas_get_context(
+        this.#ptr,
+      ),
+    );
   }
 
   /**
@@ -133,8 +141,8 @@ export class Canvas {
    * Read pixels from the canvas into a buffer.
    */
   readPixels(
-    x: number = 0,
-    y: number = 0,
+    x = 0,
+    y = 0,
     width?: number,
     height?: number,
     into?: Uint8Array,
@@ -159,17 +167,26 @@ export class Canvas {
   getContext(type: string): CanvasRenderingContext2D | null {
     switch (type) {
       case "2d": {
-        const ptr = sk_canvas_get_context(this.#ptr);
-        return new CanvasRenderingContext2D(this, ptr);
+        return this.#ctx;
       }
       default:
         return null;
     }
   }
 
+  resize(width: number, height: number) {
+    sk_canvas_set_size(this.#ptr, width, height);
+    this.#width = width;
+    this.#height = height;
+    const ctxPtr = sk_canvas_get_context(this.#ptr);
+    // In case the context is still being used, we'll just update its pointer
+    this.#ctx._unsafePointer = ctxPtr;
+    this.#ctx = new CanvasRenderingContext2D(this, ctxPtr);
+  }
+
   /** Only for GPU backed: Flushes all draw calls, call before swap */
   flush() {
-    sk_canvas_flush(this.#ptr);
+    if (this.#gpu) sk_canvas_flush(this.#ptr);
   }
 }
 

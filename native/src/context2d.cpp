@@ -348,7 +348,7 @@ extern "C" {
     }
     
     auto alphaBaseline = paragraph->getAlphabeticBaseline();
-    auto cssBaseline = (CssBaseline) alphaBaseline;
+    auto cssBaseline = (CssBaseline) context->state->textBaseline;
     
     SkScalar baselineOffset = 0;
     switch (cssBaseline) {
@@ -485,6 +485,7 @@ extern "C" {
 
   // Context.lineCap setter
   void sk_context_set_line_cap(sk_context* context, int cap) {
+    // std::cout << "setLineCap: " << context->state->paint << std::endl;
     switch (cap) {
       case 0:
         context->state->paint->setStrokeCap(SkPaint::kButt_Cap);
@@ -1135,7 +1136,7 @@ extern "C" {
 
   // Context.save()
   void sk_context_save(sk_context* context) {
-    context->states.push_back(*clone_context_state(context->state));
+    context->states.push_back(clone_context_state(context->state));
     context->canvas->save();
   }
 
@@ -1143,7 +1144,8 @@ extern "C" {
   void sk_context_restore(sk_context* context) {
     if (context->states.size() > 0) {
       free_context_state(context->state);
-      context->state = &context->states.back();
+      delete context->state;
+      context->state = context->states.back();
       context->states.pop_back();
       context->canvas->restore();
     }
@@ -1269,13 +1271,12 @@ extern "C" {
     context->state->filter = SkImageFilters::ColorFilter(color_filter, context->state->filter);
   }
 
-  /// CONTEXT_FINALIZER callback
   void sk_context_destroy(sk_context* context) {
     delete context->path;
     free_context_state(context->state);
     delete context->state;
     for (auto state : context->states) {
-      free_context_state(&state);
+      free_context_state(state);
     }
     delete context;
   }
