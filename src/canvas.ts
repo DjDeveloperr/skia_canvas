@@ -4,12 +4,14 @@ import { ColorSpace } from "./image.ts";
 
 const {
   sk_canvas_create,
+  sk_canvas_create_gl,
   sk_canvas_destroy,
   sk_canvas_save,
   sk_canvas_read_pixels,
   sk_canvas_encode_image,
   sk_data_free,
   sk_canvas_get_context,
+  sk_canvas_flush,
 } = ffi;
 
 const CANVAS_FINALIZER = new FinalizationRegistry((ptr: Deno.PointerValue) => {
@@ -49,7 +51,8 @@ export class Canvas {
   #ptr: Deno.PointerValue;
   #width: number;
   #height: number;
-  #pixels: Uint8Array;
+  #pixels: Uint8Array | null;
+  #gpu = false;
 
   get _unsafePointer() {
     return this.#ptr;
@@ -68,9 +71,15 @@ export class Canvas {
     return this.#height;
   }
 
-  constructor(width: number, height: number) {
-    this.#pixels = new Uint8Array(width * height * 4);
-    this.#ptr = sk_canvas_create(
+  /** Whether Canvas is GPU backed */
+  get gpu() {
+    return this.#gpu;
+  }
+
+  constructor(width: number, height: number, gpu = false) {
+    this.#gpu = gpu;
+    this.#pixels = gpu ? null : new Uint8Array(width * height * 4);
+    this.#ptr = gpu ? sk_canvas_create_gl(width, height) : sk_canvas_create(
       width,
       height,
       this.#pixels,
@@ -157,11 +166,19 @@ export class Canvas {
         return null;
     }
   }
+
+  /** Only for GPU backed: Flushes all draw calls, call before swap */
+  flush() {
+    sk_canvas_flush(this.#ptr);
+  }
 }
 
 /**
  * Creates a new canvas with the given dimensions.
+ *
+ * Only pass `gpu: true` if you have an OpenGL context initialized
+ * and made current already.
  */
-export function createCanvas(width: number, height: number) {
-  return new Canvas(width, height);
+export function createCanvas(width: number, height: number, gpu?: boolean) {
+  return new Canvas(width, height, gpu);
 }

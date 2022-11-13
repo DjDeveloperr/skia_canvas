@@ -33,6 +33,12 @@ if (WIN32)
   target_compile_options(native_canvas PRIVATE
     /MT
     /W0)
+
+  target_link_libraries(native_canvas
+    gdi32
+    user32
+    kernel32
+    opengl32)
 endif()
 
 # target_compile_options(native_canvas PRIVATE -g)
@@ -41,6 +47,9 @@ if(APPLE)
   target_link_libraries(native_canvas "-framework CoreFoundation")
   target_link_libraries(native_canvas "-framework CoreText")
   target_link_libraries(native_canvas "-framework CoreGraphics")
+  target_link_libraries(native_canvas "-framework IOKit")
+  target_link_libraries(native_canvas "-framework Cocoa")
+  target_link_libraries(native_canvas "-framework OpenGL")
 endif()
 
 set (SKIA_OUT ${CMAKE_CURRENT_SOURCE_DIR}/../skia/out/Release)

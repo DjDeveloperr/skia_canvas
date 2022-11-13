@@ -1,8 +1,23 @@
 #include "include/canvas.hpp"
 #include "include/context2d.hpp"
 
+void error_callback(int error, const char* description) {
+	std::cerr << "skia_canvas: glfw error (" << error << "): " << description << std::endl;
+}
+
 extern "C" {
   void sk_init() {
+    // if (glfwInit()) {
+    //   glfwSetErrorCallback(error_callback);
+    //   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    //   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+    //   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    //   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    //   // glfwWindowHint(GLFW_SRGB_CAPABLE, GL_TRUE);
+    //   glfwWindowHint(GLFW_STENCIL_BITS, 0);
+    //   // glfwWindowHint(GLFW_ALPHA_BITS, 0);
+    //   glfwWindowHint(GLFW_DEPTH_BITS, 0);
+    // }
     SkGraphics::Init();
   }
 
@@ -14,6 +29,47 @@ extern "C" {
     canvas->pixels = pixels == nullptr ? malloc(size) : pixels;
     canvas->surface = SkSurface::MakeRasterDirect(info, canvas->pixels, rowBytes).release();
     return canvas;
+  }
+
+  sk_canvas* sk_canvas_create_gl(int width, int height) {
+    sk_canvas* canvas = new sk_canvas();
+    auto interface = GrGLMakeNativeInterface();
+
+    if (interface == nullptr) {
+      return nullptr;
+    }
+
+    canvas->context = GrDirectContext::MakeGL(interface).release();
+
+    if (canvas->context == nullptr) {
+      return nullptr;
+    }
+
+    GrGLFramebufferInfo framebufferInfo;
+	  framebufferInfo.fFBOID = 0;
+    framebufferInfo.fFormat = 32856;
+
+    SkColorType colorType = kRGBA_8888_SkColorType;
+	  GrBackendRenderTarget backendRenderTarget(width, height, 0, 0, framebufferInfo);
+  
+    canvas->surface = SkSurface::MakeFromBackendRenderTarget(
+      canvas->context,
+      backendRenderTarget,
+      kBottomLeft_GrSurfaceOrigin,
+      colorType,
+      nullptr, // SkColorSpace::MakeSRGB(),
+      nullptr
+    ).release();
+
+    if (canvas->surface == nullptr) {
+      return nullptr;
+    }
+
+    return canvas;
+  }
+
+  void sk_canvas_flush(sk_canvas* canvas) {
+    canvas->context->flush();
   }
 
   void sk_canvas_destroy(sk_canvas* canvas) {

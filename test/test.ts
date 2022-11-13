@@ -1,6 +1,6 @@
-import { createCanvas, Image, Path2D } from "../mod.ts";
+import { Canvas, Image, Path2D } from "../mod.ts";
 
-const canvas = createCanvas(300, 300);
+const canvas = new Canvas(300, 300);
 const ctx = canvas.getContext("2d");
 
 ctx.filter = "brightness(70%) contrast(160%)";

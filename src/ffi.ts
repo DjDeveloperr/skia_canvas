@@ -818,6 +818,16 @@ const SYMBOLS = {
     parameters: ["pointer", "buffer", "buffer"],
     result: "pointer",
   },
+
+  sk_canvas_create_gl: {
+    parameters: ["i32", "i32"],
+    result: "pointer",
+  },
+
+  sk_canvas_flush: {
+    parameters: ["pointer"],
+    result: "void",
+  },
 } as const;
 
 const LOCAL_BUILD = Deno.env.get("DENO_SKIA_LOCAL") === "1";
