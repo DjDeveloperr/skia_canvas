@@ -13,7 +13,6 @@ import {
 } from "./pattern.ts";
 
 const {
-  sk_context_destroy,
   sk_context_clear_rect,
   sk_context_set_fill_style,
   sk_context_save,
@@ -107,10 +106,6 @@ const {
   sk_context_set_font_variant_caps,
 } = ffi;
 
-const CONTEXT_FINALIZER = new FinalizationRegistry((ptr: Deno.PointerValue) => {
-  sk_context_destroy(ptr);
-});
-
 export type FillRule = "nonzero" | "evenodd";
 
 enum CLineCap {
@@ -129,6 +124,8 @@ enum CTextAlign {
   left = 0,
   center = 1,
   right = 2,
+  start = 3,
+  end = 4,
 }
 
 enum CTextDirection {
@@ -137,9 +134,12 @@ enum CTextDirection {
 }
 
 enum CTextBaseline {
-  top = 0,
-  middle = 1,
-  bottom = 2,
+  top,
+  hanging,
+  middle,
+  alphabetic,
+  ideographic,
+  bottom,
 }
 
 enum CImageSmoothingQuality {
@@ -243,13 +243,24 @@ export class CanvasRenderingContext2D {
     return this.#ptr;
   }
 
+  set _unsafePointer(ptr: Deno.PointerValue) {
+    this.#ptr = ptr;
+    this.#fillStyle = "black";
+    this.#strokeStyle = "black";
+    this.#shadowColor = "black";
+    this.#font = "10px sans-serif";
+    this.#fontStretch = "normal";
+    this.#fontVariantCaps = "normal";
+    this.#lineDash = [];
+    this.#filter = "none";
+  }
+
   constructor(canvas: Canvas, ptr: Deno.PointerValue) {
     this.#canvas = canvas;
     this.#ptr = ptr;
     if (this.#ptr === 0) {
       throw new Error("Failed to create context");
     }
-    CONTEXT_FINALIZER.register(this, this.#ptr);
   }
 
   /// Drawing rectangles
@@ -388,7 +399,7 @@ export class CanvasRenderingContext2D {
   }
 
   set lineDashOffset(value: number) {
-    sk_context_set_line_dash_offset(this.#ptr, value);
+    sk_context_set_line_dash_offset(this.#ptr, Number(value));
   }
 
   /// Text styles

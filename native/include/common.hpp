@@ -37,13 +37,18 @@ typedef struct Style {
 enum TextAlign {
   kLeft,
   kCenter,
-  kRight
+  kRight,
+  kStart,
+  kEnd,
 };
 
 enum TextBaseline {
   kTop,
+  kHanging,
   kMiddle,
-  kBottom
+  kAlphabetic,
+  kIdeographic,
+  kBottom,
 };
 
 enum TextDirection {

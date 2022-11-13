@@ -1,33 +1,19 @@
 #include "include/canvas.hpp"
 #include "include/context2d.hpp"
 
-void error_callback(int error, const char* description) {
-	std::cerr << "skia_canvas: glfw error (" << error << "): " << description << std::endl;
-}
-
 extern "C" {
   void sk_init() {
-    // if (glfwInit()) {
-    //   glfwSetErrorCallback(error_callback);
-    //   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    //   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-    //   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-    //   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    //   // glfwWindowHint(GLFW_SRGB_CAPABLE, GL_TRUE);
-    //   glfwWindowHint(GLFW_STENCIL_BITS, 0);
-    //   // glfwWindowHint(GLFW_ALPHA_BITS, 0);
-    //   glfwWindowHint(GLFW_DEPTH_BITS, 0);
-    // }
     SkGraphics::Init();
   }
 
-  sk_canvas* sk_canvas_create(int width, int height, void* pixels) {
+  sk_canvas* sk_canvas_create(int width, int height) {
     sk_canvas* canvas = new sk_canvas();
     SkImageInfo info = SkImageInfo::MakeN32Premul(width, height);
     size_t rowBytes = info.minRowBytes();
     size_t size = info.computeByteSize(rowBytes);
-    canvas->pixels = pixels == nullptr ? malloc(size) : pixels;
+    canvas->pixels = malloc(size);
     canvas->surface = SkSurface::MakeRasterDirect(info, canvas->pixels, rowBytes).release();
+    canvas->context_2d = sk_canvas_create_context(canvas);
     return canvas;
   }
 
@@ -65,6 +51,8 @@ extern "C" {
       return nullptr;
     }
 
+    canvas->context_2d = sk_canvas_create_context(canvas);
+
     return canvas;
   }
 
@@ -74,6 +62,10 @@ extern "C" {
 
   void sk_canvas_destroy(sk_canvas* canvas) {
     canvas->surface->unref();
+    sk_context_destroy((sk_context*) canvas->context_2d);
+    if (canvas->pixels != nullptr) {
+      free(canvas->pixels);
+    }
     delete canvas;
   }
 
@@ -111,7 +103,7 @@ extern "C" {
     data->unref();
   }
 
-  sk_context* sk_canvas_get_context(sk_canvas* canvas) {
+  sk_context* sk_canvas_create_context(sk_canvas* canvas) {
     sk_context* context = new sk_context();
     
     context->canvas = canvas->surface->getCanvas();
@@ -119,8 +111,45 @@ extern "C" {
     context->path = new SkPath();
 
     context->state = create_default_state();
-    context->states = std::vector<sk_context_state>();
+    context->states = std::vector<sk_context_state*>();
 
     return context;
+  }
+
+  sk_context* sk_canvas_get_context(sk_canvas* canvas) {
+    return (sk_context*) canvas->context_2d;
+  }
+
+  void sk_canvas_set_size(sk_canvas* canvas, int width, int height) {
+    if (canvas->pixels != nullptr) {
+      // Raster canvas
+      canvas->surface->unref();
+      sk_context_destroy((sk_context*) canvas->context_2d);
+      free(canvas->pixels);
+      SkImageInfo info = SkImageInfo::MakeN32Premul(width, height);
+      size_t rowBytes = info.minRowBytes();
+      size_t size = info.computeByteSize(rowBytes);
+      canvas->pixels = malloc(size);
+      canvas->surface = SkSurface::MakeRasterDirect(info, canvas->pixels, rowBytes).release();
+      canvas->context_2d = sk_canvas_create_context(canvas);
+    } else {
+      // OpenGL canvas
+      canvas->surface->unref();
+      sk_context_destroy((sk_context*) canvas->context_2d);
+      GrGLFramebufferInfo framebufferInfo;
+      framebufferInfo.fFBOID = 0;
+      framebufferInfo.fFormat = 32856;
+      SkColorType colorType = kRGBA_8888_SkColorType;
+      GrBackendRenderTarget backendRenderTarget(width, height, 0, 0, framebufferInfo);
+      canvas->surface = SkSurface::MakeFromBackendRenderTarget(
+        canvas->context,
+        backendRenderTarget,
+        kBottomLeft_GrSurfaceOrigin,
+        colorType,
+        nullptr, // SkColorSpace::MakeSRGB(),
+        nullptr
+      ).release();
+      canvas->context_2d = sk_canvas_create_context(canvas);
+    }
   }
 }

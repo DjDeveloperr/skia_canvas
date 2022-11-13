@@ -44,7 +44,7 @@ extern "C" {
     ctx->canvas = doc->pdf->beginPage(width, height, &rect);
     ctx->path = new SkPath();
     ctx->state = create_default_state();
-    ctx->states = std::vector<sk_context_state>();
+    ctx->states = std::vector<sk_context_state*>();
     return ctx;
   }
 

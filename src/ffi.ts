@@ -14,7 +14,7 @@ import meta from "../deno.json" assert { type: "json" };
 
 const SYMBOLS = {
   sk_canvas_create: {
-    parameters: ["i32", "i32", "buffer"],
+    parameters: ["i32", "i32"],
     result: "pointer",
   },
 
@@ -826,6 +826,11 @@ const SYMBOLS = {
 
   sk_canvas_flush: {
     parameters: ["pointer"],
+    result: "void",
+  },
+
+  sk_canvas_set_size: {
+    parameters: ["pointer", "i32", "i32"],
     result: "void",
   },
 } as const;
