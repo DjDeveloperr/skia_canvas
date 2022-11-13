@@ -78,4 +78,6 @@ bench("images: node skia-canvas", async () => {
   canvas.toBufferSync("image/png");
 });
 
-await run();
+await run({
+  colors: process.env.NO_COLOR !== "1",
+});

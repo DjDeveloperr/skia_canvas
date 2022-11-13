@@ -64,7 +64,7 @@ export class Canvas {
   }
 
   set width(width: number) {
-    sk_canvas_set_size(this.#ptr, width, this.#height);
+    this.resize(width, this.#height);
   }
 
   get height() {
@@ -72,7 +72,7 @@ export class Canvas {
   }
 
   set height(height: number) {
-    sk_canvas_set_size(this.#ptr, this.#width, height);
+    this.resize(this.#width, height);
   }
 
   /** Whether Canvas is GPU backed */
@@ -175,6 +175,7 @@ export class Canvas {
   }
 
   resize(width: number, height: number) {
+    if (this.#width === width && this.#height === height) return;
     sk_canvas_set_size(this.#ptr, width, height);
     this.#width = width;
     this.#height = height;

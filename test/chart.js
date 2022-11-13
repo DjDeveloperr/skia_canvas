@@ -1,4 +1,5 @@
 import { createCanvas } from "../mod.ts";
+// @deno-types="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/types/index.esm.d.ts"
 import {
   Chart,
   registerables,
@@ -41,6 +42,7 @@ const myChart = new Chart(ctx, {
         beginAtZero: true,
       },
     },
+    animation: false,
   },
 });
 
