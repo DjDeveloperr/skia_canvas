@@ -878,7 +878,7 @@ if (LOCAL_BUILD) {
     const durl = createDownloadURL(options);
     const directory = await ensureCacheLocation();
     const cacheBasePath = join(directory, await urlToFilename(durl));
-    const cacheIcuBasePath = join(directory, `https:/github.com`);
+    const cacheIcuBasePath = join(directory, `https/github.com`);
     const cacheIcuPath = join(cacheIcuBasePath, `icudtl.dat`);
     const cacheFilePath = `${cacheBasePath}${extname(durl.pathname)}`;
     const cached = await isFile(cacheFilePath);
