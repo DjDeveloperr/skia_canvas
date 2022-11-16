@@ -106,6 +106,7 @@ jobs:
 
       - name: Release
         uses: softprops/action-gh-release@master
+        if: ${{ github.ref == 'refs/heads/main' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
