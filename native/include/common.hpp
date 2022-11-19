@@ -52,6 +52,7 @@ enum TextBaseline {
 };
 
 enum TextDirection {
+  kInherit,
   kLTR,
   kRTL
 };
