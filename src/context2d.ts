@@ -129,8 +129,9 @@ enum CTextAlign {
 }
 
 enum CTextDirection {
-  ltr = 0,
-  rtl = 1,
+  inherit = 0,
+  ltr = 1,
+  rtl = 2,
 }
 
 enum CTextBaseline {

@@ -30,7 +30,7 @@ sk_context_state* create_default_state() {
   state->imageSmoothingQuality = kLow;
   state->textAlign = kStart;
   state->textBaseline = kAlphabetic;
-  state->direction = kLTR;
+  state->direction = kInherit;
   state->font = new Font();
   state->font->size = 10;
   state->font->family = strdup("sans-serif");
@@ -298,7 +298,7 @@ extern "C" {
     skia::textlayout::ParagraphStyle paraStyle;
     paraStyle.setTextAlign(skia::textlayout::TextAlign::kLeft);
     paraStyle.setTextStyle(tstyle);
-    paraStyle.setTextDirection(skia::textlayout::TextDirection(context->state->direction));
+    paraStyle.setTextDirection(skia::textlayout::TextDirection(context->state->direction == kRTL ? 0 : 1));
     
     auto builder = skia::textlayout::ParagraphBuilderImpl::make(paraStyle, fontCollection, SkUnicode::Make());
     builder->addText(text, textLen);
@@ -395,10 +395,10 @@ extern "C" {
         paintX = x - lineWidth;
         break;
       case TextAlign::kStart:
-        paintX = context->state->direction == TextDirection::kLTR ? x : x - lineWidth;
+        paintX = context->state->direction == TextDirection::kRTL ? x - lineWidth : x;
         break;
       case TextAlign::kEnd:
-        paintX = context->state->direction == TextDirection::kLTR ? x - lineWidth : x;
+        paintX = context->state->direction == TextDirection::kRTL ? x : x - lineWidth;
         break;
       }
       auto needScale = lineWidth > maxWidth;
