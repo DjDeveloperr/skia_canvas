@@ -114,6 +114,55 @@ extern "C" {
     path->quadTo(cpx, cpy, x, y);
   }
 
+  int sk_path_is_point_in_path(SkPath* path, float x, float y, int rule) {
+    auto prev = path->getFillType();
+    path->setFillType(rule == 1 ? SkPathFillType::kEvenOdd : SkPathFillType::kWinding);
+    auto result = (int) path->contains(x, y);
+    path->setFillType(prev);
+    return result;
+  }
+
+  int sk_path_is_point_in_stroke(SkPath* path, float x, float y, float strokeWidth) {
+    auto prev = path->getFillType();
+    path->setFillType(SkPathFillType::kWinding);
+    SkPaint paint;
+    paint.setStyle(SkPaint::kStroke_Style);
+    paint.setStrokeWidth(strokeWidth);
+    SkPath traced;
+    int result;
+    if (paint.getFillPath(*path, &traced, nullptr, 0.3)) {
+      result = (int)traced.contains(x, y);
+    } else {
+      result = (int)path->contains(x, y);
+    }
+    path->setFillType(prev);
+    return result;
+  }
+
+  SkString* sk_path_to_svg(SkPath* path, const char** outString, int* outSize) {
+    auto string = new SkString();
+    SkParsePath::ToSVGString(*path, string);
+    *outString = string->c_str();
+    *outSize = string->size();
+    return string;
+  }
+
+  int sk_path_simplify(SkPath* path) {
+    return (int) Simplify(*path, path);
+  }
+
+  int sk_path_as_winding(SkPath* path) {
+    return (int) AsWinding(*path, path);
+  }
+
+  int sk_path_op(SkPath* p1, SkPath* p2, int op) {
+    return (int) Op(*p1, *p2, (SkPathOp)op, p1);
+  }
+
+  void sk_free_string(SkString* str) {
+    delete str;
+  }
+
   void sk_path_destroy(SkPath* path) {
     delete path;
   }

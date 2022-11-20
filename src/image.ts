@@ -14,21 +14,120 @@ const SK_IMAGE_FINALIZER = new FinalizationRegistry(
   },
 );
 
-export class Image {
-  #ptr: Deno.PointerValue;
+export type ImageSource = Uint8Array | string;
+
+export class Image extends EventTarget {
+  #token: { ptr: Deno.PointerValue } = { ptr: 0 };
+  #ptr: Deno.PointerValue = 0;
+  #src?: ImageSource;
 
   get _unsafePointer() {
     return this.#ptr;
   }
 
-  constructor(data: Uint8Array | string) {
+  constructor(data?: ImageSource) {
+    super();
+    this.src = data;
+  }
+
+  get src() {
+    return this.#src;
+  }
+
+  set src(data: ImageSource | undefined) {
+    if (this.#ptr !== 0) {
+      sk_image_destroy(this.#ptr);
+      SK_IMAGE_FINALIZER.unregister(this.#token);
+      this.#ptr = 0;
+    }
+
+    if (data === undefined) {
+      this.#src = undefined;
+      this.#ptr = 0;
+      this.#token.ptr = 0;
+      return;
+    }
+
+    if (typeof data === "string") {
+      if (data.match(/^\s*https?:\/\//)) {
+        fetch(data.trim())
+          .then((res) => res.arrayBuffer())
+          .then((buffer) => {
+            this.src = new Uint8Array(buffer);
+          })
+          .catch((error) => {
+            this.dispatchEvent(
+              new ErrorEvent("error", {
+                error,
+              }),
+            );
+          });
+        return;
+      } else if (data.match(/^\s*data:/)) {
+        const comma = data.indexOf(",");
+        const isBase64 = data.lastIndexOf("base64", comma) !== -1;
+        const content = data.slice(comma + 1);
+        const buffer = isBase64
+          ? (Deno as any).core.ops.op_base64_decode(content)
+          : new TextEncoder().encode(content);
+        this.src = buffer;
+        return;
+      }
+    }
+
     this.#ptr = data instanceof Uint8Array
       ? sk_image_from_encoded(data, data.byteLength)
       : sk_image_from_file(cstr(data));
+
     if (this.#ptr === 0) {
-      throw new Error("Failed to load image");
+      const error = new Error("Failed to load image");
+      queueMicrotask(() => {
+        this.dispatchEvent(
+          new ErrorEvent("error", {
+            error,
+          }),
+        );
+      });
+      throw error;
     }
-    SK_IMAGE_FINALIZER.register(this, this.#ptr);
+
+    this.#token.ptr = this.#ptr;
+    this.#src = data;
+
+    if (this.#ptr !== 0) {
+      SK_IMAGE_FINALIZER.register(this, this.#ptr, this.#token);
+    }
+
+    queueMicrotask(() => {
+      this.dispatchEvent(new Event("load"));
+    });
+  }
+
+  #onload?: EventListenerOrEventListenerObject;
+  #onerror?: EventListenerOrEventListenerObject;
+
+  get onload() {
+    return this.#onload;
+  }
+
+  get onerror() {
+    return this.#onerror;
+  }
+
+  set onload(fn: EventListenerOrEventListenerObject | undefined) {
+    if (this.#onload) {
+      this.removeEventListener("load", this.#onload);
+    }
+    this.#onload = fn;
+    if (fn) this.addEventListener("load", fn);
+  }
+
+  set onerror(fn: EventListenerOrEventListenerObject | undefined) {
+    if (this.#onerror) {
+      this.removeEventListener("error", this.#onerror);
+    }
+    this.#onerror = fn;
+    if (fn) this.addEventListener("error", fn);
   }
 
   static async load(path: string | URL) {
@@ -49,14 +148,19 @@ export class Image {
   }
 
   get width() {
+    if (this._unsafePointer === 0) return 0;
     return sk_image_width(this.#ptr);
   }
 
   get height() {
+    if (this._unsafePointer === 0) return 0;
     return sk_image_height(this.#ptr);
   }
 
   [Symbol.for("Deno.customInspect")]() {
+    if (this._unsafePointer === 0) {
+      return `Image { pending, src: ${Deno.inspect(this.src)} }`;
+    }
     return `Image { width: ${this.width}, height: ${this.height} }`;
   }
 }

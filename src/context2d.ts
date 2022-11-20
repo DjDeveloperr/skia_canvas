@@ -970,6 +970,9 @@ export class CanvasRenderingContext2D {
     asw?: number,
     ash?: number,
   ) {
+    if (image instanceof Image && image._unsafePointer === 0) {
+      return;
+    }
     const dx = asx ?? adx;
     const dy = asy ?? ady;
     const dw = asw ?? adw ?? image.width;

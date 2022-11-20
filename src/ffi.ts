@@ -833,6 +833,41 @@ const SYMBOLS = {
     parameters: ["pointer", "i32", "i32"],
     result: "void",
   },
+
+  sk_path_is_point_in_path: {
+    parameters: ["pointer", "f32", "f32", "i32"],
+    result: "i32",
+  },
+
+  sk_path_is_point_in_stroke: {
+    parameters: ["pointer", "f32", "f32", "f32"],
+    result: "i32",
+  },
+
+  sk_path_to_svg: {
+    parameters: ["pointer", "buffer", "buffer"],
+    result: "pointer",
+  },
+
+  sk_free_string: {
+    parameters: ["pointer"],
+    result: "void",
+  },
+
+  sk_path_simplify: {
+    parameters: ["pointer"],
+    result: "i32",
+  },
+
+  sk_path_as_winding: {
+    parameters: ["pointer"],
+    result: "i32",
+  },
+
+  sk_path_op: {
+    parameters: ["pointer", "pointer", "i32"],
+    result: "i32",
+  },
 } as const;
 
 const LOCAL_BUILD = Deno.env.get("DENO_SKIA_LOCAL") === "1";
@@ -919,7 +954,11 @@ const {
   op_ffi_get_buf,
 }: {
   op_ffi_cstr_read: (ptr: Deno.PointerValue) => string;
-  op_ffi_get_buf: (ptr: Deno.PointerValue, size: number) => ArrayBuffer;
+  op_ffi_get_buf: (
+    ptr: Deno.PointerValue,
+    offset: number,
+    size: number,
+  ) => ArrayBuffer;
 } = (Deno as any).core.ops;
 
 export function cstr(str: string) {
