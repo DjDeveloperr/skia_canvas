@@ -863,14 +863,13 @@ extern "C" {
   // Context.isPointInPath()
   int sk_context_is_point_in_path(sk_context* context, float x, float y, SkPath* path, int rule) {
     if (path == nullptr) path = context->path;
-    path->setFillType(rule == 1 ? SkPathFillType::kEvenOdd : SkPathFillType::kWinding);
-    return (int) path->contains(x, y);
+    return sk_path_is_point_in_path(path, x, y, rule);
   }
 
   // Context.isPointInStroke()
   int sk_context_is_point_in_stroke(sk_context* context, float x, float y, SkPath* path) {
     if (path == nullptr) path = context->path;
-    return (int) path->contains(x, y);
+    return sk_path_is_point_in_stroke(path, x, y, context->state->paint->getStrokeWidth());
   }
 
   /// Transformations
@@ -1085,6 +1084,10 @@ extern "C" {
       context->state->paint,
       SkCanvas::kFast_SrcRectConstraint
     );
+
+    if (canvas != nullptr) {
+      image->unref();
+    }
   }
 
   /// Pixel manipulation

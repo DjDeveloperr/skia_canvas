@@ -1,8 +1,11 @@
 #pragma once
 
+#include "include/core/SkString.h"
 #include "include/core/SkPath.h"
+#include "include/core/SkPaint.h"
 #include "include/utils/SkParsePath.h"
 #include "include/core/SkMatrix.h"
+#include "include/pathops/SkPathOps.h"
 #include "include/common.hpp"
 
 extern "C" {
@@ -20,5 +23,12 @@ extern "C" {
   SKIA_EXPORT void sk_path_arc(SkPath* path, float x, float y, float radius, float startAngle, float endAngle, bool clockwise);
   SKIA_EXPORT void sk_path_bezier_curve_to(SkPath* path, float cp1x, float cp1y, float cp2x, float cp2y, float x, float y);
   SKIA_EXPORT void sk_path_quadratic_curve_to(SkPath* path, float cpx, float cpy, float x, float y);
+  SKIA_EXPORT int sk_path_is_point_in_path(SkPath* path, float x, float y, int rule);
+  SKIA_EXPORT int sk_path_is_point_in_stroke(SkPath* path, float x, float y, float strokeWidth);
+  SKIA_EXPORT SkString* sk_path_to_svg(SkPath* path, const char** outString, int* outSize);
+  SKIA_EXPORT void sk_free_string(SkString* str);
+  SKIA_EXPORT int sk_path_simplify(SkPath* path);
+  SKIA_EXPORT int sk_path_as_winding(SkPath* path);
+  SKIA_EXPORT int sk_path_op(SkPath* p1, SkPath* p2, int op);
   SKIA_EXPORT void sk_path_destroy(SkPath* path);
 }

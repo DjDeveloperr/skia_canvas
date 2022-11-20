@@ -132,9 +132,16 @@ export class Canvas {
 
     const size = OUT_SIZE[0];
     const ptr = OUT_DATA[0];
-    const buffer = new Uint8Array(getBuffer(bufptr, size));
+    const buffer = new Uint8Array(getBuffer(bufptr, 0, size));
     SK_DATA_FINALIZER.register(buffer, ptr);
     return buffer;
+  }
+
+  toDataURL(format: ImageFormat = "png", quality = 100) {
+    const buffer = this.encode(format, quality);
+    return `data:image/${format};base64,${
+      (Deno as any).core.ops.op_base64_encode(buffer)
+    }`;
   }
 
   /**

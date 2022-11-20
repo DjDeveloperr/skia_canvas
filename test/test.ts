@@ -62,6 +62,7 @@ ctx.drawImage(
 
 ctx.fillStyle = "skyblue";
 ctx.font = "40px sans-serif";
+ctx.textBaseline = "top";
 ctx.fillText("hello, skia text", 10, 10);
 
 const path = new Path2D(
@@ -83,6 +84,10 @@ ctx.putImageData(
   50,
   50,
 );
+
+const img2 = new Image();
+img2.src = canvas.toDataURL();
+ctx.drawImage(img2, canvas.width - 50, canvas.height - 50, 50, 50);
 
 canvas.save("./testdata/test.png");
 console.log("done");

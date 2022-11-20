@@ -1,3 +1,4 @@
+import { FillRule } from "./context2d.ts";
 import ffi, { cstr } from "./ffi.ts";
 
 const {
@@ -16,6 +17,13 @@ const {
   sk_path_ellipse,
   sk_path_quadratic_curve_to,
   sk_path_round_rect,
+  sk_path_is_point_in_path,
+  sk_path_is_point_in_stroke,
+  sk_path_to_svg,
+  sk_free_string,
+  sk_path_as_winding,
+  sk_path_op,
+  sk_path_simplify,
 } = ffi;
 
 const PATH_FINALIZER = new FinalizationRegistry((ptr: Deno.PointerValue) => {
@@ -48,6 +56,11 @@ export function roundRectRadiiArg(
     return [v[0], v[1], v[2], v[3]];
   }
 }
+
+const OUT_PTR = new BigUint64Array(1);
+const OUT_SIZE = new Uint32Array(1);
+const OUT_PTR_U8 = new Uint8Array(OUT_PTR.buffer);
+const OUT_SIZE_U8 = new Uint8Array(OUT_SIZE.buffer);
 
 export class Path2D {
   #ptr: Deno.PointerValue;
@@ -160,5 +173,62 @@ export class Path2D {
 
   closePath() {
     sk_path_close(this.#ptr);
+  }
+
+  isPointInPath(x: number, y: number, fillRule?: FillRule) {
+    return sk_path_is_point_in_path(
+      this.#ptr,
+      x,
+      y,
+      fillRule === "evenodd" ? 1 : 0,
+    ) === 1;
+  }
+
+  isPointInStroke(x: number, y: number, lineWidth: number) {
+    return sk_path_is_point_in_stroke(
+      this.#ptr,
+      x,
+      y,
+      lineWidth,
+    ) === 1;
+  }
+
+  toSVGString() {
+    const skstr = sk_path_to_svg(this.#ptr, OUT_PTR_U8, OUT_SIZE_U8);
+    const buffer = Deno.UnsafePointerView.getArrayBuffer(
+      OUT_PTR[0],
+      OUT_SIZE[0],
+    );
+    const str = new TextDecoder().decode(buffer);
+    sk_free_string(skstr);
+    return str;
+  }
+
+  simplify() {
+    return sk_path_simplify(this.#ptr) === 1;
+  }
+
+  asWinding() {
+    return sk_path_as_winding(this.#ptr) === 1;
+  }
+
+  difference(path: Path2D) {
+    return sk_path_op(this.#ptr, path._unsafePointer, 0);
+  }
+
+  intersect(path: Path2D) {
+    return sk_path_op(this.#ptr, path._unsafePointer, 1);
+  }
+
+  reverseDifference(path: Path2D) {
+    return sk_path_op(this.#ptr, path._unsafePointer, 4);
+  }
+
+  union(path: Path2D) {
+    return sk_path_op(this.#ptr, path._unsafePointer, 2);
+  }
+
+  xor(path: Path2D) {
+    return sk_path_op(this.#ptr, path._unsafePointer, 3);
   }
 }

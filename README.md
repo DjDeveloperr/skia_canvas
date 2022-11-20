@@ -68,6 +68,8 @@ For non-standard APIs, refer to the API docs mentioned above.
 - `Fonts` - provides utility to manage fonts used by Skia
 - `PdfDocument` - create PDF documents using 2D Canvas API
 - `SvgCanvas` - like `Canvas` but creates an SVG as output instead
+- Several additional methods in `Path2D` object such as `toSVGString`,
+  `simplify`, `difference`, `xor`, etc.
 
 ## Benchmarks
 
