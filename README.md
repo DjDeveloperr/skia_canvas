@@ -56,11 +56,9 @@ Check the
 Since this module implements the Canvas Web API, you can also refer to the
 [MDN docs](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D).
 
-For non-standard APIs, refer to the API docs mentioned above.
-
 ### Non-standard APIs
 
-For non-standard APIs, refer to the API docs mentioned above.
+For non-standard APIs, see to the API reference mentioned above.
 
 - `Canvas#save` - save canvas render as file
 - `Canvas#encode` - encode render into in-memory buffer
