@@ -1,6 +1,6 @@
 const BUILD_ARGS: Record<string, any> = {
-  cc: Deno.build.os === "windows" ? '"clang-cl"' : '"clang"',
-  cxx: Deno.build.os === "windows" ? '"clang-cl"' : '"clang++"',
+  cc: Deno.build.os === "windows" ? undefined : '"clang"',
+  cxx: Deno.build.os === "windows" ? undefined : '"clang++"',
   is_official_build: false,
   skia_use_system_harfbuzz: false,
   werror: false,
@@ -50,7 +50,7 @@ const BUILD_ARGS: Record<string, any> = {
 BUILD_ARGS["extra_cflags_cc"] = "[";
 
 if (Deno.build.os === "windows") {
-  BUILD_ARGS["clang_win"] = '"C:\\\\Program Files\\\\LLVM"';
+  // BUILD_ARGS["clang_win"] = '"C:\\\\Program Files\\\\LLVM"';
 
   BUILD_ARGS["extra_cflags_cc"] += '"/std:c++17",' +
     '"/MT",' +
@@ -137,7 +137,7 @@ $(
   new URL("../skia/bin/gn", import.meta.url),
   "gen",
   "out/Release",
-  "--args=" + Object.entries(BUILD_ARGS).map(([k, v]) => `${k}=${v}`).join(" "),
+  "--args=" + Object.entries(BUILD_ARGS).filter(e => !!e[1]).map(([k, v]) => `${k}=${v}`).join(" "),
 );
 
 $("ninja", "-j 24", "-C", "out/Release");
