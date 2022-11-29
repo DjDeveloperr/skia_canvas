@@ -60,9 +60,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ./skia/out/Release
-          key: 1-${{ runner.os }}-skia-build
+          key: 2-${{ runner.os }}-skia-build
           restore-keys: |
-            1-${{ runner.os }}-skia-build
+            2-${{ runner.os }}-skia-build
 
       - name: Build Skia
         run: deno task build-skia
@@ -75,9 +75,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ./native/build
-          key: 1-${{ runner.os }}-cmake-build
+          key: 2-${{ runner.os }}-cmake-build
           restore-keys: |
-            1-${{ runner.os }}-cmake-build
+            2-${{ runner.os }}-cmake-build
             
       - name: Install dependencies (Linux)
         if: runner.os == 'Linux'
