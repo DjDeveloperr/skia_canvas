@@ -133,11 +133,17 @@ if (Deno.build.os === "windows") {
   };
 }
 
+const ARGS = Object
+  .entries(BUILD_ARGS)
+  .filter((e) => !!e[1])
+  .map(([k, v]) => `${k}=${v}`)
+  .join(" ");
+
 $(
   new URL("../skia/bin/gn", import.meta.url),
   "gen",
   "out/Release",
-  "--args=" + Object.entries(BUILD_ARGS).filter(e => !!e[1]).map(([k, v]) => `${k}=${v}`).join(" "),
+  "--args=" + ARGS,
 );
 
 $("ninja", "-j 24", "-C", "out/Release");
