@@ -51,8 +51,8 @@ extern "C" {
   }
 
   sk_sp<SkShader> sk_gradient_to_shader(sk_gradient* gradient, SkMatrix* ct) {
-    SkColor* colors = malloc(sizeof(SkColor) * gradient->colors.size());
-    SkScalar* positions = malloc(sizeof(SkScalar) * gradient->positions.size());
+    SkColor* colors = (SkColor*) malloc(sizeof(SkColor) * gradient->colors.size());
+    SkScalar* positions = (SkScalar*) malloc(sizeof(SkScalar) * gradient->positions.size());
     
     for (int i = 0; i < gradient->colors.size(); i++) {
       colors[i] = gradient->colors[i];
