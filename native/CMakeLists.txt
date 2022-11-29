@@ -22,6 +22,7 @@ add_library(native_canvas SHARED
 
 if (UNIX)
   target_compile_options(native_canvas PRIVATE
+    -std=c++17
     -Ofast
     -Wno-return-type
     -Wno-unused-result
@@ -31,6 +32,7 @@ endif()
 
 if (WIN32)
   target_compile_options(native_canvas PRIVATE
+    /std:c++17
     /MT
     /W0)
 
