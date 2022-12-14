@@ -281,11 +281,12 @@ export class CanvasRenderingContext2D {
   /// Drawing text
 
   fillText(text: string, x: number, y: number, maxWidth?: number) {
+    const encoded = new TextEncoder().encode(text);
     if (
       !sk_context_text(
         this.#ptr,
-        cstr(text),
-        text.length,
+        encoded,
+        encoded.byteLength,
         x,
         y,
         maxWidth ?? 100_000,
@@ -298,11 +299,12 @@ export class CanvasRenderingContext2D {
   }
 
   strokeText(text: string, x: number, y: number, maxWidth?: number) {
+    const encoded = new TextEncoder().encode(text);
     if (
       !sk_context_text(
         this.#ptr,
-        cstr(text),
-        text.length,
+        encoded,
+        encoded.byteLength,
         x,
         y,
         maxWidth ?? 100_000,
@@ -326,12 +328,12 @@ export class CanvasRenderingContext2D {
         fontBoundingBoxDescent: 0,
       };
     }
-
+    const encoded = new TextEncoder().encode(text);
     if (
       !sk_context_text(
         this.#ptr,
-        cstr(text),
-        text.length,
+        encoded,
+        encoded.byteLength,
         0,
         0,
         100_000,
