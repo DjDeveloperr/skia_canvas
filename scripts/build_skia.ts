@@ -82,7 +82,8 @@ if (Deno.build.os === "windows") {
     '"-DSK_HAS_HEIF_LIBRARY",' +
     '"-DSK_SHAPER_HARFBUZZ_AVAILABLE"';
 
-  if (Deno.build.os === "darwin" && Deno.build.arch === "aarch64") {
+  const targetArm64 = Deno.env.get("TARGET_ARM64") === "1";
+  if ((Deno.build.os === "darwin" && Deno.build.arch === "aarch64") || targetArm64) {
     BUILD_ARGS["target_cpu"] = `"arm64"`;
     BUILD_ARGS["target_os"] = `"mac"`;
     BUILD_ARGS["extra_cflags_cc"] += ', "--target=arm64-apple-macos"';
@@ -99,13 +100,13 @@ Deno.chdir(new URL("../skia", import.meta.url));
 
 const $ = (cmd: string | URL, ...args: string[]) => {
   console.log(`%c$ ${cmd.toString()} ${args.join(" ")}`, "color: #888");
-  Deno.spawnSync(cmd, {
+  new Deno.Command(cmd, {
     args,
     cwd: new URL("../skia", import.meta.url),
     stdin: "null",
     stdout: "inherit",
     stderr: "inherit",
-  });
+  }).outputSync();
 };
 
 if (!Deno.args.includes("skip-sync-deps")) {
