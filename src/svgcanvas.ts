@@ -87,7 +87,7 @@ export class SvgCanvas {
     }
     const size = OUT_SIZE[0];
     const ptr = OUT_DATA[0];
-    const buffer = new Uint8Array(getBuffer(ptr, size));
+    const buffer = new Uint8Array(getBuffer(ptr, 0, size));
     SK_DATA_FINALIZER.register(buffer, skdata);
     return buffer;
   }
@@ -100,7 +100,7 @@ export class SvgCanvas {
     }
     const size = OUT_SIZE[0];
     const ptr = OUT_DATA[0];
-    const buffer = new Uint8Array(getBuffer(ptr, size));
+    const buffer = new Uint8Array(getBuffer(ptr, 0, size));
     const text = new TextDecoder().decode(buffer);
     sk_data_free(skdata);
     return text;
