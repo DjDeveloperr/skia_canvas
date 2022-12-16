@@ -83,8 +83,8 @@ if (Deno.build.os === "windows") {
     '"-DSK_SHAPER_HARFBUZZ_AVAILABLE"';
 
   const targetArm64 = Deno.env.get("TARGET_ARM64") === "1";
-  const isMacArm64 = Deno.build.os === "darwin" && Deno.build.arch === "aarch64";
-  if (isMacArm64 || targetArm64) {
+  const m1 = Deno.build.os === "darwin" && Deno.build.arch === "aarch64";
+  if (m1 || targetArm64) {
     BUILD_ARGS["target_cpu"] = `"arm64"`;
     BUILD_ARGS["target_os"] = `"mac"`;
     BUILD_ARGS["extra_cflags_cc"] += ', "--target=arm64-apple-macos"';
