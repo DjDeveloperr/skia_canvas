@@ -83,7 +83,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install xorg-dev mesa-common-dev libgl1-mesa-dev libglu1-mesa-dev libgl1-mesa-glx
+          sudo apt-get install xorg-dev mesa-common-dev libgl1-mesa-dev libglu1-mesa-dev libgl1-mesa-glx libglx-dev
 
       - name: Build Native Library (Unix)
         if: runner.os != 'Windows'
