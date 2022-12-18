@@ -54,6 +54,12 @@ jobs:
           7z x ../depot_tools.zip
           cd ..
           echo "PATH=$(pwd)/depot_tools;$PATH" >> $GITHUB_ENV
+
+      - name: Install dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install xorg-dev mesa-common-dev libgl1-mesa-dev libglu1-mesa-dev libgl1-mesa-glx libglx-dev
       
       - name: Cache Skia Build
         id: cache-skia-build
@@ -78,12 +84,6 @@ jobs:
           key: 1-${{ runner.os }}-cmake-build
           restore-keys: |
             1-${{ runner.os }}-cmake-build
-            
-      - name: Install dependencies (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install xorg-dev mesa-common-dev libgl1-mesa-dev libglu1-mesa-dev libgl1-mesa-glx libglx-dev
 
       - name: Build Native Library (Unix)
         if: runner.os != 'Windows'
