@@ -54,7 +54,9 @@ sk_context_state* clone_context_state(sk_context_state* state) {
   new_state->globalAlpha = state->globalAlpha;
   new_state->lineDashOffset = state->lineDashOffset;
   new_state->fillStyle = state->fillStyle;
+  if (new_state->fillStyle.shader) new_state.fillStyle.shader = sk_sp(new_state->fillStyle.shader);
   new_state->strokeStyle = state->strokeStyle;
+  if (new_state->strokeStyle.shader) new_state.strokeStyle.shader = sk_sp(new_state->strokeStyle.shader);
   new_state->shadowColor = state->shadowColor;
   new_state->transform = new SkMatrix(*state->transform);
   new_state->imageSmoothingEnabled = state->imageSmoothingEnabled;
@@ -70,18 +72,19 @@ sk_context_state* clone_context_state(sk_context_state* state) {
   new_state->font->variant = state->font->variant;
   new_state->font->stretch = state->font->stretch;
   new_state->filter = state->filter;
+  if (new_state->filter.get() != nullptr) new_state->filter = sk_sp(new_state->filter);
   new_state->letterSpacing = state->letterSpacing;
   new_state->wordSpacing = state->wordSpacing;
   return new_state;
 }
 
 void free_context_state(sk_context_state* state) {
-  if (state->fillStyle.shader) state->fillStyle.shader.~sk_sp();
-  if (state->strokeStyle.shader) state->strokeStyle.shader.~sk_sp();
-  if (state->filter.get() != nullptr) state->filter.~sk_sp();
+  if (state->fillStyle.shader) delete state->fillStyle.shader;
+  if (state->strokeStyle.shader) delete state->strokeStyle.shader;
+  if (state->filter.get() != nullptr) delete state->filter;
   delete state->paint;
   delete state->transform;
-  free(state->font);
+  delete state->font;
 }
 
 // Utility
@@ -1145,18 +1148,18 @@ extern "C" {
 
   // Context.save()
   void sk_context_save(sk_context* context) {
-    context->states.push_back(clone_context_state(context->state));
     context->canvas->save();
+    context->states.push_back(clone_context_state(context->state));
   }
 
   // Context.restore()
   void sk_context_restore(sk_context* context) {
     if (context->states.size() > 0) {
+      context->canvas->restore();
       free_context_state(context->state);
       delete context->state;
       context->state = context->states.back();
       context->states.pop_back();
-      context->canvas->restore();
     }
   }
 
@@ -1286,6 +1289,7 @@ extern "C" {
     delete context->state;
     for (auto state : context->states) {
       free_context_state(state);
+      delete state;
     }
     delete context;
   }
