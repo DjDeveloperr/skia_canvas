@@ -54,7 +54,9 @@ sk_context_state* clone_context_state(sk_context_state* state) {
   new_state->globalAlpha = state->globalAlpha;
   new_state->lineDashOffset = state->lineDashOffset;
   new_state->fillStyle = state->fillStyle;
+  if (new_state->fillStyle.shader) new_state->fillStyle.shader = sk_sp(new_state->fillStyle.shader);
   new_state->strokeStyle = state->strokeStyle;
+  if (new_state->strokeStyle.shader) new_state->strokeStyle.shader = sk_sp(new_state->strokeStyle.shader);
   new_state->shadowColor = state->shadowColor;
   new_state->transform = new SkMatrix(*state->transform);
   new_state->imageSmoothingEnabled = state->imageSmoothingEnabled;
@@ -1151,18 +1153,18 @@ extern "C" {
 
   // Context.save()
   void sk_context_save(sk_context* context) {
-    context->states.push_back(clone_context_state(context->state));
     context->canvas->save();
+    context->states.push_back(clone_context_state(context->state));
   }
 
   // Context.restore()
   void sk_context_restore(sk_context* context) {
     if (context->states.size() > 0) {
+      context->canvas->restore();
       free_context_state(context->state);
       delete context->state;
       context->state = context->states.back();
       context->states.pop_back();
-      context->canvas->restore();
     }
   }
 
@@ -1292,6 +1294,7 @@ extern "C" {
     delete context->state;
     for (auto state : context->states) {
       free_context_state(state);
+      delete state;
     }
     delete context;
   }
