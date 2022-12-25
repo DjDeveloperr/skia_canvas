@@ -574,6 +574,7 @@ extern "C" {
     int variant,
     int stretch
   ) {
+    free(context->state->font);
     context->state->font = new Font();
     context->state->font->family = strdup(family);
     context->state->font->size = size;
@@ -893,6 +894,7 @@ extern "C" {
     context->path->transform(*inverse, SkApplyPerspectiveClip::kYes);
     s->transform->preRotate(DEGREES(angle));
     context->canvas->setMatrix(*s->transform);
+    delete inverse;
   }
 
   // Context.scale()
@@ -903,6 +905,7 @@ extern "C" {
     context->path->transform(*inverse, SkApplyPerspectiveClip::kYes);
     s->transform->preScale(x, y);
     context->canvas->setMatrix(*s->transform);
+    delete inverse;
   }
 
   // Context.translate()
@@ -913,6 +916,7 @@ extern "C" {
     context->path->transform(*inverse, SkApplyPerspectiveClip::kYes);
     s->transform->preTranslate(x, y);
     context->canvas->setMatrix(*s->transform);
+    delete inverse;
   }
 
   // Context.transform()
@@ -924,6 +928,7 @@ extern "C" {
     auto mul = (*ts) * (*s->transform);
     s->transform = &mul;
     context->canvas->setMatrix(mul);
+    delete ts;
   }
 
   // Context.setTransform()
@@ -933,6 +938,7 @@ extern "C" {
     ts->setAll(a, b, e, c, d, f, 0.0f, 0.0f, 1.0f);
     s->transform = ts;
     context->canvas->setMatrix(*s->transform);
+    delete ts;
   }
 
   // Context.resetTransform()
