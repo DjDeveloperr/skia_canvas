@@ -75,6 +75,6 @@ extern "C" {
   char* fonts_family(int index) {
     auto family = new SkString();
     assets->getFamilyName(index, family);
-    return strdup(family->c_str());
+    return (char*) family->c_str();
   }
 }

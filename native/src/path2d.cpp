@@ -100,6 +100,9 @@ extern "C" {
     }
 
     path->transform(*rotated, SkApplyPerspectiveClip::kYes);
+
+    delete rotated;
+    delete unrotated;
   }
 
   void sk_path_arc(SkPath* path, float x, float y, float radius, float startAngle, float endAngle, bool clockwise) {

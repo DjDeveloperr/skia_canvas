@@ -99,9 +99,12 @@ BUILD_ARGS["extra_cflags_cc"] += "]";
 
 Deno.chdir(new URL("../skia", import.meta.url));
 
+const SLICE_WIN = Deno.build.os === "windows" ? 1 : 0;
+
 const $ = (cmd: string | URL, ...args: string[]) => {
   console.log(`%c$ ${cmd.toString()} ${args.join(" ")}`, "color: #888");
-  new Deno.Command(cmd, {
+  const c = typeof cmd === "string" ? cmd : cmd.pathname.slice(SLICE_WIN);
+  new Deno.Command(c, {
     args,
     cwd: new URL("../skia", import.meta.url),
     stdin: "null",
