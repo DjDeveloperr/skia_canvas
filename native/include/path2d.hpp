@@ -30,5 +30,6 @@ extern "C" {
   SKIA_EXPORT int sk_path_simplify(SkPath* path);
   SKIA_EXPORT int sk_path_as_winding(SkPath* path);
   SKIA_EXPORT int sk_path_op(SkPath* p1, SkPath* p2, int op);
+  SKIA_EXPORT void sk_path_add_path(SkPath* p1, SkPath* p2, float* t);
   SKIA_EXPORT void sk_path_destroy(SkPath* path);
 }

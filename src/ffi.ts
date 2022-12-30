@@ -868,6 +868,18 @@ const SYMBOLS = {
     parameters: ["pointer", "pointer", "i32"],
     result: "i32",
   },
+
+  sk_path_add_path_buf: {
+    name: "sk_path_add_path",
+    parameters: ["pointer", "pointer", "buffer"],
+    result: "void",
+  },
+
+  sk_path_add_path_ptr: {
+    name: "sk_path_add_path",
+    parameters: ["pointer", "pointer", "pointer"],
+    result: "void",
+  },
 } as const;
 
 const LOCAL_BUILD = Deno.env.get("DENO_SKIA_LOCAL") === "1";

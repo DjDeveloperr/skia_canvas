@@ -162,6 +162,15 @@ extern "C" {
     return (int) Op(*p1, *p2, (SkPathOp)op, p1);
   }
 
+  void sk_path_add_path(SkPath* p1, SkPath* p2, float* t) {
+    SkMatrix* mat = new SkMatrix();
+    if (t != nullptr) {
+      mat->setAll(t[0], t[1], t[2], t[3], t[4], t[5], 0.0f, 0.0f, 1.0f);
+    }
+    p1->addPath(*p2, *mat, SkPath::AddPathMode::kExtend_AddPathMode);
+    delete mat;
+  }
+
   void sk_free_string(SkString* str) {
     delete str;
   }

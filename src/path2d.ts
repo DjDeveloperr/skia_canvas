@@ -24,6 +24,8 @@ const {
   sk_path_as_winding,
   sk_path_op,
   sk_path_simplify,
+  sk_path_add_path_buf,
+  sk_path_add_path_ptr,
 } = ffi;
 
 const PATH_FINALIZER = new FinalizationRegistry((ptr: Deno.PointerValue) => {
@@ -61,6 +63,8 @@ const OUT_PTR = new BigUint64Array(1);
 const OUT_SIZE = new Uint32Array(1);
 const OUT_PTR_U8 = new Uint8Array(OUT_PTR.buffer);
 const OUT_SIZE_U8 = new Uint8Array(OUT_SIZE.buffer);
+const TRANSFORM = new Float32Array(6);
+const TU8 = new Uint8Array(TRANSFORM.buffer);
 
 export class Path2D {
   #ptr: Deno.PointerValue;
@@ -230,5 +234,21 @@ export class Path2D {
 
   xor(path: Path2D) {
     return sk_path_op(this.#ptr, path._unsafePointer, 3);
+  }
+
+  addPath(path: Path2D, transform?: DOMMatrix) {
+    if (transform) {
+      TRANSFORM.set([
+        transform.a,
+        transform.b,
+        transform.e,
+        transform.c,
+        transform.d,
+        transform.f,
+      ]);
+      sk_path_add_path_buf(this.#ptr, path._unsafePointer, TU8);
+    } else {
+      sk_path_add_path_ptr(this.#ptr, path._unsafePointer, 0);
+    }
   }
 }
