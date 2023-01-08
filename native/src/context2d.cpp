@@ -7,28 +7,6 @@
 
 extern sk_sp<skia::textlayout::FontCollection> fontCollection;
 
-void free_style(Style* style) {
-  if (style->shader != nullptr) {
-    style->shader.~sk_sp();
-  }
-}
-
-void free_font(Font* font) {
-  free(font->family);
-  free(font);
-}
-
-Style clone_style(Style* style) {
-  Style new_style;
-  new_style.type = style->type;
-  if (style->type == kStyleColor) {
-    new_style.color = style->color;
-  } else if (style->type == kStyleShader) {
-    new_style.shader = sk_sp(style->shader);
-  }
-  return new_style;
-}
-
 sk_context_state* create_default_state() {
   sk_context_state* state = new sk_context_state();
   state->paint = new SkPaint();
@@ -75,8 +53,10 @@ sk_context_state* clone_context_state(sk_context_state* state) {
   new_state->lineDash = state->lineDash;
   new_state->globalAlpha = state->globalAlpha;
   new_state->lineDashOffset = state->lineDashOffset;
-  new_state->fillStyle = clone_style(&state->fillStyle);
-  new_state->strokeStyle = clone_style(&state->strokeStyle);
+  new_state->fillStyle = state->fillStyle;
+  if (new_state->fillStyle.shader) new_state->fillStyle.shader = sk_sp(new_state->fillStyle.shader);
+  new_state->strokeStyle = state->strokeStyle;
+  if (new_state->strokeStyle.shader) new_state->strokeStyle.shader = sk_sp(new_state->strokeStyle.shader);
   new_state->shadowColor = state->shadowColor;
   new_state->transform = new SkMatrix(*state->transform);
   new_state->imageSmoothingEnabled = state->imageSmoothingEnabled;
@@ -98,12 +78,12 @@ sk_context_state* clone_context_state(sk_context_state* state) {
 }
 
 void free_context_state(sk_context_state* state) {
-  free_style(&state->fillStyle);
-  free_style(&state->strokeStyle);
+  if (state->fillStyle.shader) state->fillStyle.shader.~sk_sp();
+  if (state->strokeStyle.shader) state->strokeStyle.shader.~sk_sp();
   if (state->filter.get() != nullptr) state->filter.~sk_sp();
   delete state->paint;
   delete state->transform;
-  free_font(state->font);
+  free(state->font);
 }
 
 // Utility
@@ -262,10 +242,8 @@ extern "C" {
       applyShadowOffsetMatrix(context);
       canvas->drawRect(rect, *shadowPaint);
       canvas->restore();
-      delete shadowPaint;
     }
     canvas->drawRect(rect, *fillPaint);
-    delete fillPaint;
   }
 
   // Context.strokeRect()
@@ -279,10 +257,8 @@ extern "C" {
       applyShadowOffsetMatrix(context);
       canvas->drawRect(rect, *shadowPaint);
       canvas->restore();
-      delete shadowPaint;
     }
     canvas->drawRect(rect, *strokePaint);
-    delete strokePaint;
   }
 
   /// Drawing text
@@ -470,11 +446,10 @@ extern "C" {
           shadowPaint
         );
         context->canvas->restore();
-        delete shadowPaint;
         if (res == 0) return 0;
       }
     }
-    auto res = sk_context_text_base(
+    return sk_context_text_base(
       context,
       text,
       textLen,
@@ -485,8 +460,6 @@ extern "C" {
       out_metrics,
       paint
     );
-    delete paint;
-    return res;
   }
 
   // Context.fillText() implementation in JS using sk_context_test
@@ -603,7 +576,7 @@ extern "C" {
     int variant,
     int stretch
   ) {
-    free_font(context->state->font);
+    free(context->state->font);
     context->state->font = new Font();
     context->state->font->family = strdup(family);
     context->state->font->size = size;
@@ -686,7 +659,6 @@ extern "C" {
     auto color = CSSColorParser::parse(std::string(style));
     if (color) {
       auto val = color.value();
-      free_style(&context->state->fillStyle);
       context->state->fillStyle = Style();
       context->state->fillStyle.type = kStyleColor;
       context->state->fillStyle.color = {val.r, val.g, val.b, (uint8_t)(val.a * 255)};
@@ -696,14 +668,12 @@ extern "C" {
   }
 
   void sk_context_set_fill_style_gradient(sk_context* context, sk_gradient* gradient) {
-    free_style(&context->state->fillStyle);
     context->state->fillStyle = Style();
     context->state->fillStyle.type = kStyleShader;
     context->state->fillStyle.shader = sk_gradient_to_shader(gradient, context->state->transform);
   }
 
   void sk_context_set_fill_style_pattern(sk_context* context, sk_pattern* pattern) {
-    free_style(&context->state->fillStyle);
     context->state->fillStyle = Style();
     context->state->fillStyle.type = kStyleShader;
     context->state->fillStyle.shader = sk_pattern_to_shader(pattern);
@@ -716,7 +686,6 @@ extern "C" {
     auto color = CSSColorParser::parse(std::string(style));
     if (color) {
       auto val = color.value();
-      free_style(&context->state->strokeStyle);
       context->state->strokeStyle = Style();
       context->state->strokeStyle.type = kStyleColor;
       context->state->strokeStyle.color = {val.r, val.g, val.b, (uint8_t)(val.a * 255)};
@@ -726,14 +695,12 @@ extern "C" {
   }
 
   void sk_context_set_stroke_style_gradient(sk_context* context, sk_gradient* gradient) {
-    free_style(&context->state->strokeStyle);
     context->state->strokeStyle = Style();
     context->state->strokeStyle.type = kStyleShader;
     context->state->strokeStyle.shader = sk_gradient_to_shader(gradient, context->state->transform);
   }
 
   void sk_context_set_stroke_style_pattern(sk_context* context, sk_pattern* pattern) {
-    free_style(&context->state->strokeStyle);
     context->state->strokeStyle = Style();
     context->state->strokeStyle.type = kStyleShader;
     context->state->strokeStyle.shader = sk_pattern_to_shader(pattern);
@@ -865,10 +832,8 @@ extern "C" {
       applyShadowOffsetMatrix(context);
       canvas->drawPath(*path, *shadowPaint);
       canvas->restore();
-      delete shadowPaint;
     }
     canvas->drawPath(*path, *paint);
-    delete paint;
   }
 
   // Context.stroke()
@@ -882,10 +847,8 @@ extern "C" {
       applyShadowOffsetMatrix(context);
       canvas->drawPath(*path, *shadowPaint);
       canvas->restore();
-      delete shadowPaint;
     }
     canvas->drawPath(*path, *strokePaint);
-    delete strokePaint;
   }
 
   // TODO?: Context.drawFocusIfNeeded() (should we support it?)
@@ -1119,7 +1082,6 @@ extern "C" {
         shadowPaint,
         SkCanvas::kFast_SrcRectConstraint
       );
-      delete shadowPaint;
     }
 
     context->canvas->drawImageRect(
