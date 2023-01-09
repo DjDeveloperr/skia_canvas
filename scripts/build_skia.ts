@@ -17,8 +17,6 @@ const $ = (cmd: string | URL, ...args: string[]) => {
   }).outputSync();
 };
 
-$("git", "checkout", CURRENT_HASH);
-
 if (Deno.env.get("SKIA_FROM_SOURCE") !== "1") {
   const toDownload = `brotli
   compression_utils_portable
