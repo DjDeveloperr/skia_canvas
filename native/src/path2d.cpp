@@ -133,7 +133,7 @@ extern "C" {
     paint.setStrokeWidth(strokeWidth);
     SkPath traced;
     int result;
-    if (paint.getFillPath(*path, &traced, nullptr, 0.3)) {
+    if (skpathutils::FillPathWithPaint(*path, paint, &traced, nullptr, 0.3)) {
       result = (int)traced.contains(x, y);
     } else {
       result = (int)path->contains(x, y);
@@ -143,8 +143,7 @@ extern "C" {
   }
 
   SkString* sk_path_to_svg(SkPath* path, const char** outString, int* outSize) {
-    auto string = new SkString();
-    SkParsePath::ToSVGString(*path, string);
+    auto string = new SkString(SkParsePath::ToSVGString(*path));
     *outString = string->c_str();
     *outSize = string->size();
     return string;

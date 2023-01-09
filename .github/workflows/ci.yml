@@ -60,30 +60,14 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install xorg-dev mesa-common-dev libgl1-mesa-dev libglu1-mesa-dev libgl1-mesa-glx libglx-dev
-      
-      - name: Cache Skia Build
-        id: cache-skia-build
-        uses: actions/cache@v3
-        with:
-          path: ./skia/out/Release
-          key: 2-${{ runner.os }}-skia-build
-          restore-keys: |
-            2-${{ runner.os }}-skia-build
 
-      - name: Build Skia
+      - name: Download Skia Binaries
+        env:
+          SKIA_FROM_SOURCE: 0
         run: deno task build-skia
 
       - name: Setup Build Directory
         run: mkdir ./native/build
-
-      - name: Cache Native Build
-        id: cache-native-build
-        uses: actions/cache@v3
-        with:
-          path: ./native/build
-          key: 2-${{ runner.os }}-cmake-build
-          restore-keys: |
-            2-${{ runner.os }}-cmake-build
 
       - name: Build Native Library (Unix)
         if: runner.os != 'Windows'
