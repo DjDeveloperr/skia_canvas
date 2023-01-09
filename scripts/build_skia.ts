@@ -29,6 +29,7 @@ if (Deno.env.get("SKIA_FROM_SOURCE") !== "1") {
   particles
   sktext
   skunicode
+  skshaper
   skcms
   freetype2
   wuffs
