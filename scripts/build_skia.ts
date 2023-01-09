@@ -49,13 +49,13 @@ if (Deno.env.get("SKIA_FROM_SOURCE") !== "1") {
   }
   try {
     Deno.mkdirSync("./out/Release", { recursive: true });
-  } catch(_) {}
+  } catch (_) {}
   for (const name of toDownload) {
     const file = `${Deno.build.os === "windows" ? "" : "lib"}${name}${
       Deno.build.os === "windows" ? "lib" : "a"
     }`;
     const data = await fetch(
-      `https://github.com/DjDeveloperr/skia_builds/releases/download/${relName}/${file}`
+      `https://github.com/DjDeveloperr/skia_builds/releases/download/${relName}/${file}`,
     )
       .then((res) => res.arrayBuffer())
       .then((buffer) => new Uint8Array(buffer));
