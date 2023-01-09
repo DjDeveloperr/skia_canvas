@@ -1,3 +1,83 @@
+const CURRENT_HASH = "2290b0b75a8abb80e23d9cb9aced5b5cebbf702d";
+const CURRENT_HASH_SHORT = "2290b0b";
+
+Deno.chdir(new URL("../skia", import.meta.url));
+
+const SLICE_WIN = Deno.build.os === "windows" ? 1 : 0;
+
+const $ = (cmd: string | URL, ...args: string[]) => {
+  console.log(`%c$ ${cmd.toString()} ${args.join(" ")}`, "color: #888");
+  const c = typeof cmd === "string" ? cmd : cmd.pathname.slice(SLICE_WIN);
+  new Deno.Command(c, {
+    args,
+    cwd: new URL("../skia", import.meta.url),
+    stdin: "null",
+    stdout: "inherit",
+    stderr: "inherit",
+  }).outputSync();
+};
+
+if (Deno.env.get("SKIA_FROM_SOURCE") !== "1") {
+  const toDownload = `brotli
+  compression_utils_portable
+  expat
+  freetype2
+  harfbuzz
+  icu
+  icudtl.dat
+  libjpeg
+  libpng
+  libwebp
+  libwebp_sse41
+  particles
+  pathkit
+  skcms
+  skia
+  skparagraph
+  skresources
+  skshaper
+  sktext
+  skunicode
+  svg
+  wuffs
+  zlib`
+    .split("\n").map((e) => e.trim());
+  let relName = `skia-${CURRENT_HASH_SHORT}-`;
+  switch (Deno.build.os) {
+    case "windows":
+      relName += "Windows";
+      break;
+    case "darwin":
+      relName += "macOS";
+      break;
+    case "linux":
+      relName += "Linux";
+      break;
+  }
+  try {
+    Deno.mkdirSync("./out/Release", { recursive: true });
+  } catch (_) {}
+  for (const name of toDownload) {
+    let file = name;
+    if (!name.includes(".")) {
+      file = `${Deno.build.os === "windows" ? "" : "lib"}${file}`;
+      file += `.${Deno.build.os === "windows" ? "lib" : "a"}`;
+    }
+    const data = await fetch(
+      `https://github.com/DjDeveloperr/skia_builds/releases/download/${relName}/${file}`,
+    )
+      .then((res) => res.arrayBuffer())
+      .then((buffer) => new Uint8Array(buffer));
+    await Deno.writeFile(
+      new URL(`../skia/out/Release/${file}`, import.meta.url),
+      data,
+    );
+    console.log(`Downloaded ${file}`);
+  }
+  console.log(`Downloaded prebuild binaries (${relName})`);
+  Deno.exit(0);
+}
+
 const BUILD_ARGS: Record<string, any> = {
   cc: Deno.build.os === "windows" ? '"clang-cl"' : '"clang"',
   cxx: Deno.build.os === "windows" ? '"clang-cl"' : '"clang++"',
@@ -96,22 +176,6 @@ if (Deno.build.os === "windows") {
 }
 
 BUILD_ARGS["extra_cflags_cc"] += "]";
-
-Deno.chdir(new URL("../skia", import.meta.url));
-
-const SLICE_WIN = Deno.build.os === "windows" ? 1 : 0;
-
-const $ = (cmd: string | URL, ...args: string[]) => {
-  console.log(`%c$ ${cmd.toString()} ${args.join(" ")}`, "color: #888");
-  const c = typeof cmd === "string" ? cmd : cmd.pathname.slice(SLICE_WIN);
-  new Deno.Command(c, {
-    args,
-    cwd: new URL("../skia", import.meta.url),
-    stdin: "null",
-    stdout: "inherit",
-    stderr: "inherit",
-  }).outputSync();
-};
 
 if (!Deno.args.includes("skip-sync-deps")) {
   $(

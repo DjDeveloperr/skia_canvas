@@ -6,6 +6,7 @@
 #include "include/utils/SkParsePath.h"
 #include "include/core/SkMatrix.h"
 #include "include/pathops/SkPathOps.h"
+#include "include/core/SkPathUtils.h"
 #include "include/common.hpp"
 
 extern "C" {
