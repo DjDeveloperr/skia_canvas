@@ -20,21 +20,29 @@ const $ = (cmd: string | URL, ...args: string[]) => {
 $("git", "checkout", CURRENT_HASH);
 
 if (Deno.env.get("SKIA_FROM_SOURCE") !== "1") {
-  const toDownload = `skia
+  const toDownload = `brotli
+  compression_utils_portable
+  expat
+  freetype2
   harfbuzz
-  svg
-  pathkit
-  skresources
-  skparagraph
+  icu
+  icudtl.dat
+  libjpeg
+  libpng
+  libwebp
+  libwebp_sse41
   particles
+  pathkit
+  skcms
+  skia
+  skparagraph
+  skresources
+  skshaper
   sktext
   skunicode
-  skshaper
-  skcms
-  freetype2
+  svg
   wuffs
-  icu
-  expat`
+  zlib`
     .split("\n").map((e) => e.trim());
   let relName = `skia-${CURRENT_HASH_SHORT}-`;
   switch (Deno.build.os) {
@@ -52,9 +60,10 @@ if (Deno.env.get("SKIA_FROM_SOURCE") !== "1") {
     Deno.mkdirSync("./out/Release", { recursive: true });
   } catch (_) {}
   for (const name of toDownload) {
-    const file = `${Deno.build.os === "windows" ? "" : "lib"}${name}.${
-      Deno.build.os === "windows" ? "lib" : "a"
-    }`;
+    let file = `${Deno.build.os === "windows" ? "" : "lib"}${name}`;
+    if (!file.endsWith(".dat")) {
+      file += `.${Deno.build.os === "windows" ? "lib" : "a"}`;
+    }
     const data = await fetch(
       `https://github.com/DjDeveloperr/skia_builds/releases/download/${relName}/${file}`,
     )
