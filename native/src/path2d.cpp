@@ -143,7 +143,7 @@ extern "C" {
   }
 
   SkString* sk_path_to_svg(SkPath* path, const char** outString, int* outSize) {
-    auto string = SkParsePath::ToSVGString(*path);
+    auto string = new SkString(SkParsePath::ToSVGString(*path));
     *outString = string->c_str();
     *outSize = string->size();
     return string;
