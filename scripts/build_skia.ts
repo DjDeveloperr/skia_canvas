@@ -34,25 +34,29 @@ if (Deno.env.get("SKIA_FROM_SOURCE") !== "1") {
   wuffs
   icu
   expat`
-    .split("\n").map(e => e.trim());
+    .split("\n").map((e) => e.trim());
   let relName = `skia-${CURRENT_HASH_SHORT}-`;
   switch (Deno.build.os) {
-  case "windows":
-    relName += "Windows";
-    break;
-  case "darwin":
-    relName += "macOS";
-    break;
-  case "linux":
-    relName += "Linux";
-    break;
+    case "windows":
+      relName += "Windows";
+      break;
+    case "darwin":
+      relName += "macOS";
+      break;
+    case "linux":
+      relName += "Linux";
+      break;
   }
   try {
     Deno.mkdirSync("./out/Release", { recursive: true });
   } catch(_) {}
   for (const name of toDownload) {
-    const file = `${Deno.build.os === "windows" ? "" : "lib"}${name}${Deno.build.os === "windows" ? "lib" : "a"}`
-    const data = await fetch(`https://github.com/DjDeveloperr/skia_builds/releases/download/${relName}/${file}`)
+    const file = `${Deno.build.os === "windows" ? "" : "lib"}${name}${
+      Deno.build.os === "windows" ? "lib" : "a"
+    }`;
+    const data = await fetch(
+      `https://github.com/DjDeveloperr/skia_builds/releases/download/${relName}/${file}`
+    )
       .then((res) => res.arrayBuffer())
       .then((buffer) => new Uint8Array(buffer));
     await Deno.writeFile(`./out/Release/${file}`, data);
