@@ -62,7 +62,7 @@ if (Deno.env.get("SKIA_FROM_SOURCE") !== "1") {
   for (const name of toDownload) {
     let file = name;
     if (!name.includes(".")) {
-      file = `${Deno.build.os === "windows" ? "" : "lib"}${file}`
+      file = `${Deno.build.os === "windows" ? "" : "lib"}${file}`;
       file += `.${Deno.build.os === "windows" ? "lib" : "a"}`;
     }
     const data = await fetch(
