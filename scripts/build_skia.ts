@@ -51,7 +51,7 @@ if (Deno.env.get("SKIA_FROM_SOURCE") !== "1") {
     Deno.mkdirSync("./out/Release", { recursive: true });
   } catch (_) {}
   for (const name of toDownload) {
-    const file = `${Deno.build.os === "windows" ? "" : "lib"}${name}${
+    const file = `${Deno.build.os === "windows" ? "" : "lib"}${name}.${
       Deno.build.os === "windows" ? "lib" : "a"
     }`;
     const data = await fetch(
