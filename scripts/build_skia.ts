@@ -59,7 +59,11 @@ if (Deno.env.get("SKIA_FROM_SOURCE") !== "1") {
     )
       .then((res) => res.arrayBuffer())
       .then((buffer) => new Uint8Array(buffer));
-    await Deno.writeFile(`./out/Release/${file}`, data);
+    await Deno.writeFile(
+      new URL(`../skia/out/Release/${file}`, import.meta.url),
+      data,
+    );
+    console.log(`Downloaded ${file}`);
   }
   console.log(`Downloaded prebuild binaries (${relName})`);
   Deno.exit(0);
