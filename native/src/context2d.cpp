@@ -521,7 +521,6 @@ extern "C" {
 
   // Context.lineCap setter
   void sk_context_set_line_cap(sk_context* context, int cap) {
-    // std::cout << "setLineCap: " << context->state->paint << std::endl;
     switch (cap) {
       case 0:
         context->state->paint->setStrokeCap(SkPaint::kButt_Cap);
