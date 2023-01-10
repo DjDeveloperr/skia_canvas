@@ -14,8 +14,8 @@ void free_style(Style* style) {
 }
 
 void free_font(Font* font) {
-  // free(font->family);
-  // free(font);
+  free(font->family);
+  free(font);
 }
 
 Style clone_style(Style* style) {
