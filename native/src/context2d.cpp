@@ -54,9 +54,9 @@ sk_context_state* clone_context_state(sk_context_state* state) {
   new_state->globalAlpha = state->globalAlpha;
   new_state->lineDashOffset = state->lineDashOffset;
   new_state->fillStyle = state->fillStyle;
-  if (new_state->fillStyle.shader) new_state->fillStyle.shader = sk_sp(new_state->fillStyle.shader);
+  // if (new_state->fillStyle.shader) new_state->fillStyle.shader = sk_sp(new_state->fillStyle.shader);
   new_state->strokeStyle = state->strokeStyle;
-  if (new_state->strokeStyle.shader) new_state->strokeStyle.shader = sk_sp(new_state->strokeStyle.shader);
+  // if (new_state->strokeStyle.shader) new_state->strokeStyle.shader = sk_sp(new_state->strokeStyle.shader);
   new_state->shadowColor = state->shadowColor;
   new_state->transform = new SkMatrix(*state->transform);
   new_state->imageSmoothingEnabled = state->imageSmoothingEnabled;
@@ -576,7 +576,7 @@ extern "C" {
     int variant,
     int stretch
   ) {
-    free(context->state->font);
+    // free(context->state->font);
     context->state->font = new Font();
     context->state->font->family = strdup(family);
     context->state->font->size = size;
@@ -940,7 +940,7 @@ extern "C" {
     ts->setAll(a, b, e, c, d, f, 0.0f, 0.0f, 1.0f);
     s->transform = ts;
     context->canvas->setMatrix(*s->transform);
-    delete ts;
+    // delete ts;
   }
 
   // Context.resetTransform()
@@ -1294,7 +1294,7 @@ extern "C" {
     delete context->state;
     for (auto state : context->states) {
       free_context_state(state);
-      delete state;
+      // delete state;
     }
     delete context;
   }
