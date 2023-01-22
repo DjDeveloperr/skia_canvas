@@ -946,7 +946,7 @@ if (LOCAL_BUILD) {
       await ensureDir(dirname(cacheIcuBasePath));
       try {
         await Deno.mkdir(cacheIcuBasePath, { recursive: true });
-      } catch(_) {
+      } catch (_) {
         // ignore if already exists
       }
       await Deno.writeFile(
