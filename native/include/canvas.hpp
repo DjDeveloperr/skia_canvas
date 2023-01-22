@@ -22,7 +22,7 @@ typedef struct sk_canvas {
   SkSurface* surface;
   GrDirectContext* context;
   void* context_2d;
-  sk_canvas_backend type;
+  sk_canvas_backend backend;
 } sk_canvas;
 
 typedef struct sk_context_state {
