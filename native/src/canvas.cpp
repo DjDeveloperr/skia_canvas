@@ -8,17 +8,16 @@ extern "C" {
 
   sk_canvas* sk_canvas_create(int width, int height) {
     sk_canvas* canvas = new sk_canvas();
-    SkImageInfo info = SkImageInfo::MakeN32Premul(width, height);
-    size_t rowBytes = info.minRowBytes();
-    size_t size = info.computeByteSize(rowBytes);
-    canvas->pixels = malloc(size);
-    canvas->surface = SkSurface::MakeRasterDirect(info, canvas->pixels, rowBytes).release();
+    canvas->backend = kBackendCPU;
+    canvas->surface = SkSurface::MakeRasterN32Premul(width, height).release();
     canvas->context_2d = sk_canvas_create_context(canvas);
     return canvas;
   }
 
   sk_canvas* sk_canvas_create_gl(int width, int height) {
     sk_canvas* canvas = new sk_canvas();
+    canvas->backend = kBackendOpenGL;
+    
     auto interface = GrGLMakeNativeInterface();
 
     if (interface == nullptr) {
@@ -63,9 +62,6 @@ extern "C" {
   void sk_canvas_destroy(sk_canvas* canvas) {
     canvas->surface->unref();
     sk_context_destroy((sk_context*) canvas->context_2d);
-    if (canvas->pixels != nullptr) {
-      free(canvas->pixels);
-    }
     delete canvas;
   }
 
@@ -121,18 +117,13 @@ extern "C" {
   }
 
   void sk_canvas_set_size(sk_canvas* canvas, int width, int height) {
-    if (canvas->pixels != nullptr) {
+    if (canvas->backend == kBackendCPU) {
       // Raster canvas
       canvas->surface->unref();
       sk_context_destroy((sk_context*) canvas->context_2d);
-      free(canvas->pixels);
-      SkImageInfo info = SkImageInfo::MakeN32Premul(width, height);
-      size_t rowBytes = info.minRowBytes();
-      size_t size = info.computeByteSize(rowBytes);
-      canvas->pixels = malloc(size);
-      canvas->surface = SkSurface::MakeRasterDirect(info, canvas->pixels, rowBytes).release();
+      canvas->surface = SkSurface::MakeRasterN32Premul(width, height).release();
       canvas->context_2d = sk_canvas_create_context(canvas);
-    } else {
+    } else if (canvas->backend == kBackendOpenGL) {
       // OpenGL canvas
       canvas->surface->unref();
       sk_context_destroy((sk_context*) canvas->context_2d);
