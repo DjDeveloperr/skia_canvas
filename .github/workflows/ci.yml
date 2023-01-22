@@ -88,10 +88,10 @@ jobs:
       - name: Run Tests
         env:
           DENO_SKIA_LOCAL: 1
-        run: deno task test
+        run: deno run -A --unstable test/test.ts
 
       - name: Run Tests (Prebuilt)
-        run: deno task test-prebuilt
+        run: deno run -A --unstable --import-map=./test/import_map.json test/test.ts
 
       - name: Release
         uses: softprops/action-gh-release@master
