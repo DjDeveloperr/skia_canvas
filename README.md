@@ -99,4 +99,4 @@ from the `native` directory.
 
 [Apache-2.0](./LICENSE) licensed.
 
-Copyright 2022 © DjDeveloperr
+Copyright 2022-present © DjDeveloperr
