@@ -9,7 +9,7 @@ extern sk_sp<skia::textlayout::FontCollection> fontCollection;
 
 void free_style(Style* style) {
   if (style->shader != nullptr) {
-    style->shader.~sk_sp();
+    style->shader->unref();
   }
 }
 
@@ -100,7 +100,7 @@ sk_context_state* clone_context_state(sk_context_state* state) {
 void free_context_state(sk_context_state* state) {
   free_style(&state->fillStyle);
   free_style(&state->strokeStyle);
-  if (state->filter.get() != nullptr) state->filter.~sk_sp();
+  if (state->filter.get() != nullptr) state->filter->unref();
   delete state->paint;
   delete state->transform;
   free_font(state->font);
@@ -1213,6 +1213,7 @@ extern "C" {
   /// Filters
   
   void sk_context_filter_reset(sk_context* context) {
+    if (context->state->filter.get() != nullptr) context->state->filter->unref();
     context->state->filter = sk_sp((SkImageFilter*) nullptr);
   }
 

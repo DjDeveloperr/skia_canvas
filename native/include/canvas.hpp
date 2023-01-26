@@ -13,11 +13,16 @@
 #include "include/gpu/GrDirectContext.h"
 #include "include/gpu/gl/GrGLInterface.h"
 
+typedef enum sk_canvas_backend {
+  kBackendCPU,
+  kBackendOpenGL,
+} sk_canvas_backend;
+
 typedef struct sk_canvas {
   SkSurface* surface;
   GrDirectContext* context;
-  void* pixels;
   void* context_2d;
+  sk_canvas_backend backend;
 } sk_canvas;
 
 typedef struct sk_context_state {

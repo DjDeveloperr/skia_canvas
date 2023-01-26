@@ -944,7 +944,11 @@ if (LOCAL_BUILD) {
       }
 
       await ensureDir(dirname(cacheIcuBasePath));
-
+      try {
+        await Deno.mkdir(cacheIcuBasePath, { recursive: true });
+      } catch (_) {
+        // ignore if already exists
+      }
       await Deno.writeFile(
         cacheIcuPath,
         new Uint8Array(await response.arrayBuffer()),
@@ -964,6 +968,8 @@ export default lib;
 const {
   op_ffi_cstr_read,
   op_ffi_get_buf,
+  op_base64_encode,
+  op_base64_decode,
 }: {
   op_ffi_cstr_read: (ptr: Deno.PointerValue) => string;
   op_ffi_get_buf: (
@@ -971,10 +977,17 @@ const {
     offset: number,
     size: number,
   ) => ArrayBuffer;
-} = (Deno as any).core.ops;
+  op_base64_encode: (buf: Uint8Array) => string;
+  op_base64_decode: (base64: string) => Uint8Array;
+} = (Deno as any)[(Deno as any).internal].core.ops;
 
 export function cstr(str: string) {
   return new TextEncoder().encode(str + "\0");
 }
 
-export { op_ffi_cstr_read as readCstr, op_ffi_get_buf as getBuffer };
+export {
+  op_base64_decode as decodeBase64,
+  op_base64_encode as encodeBase64,
+  op_ffi_cstr_read as readCstr,
+  op_ffi_get_buf as getBuffer,
+};

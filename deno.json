@@ -7,6 +7,7 @@
     "build": "cd native/build && CC=clang CXX=clang++ cmake .. && cmake --build . --config Release",
     "build-win": "rm -rf native/build && mkdir native/build && cd native/build && cmake .. -G \"Visual Studio 17 2022\" -T ClangCL && cmake --build . --config Release",
     "test": "deno run -A --unstable ./test/test.ts",
+    "test-prebuilt": "deno run -A --unstable --import-map=./test/import_map.json ./test/test.ts",
     "test-pdf": "deno run -A --unstable ./test/pdf.ts",
     "test-svg": "deno run -A --unstable ./test/svg.ts",
     "bench-deno": "deno bench -A --unstable bench/deno.js",
@@ -17,7 +18,7 @@
 
   "fmt": {
     "files": {
-      "exclude": ["skia", "bench/node_modules", "build"]
+      "exclude": ["skia", "bench/node_modules", "build", "native/build"]
     }
   }
 }

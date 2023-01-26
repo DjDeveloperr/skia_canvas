@@ -1,5 +1,5 @@
 import { CanvasRenderingContext2D } from "./context2d.ts";
-import ffi, { cstr, getBuffer } from "./ffi.ts";
+import ffi, { cstr, encodeBase64, getBuffer } from "./ffi.ts";
 import { ColorSpace } from "./image.ts";
 
 const {
@@ -139,9 +139,7 @@ export class Canvas {
 
   toDataURL(format: ImageFormat = "png", quality = 100) {
     const buffer = this.encode(format, quality);
-    return `data:image/${format};base64,${
-      (Deno as any).core.ops.op_base64_encode(buffer)
-    }`;
+    return `data:image/${format};base64,${encodeBase64(buffer)}`;
   }
 
   /**
