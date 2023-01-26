@@ -1,5 +1,5 @@
 import { CanvasRenderingContext2D } from "./context2d.ts";
-import ffi, { cstr, getBuffer, encodeBase64 } from "./ffi.ts";
+import ffi, { cstr, encodeBase64, getBuffer } from "./ffi.ts";
 import { ColorSpace } from "./image.ts";
 
 const {
