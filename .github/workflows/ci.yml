@@ -90,9 +90,6 @@ jobs:
           DENO_SKIA_LOCAL: 1
         run: deno run -A --unstable test/test.ts
 
-      - name: Run Tests (Prebuilt)
-        run: deno run -A --unstable --import-map=./test/import_map.json test/test.ts
-
       - name: Release
         uses: softprops/action-gh-release@master
         if: ${{ github.ref == 'refs/heads/main' }}
