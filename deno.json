@@ -1,7 +1,7 @@
 {
   "name": "skia_canvas",
   "github": "https://github.com/DjDeveloperr/skia_canvas",
-  "verision": "0.5.0",
+  "verision": "0.5.1",
 
   "tasks": {
     "build": "cd native/build && CC=clang CXX=clang++ cmake .. && cmake --build . --config Release",
