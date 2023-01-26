@@ -968,6 +968,7 @@ export default lib;
 const {
   op_ffi_cstr_read,
   op_ffi_get_buf,
+  op_base64_encode,
 }: {
   op_ffi_cstr_read: (ptr: Deno.PointerValue) => string;
   op_ffi_get_buf: (
@@ -975,10 +976,15 @@ const {
     offset: number,
     size: number,
   ) => ArrayBuffer;
-} = (Deno as any).core.ops;
+  op_base64_encode: (buf: Uint8Array) => string;
+} = (Deno as any)[(Deno as any).internal].core.ops;
 
 export function cstr(str: string) {
   return new TextEncoder().encode(str + "\0");
 }
 
-export { op_ffi_cstr_read as readCstr, op_ffi_get_buf as getBuffer };
+export {
+  op_ffi_cstr_read as readCstr,
+  op_ffi_get_buf as getBuffer,
+  op_base64_encode as encodeBase64,
+};
