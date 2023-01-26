@@ -45,6 +45,8 @@ extern "C" {
   }
 
   sk_sp<SkShader> sk_pattern_to_shader(sk_pattern* pattern) {
-    return pattern->bitmap->makeShader(pattern->tmx, pattern->tmy, SkSamplingOptions({1.0f / 3.0f, 1.0f / 3.0f}), &pattern->ts);
+    auto shader = pattern->bitmap->makeShader(pattern->tmx, pattern->tmy, SkSamplingOptions({1.0f / 3.0f, 1.0f / 3.0f}), &pattern->ts);
+    shader->ref();
+    return shader;
   }
 }
