@@ -986,8 +986,8 @@ export function cstr(str: string) {
 }
 
 export {
-  op_ffi_cstr_read as readCstr,
-  op_base64_encode as encodeBase64,
   op_base64_decode as decodeBase64,
+  op_base64_encode as encodeBase64,
+  op_ffi_cstr_read as readCstr,
   op_ffi_get_buf as getBuffer,
 };
