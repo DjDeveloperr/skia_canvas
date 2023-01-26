@@ -380,10 +380,10 @@ extern "C" {
     SkScalar baselineOffset = 0;
     switch (cssBaseline) {
     case CssBaseline::Top:
-      baselineOffset = -alphaBaseline - font_metrics.fAscent;
+      baselineOffset = -alphaBaseline - font_metrics.fAscent - font_metrics.fUnderlinePosition - font_metrics.fUnderlineThickness;
       break;
     case CssBaseline::Hanging:
-      baselineOffset = -alphaBaseline - (font_metrics.fAscent - font_metrics.fDescent) * 80 / 100.0;
+      baselineOffset = -alphaBaseline - font_metrics.fAscent * 80 / 100.0;
       break;
     case CssBaseline::Middle:
       baselineOffset = -paragraph->getHeight() / 2;
@@ -395,7 +395,27 @@ extern "C" {
       baselineOffset = -paragraph->getIdeographicBaseline();
       break;
     case CssBaseline::Bottom:
-      baselineOffset = -font_metrics.fStrikeoutPosition;
+      baselineOffset = font_metrics.fStrikeoutThickness + font_metrics.fStrikeoutPosition - alphaBaseline;
+      break;
+    }
+
+    auto line_center = lineWidth / 2.0f;
+    float paintX;
+    switch (context->state->textAlign) {
+    case TextAlign::kLeft:
+      paintX = x;
+      break;
+    case TextAlign::kCenter:
+      paintX = x - line_center;
+      break;
+    case TextAlign::kRight:
+      paintX = x - lineWidth;
+      break;
+    case TextAlign::kStart:
+      paintX = context->state->direction == TextDirection::kRTL ? x - lineWidth : x;
+      break;
+    case TextAlign::kEnd:
+      paintX = context->state->direction == TextDirection::kRTL ? x : x - lineWidth;
       break;
     }
 
@@ -403,38 +423,20 @@ extern "C" {
       auto offset = -baselineOffset - alphaBaseline;
       out_metrics->ascent = -ascent + offset;
       out_metrics->descent = descent + offset;
-      out_metrics->left = line_metrics.fLeft - firstCharBounds.fLeft;
-      out_metrics->right = lastCharPosX + lastCharBounds.fRight - line_metrics.fLeft;
+      out_metrics->left = -paintX + line_metrics.fLeft - firstCharBounds.fLeft;
+      out_metrics->right = paintX + lastCharPosX + lastCharBounds.fRight - line_metrics.fLeft;
       out_metrics->width = lineWidth;
       out_metrics->font_ascent = -font_metrics.fAscent + offset;
       out_metrics->font_descent = font_metrics.fDescent + offset;
     } else {
-      auto line_center = lineWidth / 2.0f;
-      float paintX;
-      switch (context->state->textAlign) {
-      case TextAlign::kLeft:
-        paintX = x;
-        break;
-      case TextAlign::kCenter:
-        paintX = x - line_center;
-        break;
-      case TextAlign::kRight:
-        paintX = x - lineWidth;
-        break;
-      case TextAlign::kStart:
-        paintX = context->state->direction == TextDirection::kRTL ? x - lineWidth : x;
-        break;
-      case TextAlign::kEnd:
-        paintX = context->state->direction == TextDirection::kRTL ? x : x - lineWidth;
-        break;
-      }
       auto needScale = lineWidth > maxWidth;
+      auto ratio = needScale ? maxWidth / lineWidth : 1.0;
       if (needScale) {
         context->canvas->save();
-        context->canvas->scale(maxWidth / lineWidth, 1.0);
+        context->canvas->scale(ratio, 1.0);
       }
       auto paintY = y + baselineOffset;
-      paragraph.get()->paint(context->canvas, paintX, paintY);
+      paragraph.get()->paint(context->canvas, paintX / ratio, paintY);
       if (needScale) {
         context->canvas->restore();
       }

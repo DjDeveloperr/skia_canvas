@@ -326,6 +326,9 @@ export class CanvasRenderingContext2D {
         actualBoundingBoxDescent: 0,
         fontBoundingBoxAscent: 0,
         fontBoundingBoxDescent: 0,
+        alphabeticBaseline: 0,
+        emHeightAscent: 0,
+        emHeightDescent: 0,
       };
     }
     const encoded = new TextEncoder().encode(text);
@@ -351,6 +354,9 @@ export class CanvasRenderingContext2D {
       actualBoundingBoxDescent: METRICS[1],
       fontBoundingBoxAscent: METRICS[5],
       fontBoundingBoxDescent: METRICS[6],
+      alphabeticBaseline: METRICS[5],
+      emHeightAscent: METRICS[5],
+      emHeightDescent: METRICS[6],
     };
   }
 
