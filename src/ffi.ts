@@ -969,6 +969,7 @@ const {
   op_ffi_cstr_read,
   op_ffi_get_buf,
   op_base64_encode,
+  op_base64_decode,
 }: {
   op_ffi_cstr_read: (ptr: Deno.PointerValue) => string;
   op_ffi_get_buf: (
@@ -977,6 +978,7 @@ const {
     size: number,
   ) => ArrayBuffer;
   op_base64_encode: (buf: Uint8Array) => string;
+  op_base64_decode: (base64: string) => Uint8Array;
 } = (Deno as any)[(Deno as any).internal].core.ops;
 
 export function cstr(str: string) {
@@ -986,5 +988,6 @@ export function cstr(str: string) {
 export {
   op_ffi_cstr_read as readCstr,
   op_base64_encode as encodeBase64,
+  op_base64_decode as decodeBase64,
   op_ffi_get_buf as getBuffer,
 };

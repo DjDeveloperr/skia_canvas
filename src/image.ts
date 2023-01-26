@@ -1,4 +1,4 @@
-import ffi, { cstr } from "./ffi.ts";
+import ffi, { cstr, decodeBase64 } from "./ffi.ts";
 
 const {
   sk_image_destroy,
@@ -68,7 +68,7 @@ export class Image extends EventTarget {
         const isBase64 = data.lastIndexOf("base64", comma) !== -1;
         const content = data.slice(comma + 1);
         const buffer = isBase64
-          ? (Deno as any).core.ops.op_base64_decode(content)
+          ? decodeBase64(content)
           : new TextEncoder().encode(content);
         this.src = buffer;
         return;
