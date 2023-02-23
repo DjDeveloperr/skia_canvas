@@ -137,6 +137,9 @@ export class Canvas {
     return buffer;
   }
 
+  /**
+   * Creates a data url from the canvas data
+   */
   toDataURL(format: ImageFormat = "png", quality = 100) {
     const buffer = this.encode(format, quality);
     return `data:image/${format};base64,${encodeBase64(buffer)}`;
@@ -168,6 +171,9 @@ export class Canvas {
     return pixels;
   }
 
+  /**
+   * Returns the Rendering Context of the canvas
+   */
   getContext(type: "2d"): CanvasRenderingContext2D;
   getContext(type: string): CanvasRenderingContext2D | null {
     switch (type) {
@@ -179,6 +185,9 @@ export class Canvas {
     }
   }
 
+  /**
+   * Resizes the Canvas to the specified dimensions
+   */
   resize(width: number, height: number) {
     if (this.#width === width && this.#height === height) return;
     sk_canvas_set_size(this.#ptr, width, height);
