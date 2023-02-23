@@ -86,7 +86,7 @@ export class Canvas {
       width,
       height,
     );
-    if (this.#ptr === 0) {
+    if (this.#ptr === null) {
       throw new Error("Failed to create canvas");
     }
     CANVAS_FINALIZER.register(this, this.#ptr);
@@ -126,12 +126,12 @@ export class Canvas {
       OUT_DATA_PTR,
     );
 
-    if (bufptr === 0) {
+    if (bufptr === null) {
       throw new Error("Failed to encode canvas");
     }
 
     const size = OUT_SIZE[0];
-    const ptr = OUT_DATA[0];
+    const ptr = Deno.UnsafePointer.create(OUT_DATA[0]);
     const buffer = new Uint8Array(getBuffer(bufptr, 0, size));
     SK_DATA_FINALIZER.register(buffer, ptr);
     return buffer;

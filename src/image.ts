@@ -17,8 +17,8 @@ const SK_IMAGE_FINALIZER = new FinalizationRegistry(
 export type ImageSource = Uint8Array | string;
 
 export class Image extends EventTarget {
-  #token: { ptr: Deno.PointerValue } = { ptr: 0 };
-  #ptr: Deno.PointerValue = 0;
+  #token: { ptr: Deno.PointerValue } = { ptr: null };
+  #ptr: Deno.PointerValue = null;
   #src?: ImageSource;
 
   get _unsafePointer() {
@@ -35,16 +35,16 @@ export class Image extends EventTarget {
   }
 
   set src(data: ImageSource | undefined) {
-    if (this.#ptr !== 0) {
+    if (this.#ptr !== null) {
       sk_image_destroy(this.#ptr);
       SK_IMAGE_FINALIZER.unregister(this.#token);
-      this.#ptr = 0;
+      this.#ptr = null;
     }
 
     if (data === undefined) {
       this.#src = undefined;
-      this.#ptr = 0;
-      this.#token.ptr = 0;
+      this.#ptr = null;
+      this.#token.ptr = null;
       return;
     }
 
@@ -79,7 +79,7 @@ export class Image extends EventTarget {
       ? sk_image_from_encoded(data, data.byteLength)
       : sk_image_from_file(cstr(data));
 
-    if (this.#ptr === 0) {
+    if (this.#ptr === null) {
       const error = new Error("Failed to load image");
       queueMicrotask(() => {
         this.dispatchEvent(
@@ -94,7 +94,7 @@ export class Image extends EventTarget {
     this.#token.ptr = this.#ptr;
     this.#src = data;
 
-    if (this.#ptr !== 0) {
+    if (this.#ptr !== null) {
       SK_IMAGE_FINALIZER.register(this, this.#ptr, this.#token);
     }
 
@@ -114,6 +114,7 @@ export class Image extends EventTarget {
     return this.#onerror;
   }
 
+  // deno-lint-ignore adjacent-overload-signatures
   set onload(fn: EventListenerOrEventListenerObject | undefined) {
     if (this.#onload) {
       this.removeEventListener("load", this.#onload);
@@ -122,6 +123,7 @@ export class Image extends EventTarget {
     if (fn) this.addEventListener("load", fn);
   }
 
+  // deno-lint-ignore adjacent-overload-signatures
   set onerror(fn: EventListenerOrEventListenerObject | undefined) {
     if (this.#onerror) {
       this.removeEventListener("error", this.#onerror);
@@ -148,17 +150,17 @@ export class Image extends EventTarget {
   }
 
   get width() {
-    if (this._unsafePointer === 0) return 0;
+    if (this._unsafePointer === null) return 0;
     return sk_image_width(this.#ptr);
   }
 
   get height() {
-    if (this._unsafePointer === 0) return 0;
+    if (this._unsafePointer === null) return 0;
     return sk_image_height(this.#ptr);
   }
 
   [Symbol.for("Deno.customInspect")]() {
-    if (this._unsafePointer === 0) {
+    if (this._unsafePointer === null) {
       return `Image { pending, src: ${Deno.inspect(this.src)} }`;
     }
     return `Image { width: ${this.width}, height: ${this.height} }`;

@@ -1,4 +1,5 @@
 import { FillRule } from "./context2d.ts";
+import { DOMMatrix } from "./dommatrix.ts";
 import ffi, { cstr } from "./ffi.ts";
 
 const {
@@ -82,7 +83,7 @@ export class Path2D {
       : typeof path === "object" && path !== null && path instanceof Path2D
       ? sk_path_create_copy(path._unsafePointer)
       : sk_path_create();
-    if (this.#ptr === 0) {
+    if (this.#ptr === null) {
       throw new Error("Failed to create path");
     }
     PATH_FINALIZER.register(this, this.#ptr);
@@ -200,7 +201,7 @@ export class Path2D {
   toSVGString() {
     const skstr = sk_path_to_svg(this.#ptr, OUT_PTR_U8, OUT_SIZE_U8);
     const buffer = Deno.UnsafePointerView.getArrayBuffer(
-      OUT_PTR[0],
+      Deno.UnsafePointer.create(OUT_PTR[0])!,
       OUT_SIZE[0],
     );
     const str = new TextDecoder().decode(buffer);
@@ -248,7 +249,7 @@ export class Path2D {
       ]);
       sk_path_add_path_buf(this.#ptr, path._unsafePointer, TU8);
     } else {
-      sk_path_add_path_ptr(this.#ptr, path._unsafePointer, 0);
+      sk_path_add_path_ptr(this.#ptr, path._unsafePointer, null);
     }
   }
 }

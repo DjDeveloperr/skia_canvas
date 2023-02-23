@@ -30,7 +30,7 @@ export class CanvasPattern {
   }
 
   constructor(image: CanvasPatternImage, repetition: CanvasPatternRepeat) {
-    if (image._unsafePointer === 0) throw new Error("Image not loaded");
+    if (image._unsafePointer === null) throw new Error("Image not loaded");
     this.#ptr = sk_pattern_new_image(image._unsafePointer, repeat[repetition]);
     PATTERN_FINALIZER.register(this, this.#ptr);
   }

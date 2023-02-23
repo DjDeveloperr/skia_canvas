@@ -99,6 +99,7 @@ export function parseFilterString(filter: string): Filter[] {
   let state: "fn" | "args" = "fn";
   let fn = "";
   let argc = 0;
+  // deno-lint-ignore no-explicit-any
   let argv: any[] = [];
 
   let i = 0;
@@ -137,6 +138,7 @@ export function parseFilterString(filter: string): Filter[] {
         continue;
       }
 
+      // deno-lint-ignore no-inner-declarations
       function parsePixel() {
         let numPart = "";
         let unitPart = "";
@@ -182,6 +184,7 @@ export function parseFilterString(filter: string): Filter[] {
         }
       }
 
+      // deno-lint-ignore no-inner-declarations
       function parsePercentage() {
         if (!arg.match(/^[0-9\.]+%?$/)) {
           throw new Error(`Invalid percentage: ${arg}`);
@@ -197,6 +200,7 @@ export function parseFilterString(filter: string): Filter[] {
         return num / 100;
       }
 
+      // deno-lint-ignore no-inner-declarations
       function parseAngle() {
         if (arg.endsWith("deg")) {
           const num = parseFloat(arg.slice(0, arg.length - 3));
@@ -227,6 +231,7 @@ export function parseFilterString(filter: string): Filter[] {
         }
       }
 
+      // deno-lint-ignore no-explicit-any
       let v: any = undefined;
 
       switch (fn) {
