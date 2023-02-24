@@ -86,7 +86,7 @@ export class Canvas {
       width,
       height,
     );
-    if (this.#ptr === 0) {
+    if (this.#ptr === null) {
       throw new Error("Failed to create canvas");
     }
     CANVAS_FINALIZER.register(this, this.#ptr);
@@ -126,17 +126,20 @@ export class Canvas {
       OUT_DATA_PTR,
     );
 
-    if (bufptr === 0) {
+    if (bufptr === null) {
       throw new Error("Failed to encode canvas");
     }
 
     const size = OUT_SIZE[0];
-    const ptr = OUT_DATA[0];
+    const ptr = Deno.UnsafePointer.create(OUT_DATA[0]);
     const buffer = new Uint8Array(getBuffer(bufptr, 0, size));
     SK_DATA_FINALIZER.register(buffer, ptr);
     return buffer;
   }
 
+  /**
+   * Creates a data url from the canvas data
+   */
   toDataURL(format: ImageFormat = "png", quality = 100) {
     const buffer = this.encode(format, quality);
     return `data:image/${format};base64,${encodeBase64(buffer)}`;
@@ -168,6 +171,9 @@ export class Canvas {
     return pixels;
   }
 
+  /**
+   * Returns the Rendering Context of the canvas
+   */
   getContext(type: "2d"): CanvasRenderingContext2D;
   getContext(type: string): CanvasRenderingContext2D | null {
     switch (type) {
@@ -179,6 +185,9 @@ export class Canvas {
     }
   }
 
+  /**
+   * Resizes the Canvas to the specified dimensions
+   */
   resize(width: number, height: number) {
     if (this.#width === width && this.#height === height) return;
     sk_canvas_set_size(this.#ptr, width, height);

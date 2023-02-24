@@ -29,6 +29,7 @@ const sizeFamilyRe = new RegExp(
  * Cache font parsing.
  */
 
+// deno-lint-ignore no-explicit-any
 const cache: Record<string, any> = {};
 
 const defaultHeight = 16; // pt, common browser default
@@ -36,6 +37,7 @@ const defaultHeight = 16; // pt, common browser default
 /**
  * Parse font `str`.
  */
+// deno-lint-ignore no-explicit-any
 export function parseFont(str: string): any {
   // Cached
   if (cache[str]) return cache[str];
@@ -45,6 +47,7 @@ export function parseFont(str: string): any {
   if (!sizeFamily) return; // invalid
 
   // Default values and required properties
+  // deno-lint-ignore no-explicit-any
   const font: any = {
     weight: "normal",
     style: "normal",

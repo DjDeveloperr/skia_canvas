@@ -60,7 +60,7 @@ function dateToSkTime(date: Date) {
 }
 
 export class PdfRenderingContext2D extends CanvasRenderingContext2D {
-  // @ts-expect-error
+  // @ts-expect-error typescript error
   declare canvas!: PdfDocument;
 
   constructor(
@@ -69,6 +69,7 @@ export class PdfRenderingContext2D extends CanvasRenderingContext2D {
     public width: number,
     public height: number,
   ) {
+    // deno-lint-ignore no-explicit-any
     super(canvas as any, ptr);
   }
 }
@@ -140,7 +141,9 @@ export class PdfDocument {
     }
     const size = OUT_SIZE[0];
     const ptr = OUT_DATA[0];
-    const buffer = new Uint8Array(getBuffer(ptr, 0, size));
+    const buffer = new Uint8Array(
+      getBuffer(Deno.UnsafePointer.create(ptr), 0, size),
+    );
     SK_DATA_FINALIZER.register(buffer, skdata);
     return buffer;
   }

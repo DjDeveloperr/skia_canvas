@@ -26,10 +26,11 @@ const OUT_DATA = new BigUint64Array(1);
 const OUT_DATA_PTR = new Uint8Array(OUT_DATA.buffer);
 
 export class SvgRenderingContext2D extends CanvasRenderingContext2D {
-  // @ts-expect-error
+  // @ts-expect-error typescript warning
   declare readonly canvas: SvgCanvas;
 
   constructor(canvas: SvgCanvas, ptr: Deno.PointerValue) {
+    // deno-lint-ignore no-explicit-any
     super(canvas as any, ptr);
   }
 }
@@ -57,7 +58,7 @@ export class SvgCanvas {
       0 | (options.convertTextsToPaths ? 1 : 0) |
         (options.noPrettyXml ? 2 : 0) | (options.relativePathEncoding ? 4 : 0),
     );
-    if (this.#ptr === 0) {
+    if (this.#ptr === null) {
       throw new Error("Failed to create SVG Canvas");
     }
     SVG_FINALIZER.register(this, this.#ptr);
@@ -66,7 +67,7 @@ export class SvgCanvas {
   /** Obtain 2D context for drawing on SVG */
   getContext() {
     const ptr = sk_svg_get_context(this.#ptr);
-    if (ptr === 0) {
+    if (ptr === null) {
       throw new Error("Failed to get SVG context");
     }
     return new SvgRenderingContext2D(this, ptr);
@@ -87,7 +88,9 @@ export class SvgCanvas {
     }
     const size = OUT_SIZE[0];
     const ptr = OUT_DATA[0];
-    const buffer = new Uint8Array(getBuffer(ptr, 0, size));
+    const buffer = new Uint8Array(
+      getBuffer(Deno.UnsafePointer.create(ptr), 0, size),
+    );
     SK_DATA_FINALIZER.register(buffer, skdata);
     return buffer;
   }
@@ -100,7 +103,9 @@ export class SvgCanvas {
     }
     const size = OUT_SIZE[0];
     const ptr = OUT_DATA[0];
-    const buffer = new Uint8Array(getBuffer(ptr, 0, size));
+    const buffer = new Uint8Array(
+      getBuffer(Deno.UnsafePointer.create(ptr), 0, size),
+    );
     const text = new TextDecoder().decode(buffer);
     sk_data_free(skdata);
     return text;

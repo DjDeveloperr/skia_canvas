@@ -188,7 +188,7 @@ export type GlobalCompositeOperation = keyof typeof CGlobalCompositeOperation;
 export type ImageSmoothingQuality = keyof typeof CImageSmoothingQuality;
 
 const METRICS = new Float32Array(7);
-const METRICS_PTR = Number(Deno.UnsafePointer.of(METRICS));
+const METRICS_PTR = Deno.UnsafePointer.of(METRICS);
 
 export type Style = string | CanvasGradient | CanvasPattern;
 
@@ -259,7 +259,7 @@ export class CanvasRenderingContext2D {
   constructor(canvas: Canvas, ptr: Deno.PointerValue) {
     this.#canvas = canvas;
     this.#ptr = ptr;
-    if (this.#ptr === 0) {
+    if (this.#ptr === null) {
       throw new Error("Failed to create context");
     }
   }
@@ -291,7 +291,7 @@ export class CanvasRenderingContext2D {
         y,
         maxWidth ?? 100_000,
         1,
-        0,
+        null,
       )
     ) {
       throw new Error("failed to fill text");
@@ -309,7 +309,7 @@ export class CanvasRenderingContext2D {
         y,
         maxWidth ?? 100_000,
         0,
-        0,
+        null,
       )
     ) {
       throw new Error("failed to stroke text");
@@ -773,13 +773,16 @@ export class CanvasRenderingContext2D {
     const pathptr =
       typeof path === "object" && path !== null && path instanceof Path2D
         ? path._unsafePointer
-        : 0;
+        : null;
     const irule = (typeof path === "string" ? path : rule) ?? "nonzero";
     sk_context_fill(this.#ptr, pathptr, irule === "evenodd" ? 1 : 0);
   }
 
   stroke(path?: Path2D) {
-    sk_context_stroke(this.#ptr, path ? path._unsafePointer : 0);
+    sk_context_stroke(
+      this.#ptr,
+      path ? path._unsafePointer : null,
+    );
   }
 
   drawFocusIfNeeded() {
@@ -800,7 +803,7 @@ export class CanvasRenderingContext2D {
   ) {
     const pathptr = typeof path === "object" && path !== null
       ? path._unsafePointer
-      : 0;
+      : null;
     const fillRuleStr = typeof path === "string" ? path : fillRule;
     const ifillRule = fillRuleStr === "evenodd" ? 1 : 0;
     sk_context_clip(this.#ptr, pathptr, ifillRule);
@@ -825,7 +828,7 @@ export class CanvasRenderingContext2D {
   ): boolean {
     const pathptr = typeof path === "object" && path !== null
       ? path._unsafePointer
-      : 0;
+      : null;
     const ifillRule = (typeof y === "string" ? y : fillRule) === "evenodd"
       ? 1
       : 0;
@@ -854,7 +857,7 @@ export class CanvasRenderingContext2D {
   ): boolean {
     const pathptr = typeof path === "object" && path !== null
       ? path._unsafePointer
-      : 0;
+      : null;
     return sk_context_is_point_in_stroke(
       this.#ptr,
       typeof path === "number" ? path : x,
@@ -978,7 +981,7 @@ export class CanvasRenderingContext2D {
     asw?: number,
     ash?: number,
   ) {
-    if (image instanceof Image && image._unsafePointer === 0) {
+    if (image instanceof Image && image._unsafePointer === null) {
       return;
     }
     const dx = asx ?? adx;
@@ -991,8 +994,8 @@ export class CanvasRenderingContext2D {
     const sh = ash === undefined ? image.height : adh ?? image.height;
     sk_context_draw_image(
       this.#ptr,
-      image instanceof Canvas ? image._unsafePointer : 0,
-      image instanceof Image ? image._unsafePointer : 0,
+      image instanceof Canvas ? image._unsafePointer : null,
+      image instanceof Image ? image._unsafePointer : null,
       dx,
       dy,
       dw,

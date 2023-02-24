@@ -10,7 +10,7 @@ Chart.register(...registerables);
 const canvas = createCanvas(800, 600);
 const ctx = canvas.getContext("2d");
 
-const myChart = new Chart(ctx, {
+const _myChart = new Chart(ctx, {
   type: "bar",
   data: {
     labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],

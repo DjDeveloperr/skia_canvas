@@ -979,6 +979,7 @@ const {
   ) => ArrayBuffer;
   op_base64_encode: (buf: Uint8Array) => string;
   op_base64_decode: (base64: string) => Uint8Array;
+  // deno-lint-ignore no-explicit-any
 } = (Deno as any)[(Deno as any).internal].core.ops;
 
 export function cstr(str: string) {

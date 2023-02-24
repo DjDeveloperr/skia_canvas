@@ -1,4 +1,4 @@
-const CURRENT_HASH = "2290b0b75a8abb80e23d9cb9aced5b5cebbf702d";
+const _CURRENT_HASH = "2290b0b75a8abb80e23d9cb9aced5b5cebbf702d";
 const CURRENT_HASH_SHORT = "2290b0b";
 
 Deno.chdir(new URL("../skia", import.meta.url));
@@ -56,6 +56,7 @@ if (Deno.env.get("SKIA_FROM_SOURCE") !== "1") {
   }
   try {
     Deno.mkdirSync("./out/Release", { recursive: true });
+    // deno-lint-ignore no-empty
   } catch (_) {}
   for (const name of toDownload) {
     let file = name;
@@ -78,6 +79,7 @@ if (Deno.env.get("SKIA_FROM_SOURCE") !== "1") {
   Deno.exit(0);
 }
 
+// deno-lint-ignore no-explicit-any
 const BUILD_ARGS: Record<string, any> = {
   cc: Deno.build.os === "windows" ? '"clang-cl"' : '"clang"',
   cxx: Deno.build.os === "windows" ? '"clang-cl"' : '"clang++"',
