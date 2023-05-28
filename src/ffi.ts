@@ -880,6 +880,11 @@ const SYMBOLS = {
     parameters: ["pointer", "pointer", "pointer"],
     result: "void",
   },
+
+  sk_svg_delete_canvas: {
+    parameters: ["pointer"],
+    result: "void",
+  },
 } as const;
 
 const LOCAL_BUILD = Deno.env.get("DENO_SKIA_LOCAL") === "1";

@@ -13,7 +13,9 @@ extern "C" {
   }
 
   SKIA_EXPORT void sk_svg_destroy(sk_svg* svg) {
-    delete svg->canvas;
+    if (svg->canvas != nullptr) {
+      delete svg->canvas;
+    }
     delete svg->stream;
     delete svg;
   }
@@ -37,5 +39,12 @@ extern "C" {
     *buffer = data->writable_data();
     *size = data->size();
     return data;
+  }
+
+  SKIA_EXPORT void sk_svg_delete_canvas(sk_svg* svg) {
+    if (svg->canvas != nullptr) {
+      delete svg->canvas;
+      svg->canvas = nullptr;
+    }
   }
 }

@@ -126,7 +126,6 @@ const BUILD_ARGS: Record<string, any> = {
   skia_pdf_subset_harfbuzz: true,
   skia_use_expat: true,
   skia_use_wuffs: true,
-  skia_use_libgifcodec: true,
 };
 
 BUILD_ARGS["extra_cflags_cc"] = "[";

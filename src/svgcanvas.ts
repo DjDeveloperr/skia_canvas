@@ -8,6 +8,7 @@ const {
   sk_svg_get_context,
   sk_svg_write_file,
   sk_data_free,
+  sk_svg_delete_canvas,
 } = ffi;
 
 const SVG_FINALIZER = new FinalizationRegistry((ptr: Deno.PointerValue) => {
@@ -43,6 +44,9 @@ export interface SvgCanvasOptions {
 
 /**
  * A canvas that can be used to render SVG.
+ *
+ * Make sure to call `complete()` when you are done drawing.
+ * Only call `save()` or `encode()` after calling `complete()`, once.
  */
 export class SvgCanvas {
   #ptr: Deno.PointerValue;
@@ -109,5 +113,13 @@ export class SvgCanvas {
     const text = new TextDecoder().decode(buffer);
     sk_data_free(skdata);
     return text;
+  }
+
+  /**
+   * In order to complete the SVG, you must call this method.
+   * Call it only once before saving or encoding.
+   */
+  complete() {
+    sk_svg_delete_canvas(this.#ptr);
   }
 }

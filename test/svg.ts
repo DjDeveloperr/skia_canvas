@@ -24,5 +24,9 @@ ctx.lineTo(250, 140);
 ctx.closePath();
 ctx.stroke();
 
+canvas.complete();
+
 canvas.save("./testdata/test.svg");
+canvas.save("./testdata/test2.svg");
+
 console.log("done");
