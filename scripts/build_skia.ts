@@ -18,64 +18,44 @@ const $ = (cmd: string | URL, ...args: string[]) => {
 };
 
 if (Deno.env.get("SKIA_FROM_SOURCE") !== "1") {
-  const toDownload = `brotli
-  compression_utils_portable
-  expat
-  freetype2
-  harfbuzz
-  icu
-  icudtl.dat
-  libjpeg
-  libpng
-  libwebp
-  libwebp_sse41
-  particles
-  pathkit
-  skcms
-  skia
-  skparagraph
-  skresources
-  skshaper
-  sktext
-  skunicode
-  svg
-  wuffs
-  zlib`
-    .split("\n").map((e) => e.trim());
-  let relName = `skia-${CURRENT_HASH_SHORT}-`;
+  const relName = `skia-${CURRENT_HASH_SHORT}`;
+  let os = "";
   switch (Deno.build.os) {
     case "windows":
-      relName += "Windows";
+      os = "Windows";
       break;
     case "darwin":
-      relName += "macOS";
+      os = "macOS";
       break;
     case "linux":
-      relName += "Linux";
+      os = "Linux";
       break;
+  }
+  if (Deno.build.arch === "aarch64") {
+    os += "-aarch64";
   }
   try {
     Deno.mkdirSync("./out/Release", { recursive: true });
     // deno-lint-ignore no-empty
   } catch (_) {}
-  for (const name of toDownload) {
-    let file = name;
-    if (!name.includes(".")) {
-      file = `${Deno.build.os === "windows" ? "" : "lib"}${file}`;
-      file += `.${Deno.build.os === "windows" ? "lib" : "a"}`;
-    }
-    const data = await fetch(
-      `https://github.com/DjDeveloperr/skia_builds/releases/download/${relName}/${file}`,
-    )
-      .then((res) => res.arrayBuffer())
-      .then((buffer) => new Uint8Array(buffer));
-    await Deno.writeFile(
-      new URL(`../skia/out/Release/${file}`, import.meta.url),
-      data,
-    );
-    console.log(`Downloaded ${file}`);
-  }
-  console.log(`Downloaded prebuild binaries (${relName})`);
+  console.log("Downloading zip");
+  const data = await fetch(
+    `https://github.com/DjDeveloperr/skia_builds/releases/download/${relName}/skia-${os}.zip`,
+  )
+    .then((res) => res.arrayBuffer())
+    .then((buffer) => new Uint8Array(buffer));
+  await Deno.writeFile(
+    new URL(`../skia/out/Release/prebuilt.zip`, import.meta.url),
+    data,
+  );
+  $(
+    "unzip",
+    "-o",
+    "-d",
+    "out/Release",
+    new URL(`../skia/out/Release/prebuilt.zip`, import.meta.url).pathname,
+  );
+  console.log(`Downloaded prebuilt binaries (${relName}, ${os})`);
   Deno.exit(0);
 }
 
