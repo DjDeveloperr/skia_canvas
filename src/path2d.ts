@@ -67,42 +67,44 @@ const OUT_SIZE_U8 = new Uint8Array(OUT_SIZE.buffer);
 const TRANSFORM = new Float32Array(6);
 const TU8 = new Uint8Array(TRANSFORM.buffer);
 
+const _ptr = Symbol("[[ptr]]");
+
 export class Path2D {
-  #ptr: Deno.PointerValue;
+  [_ptr]: Deno.PointerValue;
 
   get _unsafePointer() {
-    return this.#ptr;
+    return this[_ptr];
   }
 
   constructor();
   constructor(path: Path2D);
   constructor(svg: string);
   constructor(path?: Path2D | string) {
-    this.#ptr = typeof path === "string"
+    this[_ptr] = typeof path === "string"
       ? sk_path_from_svg_string(cstr(path))
       : typeof path === "object" && path !== null && path instanceof Path2D
       ? sk_path_create_copy(path._unsafePointer)
       : sk_path_create();
-    if (this.#ptr === null) {
+    if (this[_ptr] === null) {
       throw new Error("Failed to create path");
     }
-    PATH_FINALIZER.register(this, this.#ptr);
+    PATH_FINALIZER.register(this, this[_ptr]);
   }
 
   beginPath() {
-    sk_path_begin(this.#ptr);
+    sk_path_begin(this[_ptr]);
   }
 
   lineTo(x: number, y: number) {
-    sk_path_line_to(this.#ptr, x, y);
+    sk_path_line_to(this[_ptr], x, y);
   }
 
   moveTo(x: number, y: number) {
-    sk_path_move_to(this.#ptr, x, y);
+    sk_path_move_to(this[_ptr], x, y);
   }
 
   rect(x: number, y: number, width: number, height: number) {
-    sk_path_rect(this.#ptr, x, y, width, height);
+    sk_path_rect(this[_ptr], x, y, width, height);
   }
 
   roundRect(
@@ -112,11 +114,18 @@ export class Path2D {
     height: number,
     r: RoundRectRadii,
   ) {
-    sk_path_round_rect(this.#ptr, x, y, width, height, ...roundRectRadiiArg(r));
+    sk_path_round_rect(
+      this[_ptr],
+      x,
+      y,
+      width,
+      height,
+      ...roundRectRadiiArg(r),
+    );
   }
 
   arcTo(x1: number, y1: number, x2: number, y2: number, radius: number) {
-    sk_path_arc_to(this.#ptr, x1, y1, x2, y2, radius);
+    sk_path_arc_to(this[_ptr], x1, y1, x2, y2, radius);
   }
 
   arc(
@@ -128,7 +137,7 @@ export class Path2D {
     anticlockwise: boolean,
   ) {
     sk_path_arc(
-      this.#ptr,
+      this[_ptr],
       x,
       y,
       radius,
@@ -149,7 +158,7 @@ export class Path2D {
     anticlockwise: boolean,
   ) {
     sk_path_ellipse(
-      this.#ptr,
+      this[_ptr],
       x,
       y,
       radiusX,
@@ -169,20 +178,20 @@ export class Path2D {
     x: number,
     y: number,
   ) {
-    sk_path_bezier_curve_to(this.#ptr, cp1x, cp1y, cp2x, cp2y, x, y);
+    sk_path_bezier_curve_to(this[_ptr], cp1x, cp1y, cp2x, cp2y, x, y);
   }
 
   quadraticCurveTo(cpx: number, cpy: number, x: number, y: number) {
-    sk_path_quadratic_curve_to(this.#ptr, cpx, cpy, x, y);
+    sk_path_quadratic_curve_to(this[_ptr], cpx, cpy, x, y);
   }
 
   closePath() {
-    sk_path_close(this.#ptr);
+    sk_path_close(this[_ptr]);
   }
 
   isPointInPath(x: number, y: number, fillRule?: FillRule) {
     return sk_path_is_point_in_path(
-      this.#ptr,
+      this[_ptr],
       x,
       y,
       fillRule === "evenodd" ? 1 : 0,
@@ -191,7 +200,7 @@ export class Path2D {
 
   isPointInStroke(x: number, y: number, lineWidth: number) {
     return sk_path_is_point_in_stroke(
-      this.#ptr,
+      this[_ptr],
       x,
       y,
       lineWidth,
@@ -199,7 +208,7 @@ export class Path2D {
   }
 
   toSVGString() {
-    const skstr = sk_path_to_svg(this.#ptr, OUT_PTR_U8, OUT_SIZE_U8);
+    const skstr = sk_path_to_svg(this[_ptr], OUT_PTR_U8, OUT_SIZE_U8);
     const buffer = Deno.UnsafePointerView.getArrayBuffer(
       Deno.UnsafePointer.create(OUT_PTR[0])!,
       OUT_SIZE[0],
@@ -210,31 +219,31 @@ export class Path2D {
   }
 
   simplify() {
-    return sk_path_simplify(this.#ptr) === 1;
+    return sk_path_simplify(this[_ptr]) === 1;
   }
 
   asWinding() {
-    return sk_path_as_winding(this.#ptr) === 1;
+    return sk_path_as_winding(this[_ptr]) === 1;
   }
 
   difference(path: Path2D) {
-    return sk_path_op(this.#ptr, path._unsafePointer, 0);
+    return sk_path_op(this[_ptr], path._unsafePointer, 0);
   }
 
   intersect(path: Path2D) {
-    return sk_path_op(this.#ptr, path._unsafePointer, 1);
+    return sk_path_op(this[_ptr], path._unsafePointer, 1);
   }
 
   reverseDifference(path: Path2D) {
-    return sk_path_op(this.#ptr, path._unsafePointer, 4);
+    return sk_path_op(this[_ptr], path._unsafePointer, 4);
   }
 
   union(path: Path2D) {
-    return sk_path_op(this.#ptr, path._unsafePointer, 2);
+    return sk_path_op(this[_ptr], path._unsafePointer, 2);
   }
 
   xor(path: Path2D) {
-    return sk_path_op(this.#ptr, path._unsafePointer, 3);
+    return sk_path_op(this[_ptr], path._unsafePointer, 3);
   }
 
   addPath(path: Path2D, transform?: DOMMatrix) {
@@ -247,9 +256,9 @@ export class Path2D {
         transform.d,
         transform.f,
       ]);
-      sk_path_add_path_buf(this.#ptr, path._unsafePointer, TU8);
+      sk_path_add_path_buf(this[_ptr], path._unsafePointer, TU8);
     } else {
-      sk_path_add_path_ptr(this.#ptr, path._unsafePointer, null);
+      sk_path_add_path_ptr(this[_ptr], path._unsafePointer, null);
     }
   }
 }

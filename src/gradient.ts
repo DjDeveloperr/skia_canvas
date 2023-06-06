@@ -11,19 +11,21 @@ const GRADIENT_FINALIZER = new FinalizationRegistry(
   },
 );
 
+const _ptr = Symbol("[[ptr]]");
+
 export class CanvasGradient {
-  #ptr: Deno.PointerValue;
+  [_ptr]: Deno.PointerValue;
 
   get _unsafePointer() {
-    return this.#ptr;
+    return this[_ptr];
   }
 
   constructor(ptr: Deno.PointerValue) {
-    this.#ptr = ptr;
+    this[_ptr] = ptr;
     GRADIENT_FINALIZER.register(this, ptr);
   }
 
   addColorStop(offset: number, color: string) {
-    sk_gradient_add_color_stop(this.#ptr, offset, cstr(color));
+    sk_gradient_add_color_stop(this[_ptr], offset, cstr(color));
   }
 }

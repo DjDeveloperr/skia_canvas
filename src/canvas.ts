@@ -38,6 +38,12 @@ const SK_DATA_FINALIZER = new FinalizationRegistry(
   },
 );
 
+const _ptr = Symbol("[[ptr]]");
+const _width = Symbol("[[width]]");
+const _height = Symbol("[[height]]");
+const _gpu = Symbol("[[gpu]]");
+const _ctx = Symbol("[[ctx]]");
+
 /**
  * Canvas is an offscreen surface that can be drawn to.
  *
@@ -49,53 +55,53 @@ const SK_DATA_FINALIZER = new FinalizationRegistry(
  * @link https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API
  */
 export class Canvas {
-  #ptr: Deno.PointerValue;
-  #width: number;
-  #height: number;
-  #gpu = false;
-  #ctx: CanvasRenderingContext2D;
+  [_ptr]: Deno.PointerValue;
+  [_width]: number;
+  [_height]: number;
+  [_gpu] = false;
+  [_ctx]: CanvasRenderingContext2D;
 
   get _unsafePointer() {
-    return this.#ptr;
+    return this[_ptr];
   }
 
   get width() {
-    return this.#width;
+    return this[_width];
   }
 
   set width(width: number) {
-    this.resize(width, this.#height);
+    this.resize(width, this[_height]);
   }
 
   get height() {
-    return this.#height;
+    return this[_height];
   }
 
   set height(height: number) {
-    this.resize(this.#width, height);
+    this.resize(this[_width], height);
   }
 
   /** Whether Canvas is GPU backed */
   get gpu() {
-    return this.#gpu;
+    return this[_gpu];
   }
 
   constructor(width: number, height: number, gpu = false) {
-    this.#gpu = gpu;
-    this.#ptr = gpu ? sk_canvas_create_gl(width, height) : sk_canvas_create(
+    this[_gpu] = gpu;
+    this[_ptr] = gpu ? sk_canvas_create_gl(width, height) : sk_canvas_create(
       width,
       height,
     );
-    if (this.#ptr === null) {
+    if (this[_ptr] === null) {
       throw new Error("Failed to create canvas");
     }
-    CANVAS_FINALIZER.register(this, this.#ptr);
-    this.#width = width;
-    this.#height = height;
-    this.#ctx = new CanvasRenderingContext2D(
+    CANVAS_FINALIZER.register(this, this[_ptr]);
+    this[_width] = width;
+    this[_height] = height;
+    this[_ctx] = new CanvasRenderingContext2D(
       this,
       sk_canvas_get_context(
-        this.#ptr,
+        this[_ptr],
       ),
     );
   }
@@ -108,7 +114,7 @@ export class Canvas {
    * It represents different factors for different formats.
    */
   save(path: string, format: ImageFormat = "png", quality = 100) {
-    if (!sk_canvas_save(this.#ptr, cstr(path), CFormat[format], quality)) {
+    if (!sk_canvas_save(this[_ptr], cstr(path), CFormat[format], quality)) {
       throw new Error("Failed to save canvas");
     }
   }
@@ -119,7 +125,7 @@ export class Canvas {
    */
   encode(format: ImageFormat = "png", quality = 100) {
     const bufptr = sk_canvas_encode_image(
-      this.#ptr,
+      this[_ptr],
       CFormat[format],
       quality,
       OUT_SIZE_PTR,
@@ -156,11 +162,11 @@ export class Canvas {
     into?: Uint8Array,
     colorSpace: ColorSpace = "srgb",
   ) {
-    width = width ?? this.#width;
-    height = height ?? this.#height;
+    width = width ?? this[_width];
+    height = height ?? this[_height];
     const pixels = into ?? new Uint8Array(width * height * 4);
     sk_canvas_read_pixels(
-      this.#ptr,
+      this[_ptr],
       x,
       y,
       width,
@@ -178,7 +184,7 @@ export class Canvas {
   getContext(type: string): CanvasRenderingContext2D | null {
     switch (type) {
       case "2d": {
-        return this.#ctx;
+        return this[_ctx];
       }
       default:
         return null;
@@ -189,19 +195,19 @@ export class Canvas {
    * Resizes the Canvas to the specified dimensions
    */
   resize(width: number, height: number) {
-    if (this.#width === width && this.#height === height) return;
-    sk_canvas_set_size(this.#ptr, width, height);
-    this.#width = width;
-    this.#height = height;
-    const ctxPtr = sk_canvas_get_context(this.#ptr);
+    if (this[_width] === width && this[_height] === height) return;
+    sk_canvas_set_size(this[_ptr], width, height);
+    this[_width] = width;
+    this[_height] = height;
+    const ctxPtr = sk_canvas_get_context(this[_ptr]);
     // In case the context is still being used, we'll just update its pointer
-    this.#ctx._unsafePointer = ctxPtr;
-    this.#ctx = new CanvasRenderingContext2D(this, ctxPtr);
+    this[_ctx]._unsafePointer = ctxPtr;
+    this[_ctx] = new CanvasRenderingContext2D(this, ctxPtr);
   }
 
   /** Only for GPU backed: Flushes all draw calls, call before swap */
   flush() {
-    if (this.#gpu) sk_canvas_flush(this.#ptr);
+    if (this[_gpu]) sk_canvas_flush(this[_ptr]);
   }
 }
 

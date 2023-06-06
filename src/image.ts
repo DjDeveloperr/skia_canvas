@@ -16,13 +16,17 @@ const SK_IMAGE_FINALIZER = new FinalizationRegistry(
 
 export type ImageSource = Uint8Array | string;
 
+const _token = Symbol("[[token]]");
+const _ptr = Symbol("[[ptr]]");
+const _src = Symbol("[[src]]");
+
 export class Image extends EventTarget {
-  #token: { ptr: Deno.PointerValue } = { ptr: null };
-  #ptr: Deno.PointerValue = null;
-  #src?: ImageSource;
+  [_token]: { ptr: Deno.PointerValue } = { ptr: null };
+  [_ptr]: Deno.PointerValue = null;
+  [_src]?: ImageSource;
 
   get _unsafePointer() {
-    return this.#ptr;
+    return this[_ptr];
   }
 
   constructor(data?: ImageSource) {
@@ -31,20 +35,20 @@ export class Image extends EventTarget {
   }
 
   get src() {
-    return this.#src;
+    return this[_src];
   }
 
   set src(data: ImageSource | undefined) {
-    if (this.#ptr !== null) {
-      sk_image_destroy(this.#ptr);
-      SK_IMAGE_FINALIZER.unregister(this.#token);
-      this.#ptr = null;
+    if (this[_ptr] !== null) {
+      sk_image_destroy(this[_ptr]);
+      SK_IMAGE_FINALIZER.unregister(this[_token]);
+      this[_ptr] = null;
     }
 
     if (data === undefined) {
-      this.#src = undefined;
-      this.#ptr = null;
-      this.#token.ptr = null;
+      this[_src] = undefined;
+      this[_ptr] = null;
+      this[_token].ptr = null;
       return;
     }
 
@@ -75,11 +79,11 @@ export class Image extends EventTarget {
       }
     }
 
-    this.#ptr = data instanceof Uint8Array
+    this[_ptr] = data instanceof Uint8Array
       ? sk_image_from_encoded(data, data.byteLength)
       : sk_image_from_file(cstr(data));
 
-    if (this.#ptr === null) {
+    if (this[_ptr] === null) {
       const error = new Error("Failed to load image");
       queueMicrotask(() => {
         this.dispatchEvent(
@@ -91,11 +95,11 @@ export class Image extends EventTarget {
       throw error;
     }
 
-    this.#token.ptr = this.#ptr;
-    this.#src = data;
+    this[_token].ptr = this[_ptr];
+    this[_src] = data;
 
-    if (this.#ptr !== null) {
-      SK_IMAGE_FINALIZER.register(this, this.#ptr, this.#token);
+    if (this[_ptr] !== null) {
+      SK_IMAGE_FINALIZER.register(this, this[_ptr], this[_token]);
     }
 
     queueMicrotask(() => {
@@ -151,12 +155,12 @@ export class Image extends EventTarget {
 
   get width() {
     if (this._unsafePointer === null) return 0;
-    return sk_image_width(this.#ptr);
+    return sk_image_width(this[_ptr]);
   }
 
   get height() {
     if (this._unsafePointer === null) return 0;
-    return sk_image_height(this.#ptr);
+    return sk_image_height(this[_ptr]);
   }
 
   [Symbol.for("Deno.customInspect")]() {

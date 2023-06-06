@@ -17,8 +17,6 @@
   },
 
   "fmt": {
-    "files": {
-      "exclude": ["skia", "bench/node_modules", "build", "native/build"]
-    }
+    "exclude": ["skia", "bench/node_modules", "build", "native/build"]
   }
 }

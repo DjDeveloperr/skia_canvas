@@ -221,45 +221,56 @@ const CFontVariantCaps = {
 export type FontStretch = keyof typeof CFontStretch;
 export type FontVariantCaps = keyof typeof CFontVariantCaps;
 
+const _canvas = Symbol("[[canvas]]");
+const _ptr = Symbol("[[ptr]]");
+const _fillStyle = Symbol("[[fillStyle]]");
+const _strokeStyle = Symbol("[[strokeStyle]]");
+const _shadowColor = Symbol("[[shadowColor]]");
+const _font = Symbol("[[font]]");
+const _fontStretch = Symbol("[[fontStretch]]");
+const _fontVariantCaps = Symbol("[[fontVariantCaps]]");
+const _lineDash = Symbol("[[lineDash]]");
+const _filter = Symbol("[[filter]]");
+
 /**
  * @link https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D
  */
 export class CanvasRenderingContext2D {
   /// Internal State
 
-  #canvas: Canvas;
-  #ptr: Deno.PointerValue;
+  [_canvas]: Canvas;
+  [_ptr]: Deno.PointerValue;
 
-  #fillStyle: Style = "black";
-  #strokeStyle: Style = "black";
-  #shadowColor = "black";
-  #font = "10px sans-serif";
-  #fontStretch: FontStretch = "normal";
-  #fontVariantCaps: FontVariantCaps = "normal";
-  #lineDash: number[] = [];
-  #filter = "none";
+  [_fillStyle]: Style = "black";
+  [_strokeStyle]: Style = "black";
+  [_shadowColor] = "black";
+  [_font] = "10px sans-serif";
+  [_fontStretch]: FontStretch = "normal";
+  [_fontVariantCaps]: FontVariantCaps = "normal";
+  [_lineDash]: number[] = [];
+  [_filter] = "none";
 
   /// For FFI interface
   get _unsafePointer() {
-    return this.#ptr;
+    return this[_ptr];
   }
 
   set _unsafePointer(ptr: Deno.PointerValue) {
-    this.#ptr = ptr;
-    this.#fillStyle = "black";
-    this.#strokeStyle = "black";
-    this.#shadowColor = "black";
-    this.#font = "10px sans-serif";
-    this.#fontStretch = "normal";
-    this.#fontVariantCaps = "normal";
-    this.#lineDash = [];
-    this.#filter = "none";
+    this[_ptr] = ptr;
+    this[_fillStyle] = "black";
+    this[_strokeStyle] = "black";
+    this[_shadowColor] = "black";
+    this[_font] = "10px sans-serif";
+    this[_fontStretch] = "normal";
+    this[_fontVariantCaps] = "normal";
+    this[_lineDash] = [];
+    this[_filter] = "none";
   }
 
   constructor(canvas: Canvas, ptr: Deno.PointerValue) {
-    this.#canvas = canvas;
-    this.#ptr = ptr;
-    if (this.#ptr === null) {
+    this[_canvas] = canvas;
+    this[_ptr] = ptr;
+    if (this[_ptr] === null) {
       throw new Error("Failed to create context");
     }
   }
@@ -267,15 +278,15 @@ export class CanvasRenderingContext2D {
   /// Drawing rectangles
 
   clearRect(x: number, y: number, width: number, height: number) {
-    sk_context_clear_rect(this.#ptr, x, y, width, height);
+    sk_context_clear_rect(this[_ptr], x, y, width, height);
   }
 
   fillRect(x: number, y: number, width: number, height: number) {
-    sk_context_fill_rect(this.#ptr, x, y, width, height);
+    sk_context_fill_rect(this[_ptr], x, y, width, height);
   }
 
   strokeRect(x: number, y: number, width: number, height: number) {
-    sk_context_stroke_rect(this.#ptr, x, y, width, height);
+    sk_context_stroke_rect(this[_ptr], x, y, width, height);
   }
 
   /// Drawing text
@@ -284,7 +295,7 @@ export class CanvasRenderingContext2D {
     const encoded = new TextEncoder().encode(text);
     if (
       !sk_context_text(
-        this.#ptr,
+        this[_ptr],
         encoded,
         encoded.byteLength,
         x,
@@ -302,7 +313,7 @@ export class CanvasRenderingContext2D {
     const encoded = new TextEncoder().encode(text);
     if (
       !sk_context_text(
-        this.#ptr,
+        this[_ptr],
         encoded,
         encoded.byteLength,
         x,
@@ -334,7 +345,7 @@ export class CanvasRenderingContext2D {
     const encoded = new TextEncoder().encode(text);
     if (
       !sk_context_text(
-        this.#ptr,
+        this[_ptr],
         encoded,
         encoded.byteLength,
         0,
@@ -363,52 +374,52 @@ export class CanvasRenderingContext2D {
   /// Line styles
 
   get lineWidth() {
-    return sk_context_get_line_width(this.#ptr);
+    return sk_context_get_line_width(this[_ptr]);
   }
 
   set lineWidth(value: number) {
-    sk_context_set_line_width(this.#ptr, value);
+    sk_context_set_line_width(this[_ptr], value);
   }
 
   get lineCap() {
-    return CLineCap[sk_context_get_line_cap(this.#ptr)] as LineCap;
+    return CLineCap[sk_context_get_line_cap(this[_ptr])] as LineCap;
   }
 
   set lineCap(value: LineCap) {
-    sk_context_set_line_cap(this.#ptr, CLineCap[value]);
+    sk_context_set_line_cap(this[_ptr], CLineCap[value]);
   }
 
   get lineJoin() {
-    return CLineJoin[sk_context_get_line_join(this.#ptr)] as LineJoin;
+    return CLineJoin[sk_context_get_line_join(this[_ptr])] as LineJoin;
   }
 
   set lineJoin(value: LineJoin) {
-    sk_context_set_line_join(this.#ptr, CLineJoin[value]);
+    sk_context_set_line_join(this[_ptr], CLineJoin[value]);
   }
 
   get miterLimit() {
-    return sk_context_get_miter_limit(this.#ptr);
+    return sk_context_get_miter_limit(this[_ptr]);
   }
 
   set miterLimit(value: number) {
-    sk_context_set_miter_limit(this.#ptr, value);
+    sk_context_set_miter_limit(this[_ptr], value);
   }
 
   getLineDash() {
-    return this.#lineDash;
+    return this[_lineDash];
   }
 
   setLineDash(value: number[]) {
-    this.#lineDash = value;
-    sk_context_set_line_dash(this.#ptr, new Float32Array(value), value.length);
+    this[_lineDash] = value;
+    sk_context_set_line_dash(this[_ptr], new Float32Array(value), value.length);
   }
 
   get lineDashOffset() {
-    return sk_context_get_line_dash_offset(this.#ptr);
+    return sk_context_get_line_dash_offset(this[_ptr]);
   }
 
   set lineDashOffset(value: number) {
-    sk_context_set_line_dash_offset(this.#ptr, Number(value));
+    sk_context_set_line_dash_offset(this[_ptr], Number(value));
   }
 
   /// Text styles
@@ -418,7 +429,7 @@ export class CanvasRenderingContext2D {
     if (font) {
       if (
         sk_context_set_font(
-          this.#ptr,
+          this[_ptr],
           font.size,
           cstr(font.family),
           font.weight,
@@ -427,7 +438,7 @@ export class CanvasRenderingContext2D {
           font.stretch,
         )
       ) {
-        this.#font = value;
+        this[_font] = value;
       }
     } else {
       throw new Error("Invalid font");
@@ -435,51 +446,51 @@ export class CanvasRenderingContext2D {
   }
 
   get font() {
-    return this.#font;
+    return this[_font];
   }
 
   get textAlign() {
-    return CTextAlign[sk_context_get_text_align(this.#ptr)] as TextAlign;
+    return CTextAlign[sk_context_get_text_align(this[_ptr])] as TextAlign;
   }
 
   set textAlign(value: TextAlign) {
-    sk_context_set_text_align(this.#ptr, CTextAlign[value]);
+    sk_context_set_text_align(this[_ptr], CTextAlign[value]);
   }
 
   get textBaseline() {
     return CTextBaseline[
-      sk_context_get_text_baseline(this.#ptr)
+      sk_context_get_text_baseline(this[_ptr])
     ] as TextBaseline;
   }
 
   set textBaseline(value: TextBaseline) {
-    sk_context_set_text_baseline(this.#ptr, CTextBaseline[value]);
+    sk_context_set_text_baseline(this[_ptr], CTextBaseline[value]);
   }
 
   get direction() {
     return CTextDirection[
-      sk_context_get_text_direction(this.#ptr)
+      sk_context_get_text_direction(this[_ptr])
     ] as TextDirection;
   }
 
   set direction(value: TextDirection) {
-    sk_context_set_text_direction(this.#ptr, CTextDirection[value]);
+    sk_context_set_text_direction(this[_ptr], CTextDirection[value]);
   }
 
   get letterSpacing() {
-    return sk_context_get_letter_spacing(this.#ptr);
+    return sk_context_get_letter_spacing(this[_ptr]);
   }
 
   set letterSpacing(value: number) {
-    sk_context_set_letter_spacing(this.#ptr, value);
+    sk_context_set_letter_spacing(this[_ptr], value);
   }
 
   get wordSpacing() {
-    return sk_context_get_word_spacing(this.#ptr);
+    return sk_context_get_word_spacing(this[_ptr]);
   }
 
   set wordSpacing(value: number) {
-    sk_context_set_word_spacing(this.#ptr, value);
+    sk_context_set_word_spacing(this[_ptr], value);
   }
 
   get fontKerning() {
@@ -493,7 +504,7 @@ export class CanvasRenderingContext2D {
   }
 
   get fontStretch() {
-    return this.#fontStretch;
+    return this[_fontStretch];
   }
 
   set fontStretch(value: FontStretch) {
@@ -501,12 +512,12 @@ export class CanvasRenderingContext2D {
     if (typeof c !== "number") {
       throw new Error("invalid fontStretch");
     }
-    this.#fontStretch = value;
-    sk_context_set_font_stretch(this.#ptr, c);
+    this[_fontStretch] = value;
+    sk_context_set_font_stretch(this[_ptr], c);
   }
 
   get fontVariantCaps() {
-    return this.#fontVariantCaps;
+    return this[_fontVariantCaps];
   }
 
   set fontVariant(value: FontVariantCaps) {
@@ -514,8 +525,8 @@ export class CanvasRenderingContext2D {
     if (typeof c !== "number") {
       throw new Error("invalid fontVariantCaps");
     }
-    this.#fontVariantCaps = value;
-    sk_context_set_font_variant_caps(this.#ptr, c);
+    this[_fontVariantCaps] = value;
+    sk_context_set_font_variant_caps(this[_ptr], c);
   }
 
   get textRendering() {
@@ -531,52 +542,52 @@ export class CanvasRenderingContext2D {
   /// Fill and stroke styles
 
   get fillStyle() {
-    return this.#fillStyle;
+    return this[_fillStyle];
   }
 
   set fillStyle(value: Style) {
     if (typeof value === "string") {
-      if (sk_context_set_fill_style(this.#ptr, cstr(value))) {
-        this.#fillStyle = value;
+      if (sk_context_set_fill_style(this[_ptr], cstr(value))) {
+        this[_fillStyle] = value;
       }
     } else if (
       typeof value === "object" && value !== null &&
       value instanceof CanvasGradient
     ) {
-      sk_context_set_fill_style_gradient(this.#ptr, value._unsafePointer);
-      this.#fillStyle = value;
+      sk_context_set_fill_style_gradient(this[_ptr], value._unsafePointer);
+      this[_fillStyle] = value;
     } else if (
       typeof value === "object" && value !== null &&
       value instanceof CanvasPattern
     ) {
-      sk_context_set_fill_style_pattern(this.#ptr, value._unsafePointer);
-      this.#fillStyle = value;
+      sk_context_set_fill_style_pattern(this[_ptr], value._unsafePointer);
+      this[_fillStyle] = value;
     } else {
       throw new Error("Invalid fill style");
     }
   }
 
   get strokeStyle() {
-    return this.#strokeStyle;
+    return this[_strokeStyle];
   }
 
   set strokeStyle(value: Style) {
     if (typeof value === "string") {
-      if (sk_context_set_stroke_style(this.#ptr, cstr(value))) {
-        this.#strokeStyle = value;
+      if (sk_context_set_stroke_style(this[_ptr], cstr(value))) {
+        this[_strokeStyle] = value;
       }
     } else if (
       typeof value === "object" && value !== null &&
       value instanceof CanvasGradient
     ) {
-      sk_context_set_stroke_style_gradient(this.#ptr, value._unsafePointer);
-      this.#strokeStyle = value;
+      sk_context_set_stroke_style_gradient(this[_ptr], value._unsafePointer);
+      this[_strokeStyle] = value;
     } else if (
       typeof value === "object" && value !== null &&
       value instanceof CanvasPattern
     ) {
-      sk_context_set_stroke_style_pattern(this.#ptr, value._unsafePointer);
-      this.#strokeStyle = value;
+      sk_context_set_stroke_style_pattern(this[_ptr], value._unsafePointer);
+      this[_strokeStyle] = value;
     } else {
       throw new Error("Invalid stroke style");
     }
@@ -624,55 +635,55 @@ export class CanvasRenderingContext2D {
   /// Shadows
 
   get shadowBlur() {
-    return sk_context_get_shadow_blur(this.#ptr);
+    return sk_context_get_shadow_blur(this[_ptr]);
   }
 
   set shadowBlur(value: number) {
-    sk_context_set_shadow_blur(this.#ptr, value);
+    sk_context_set_shadow_blur(this[_ptr], value);
   }
 
   get shadowColor() {
-    return this.#shadowColor;
+    return this[_shadowColor];
   }
 
   set shadowColor(value: string) {
-    if (sk_context_set_shadow_color(this.#ptr, cstr(value))) {
-      this.#shadowColor = value;
+    if (sk_context_set_shadow_color(this[_ptr], cstr(value))) {
+      this[_shadowColor] = value;
     }
   }
 
   get shadowOffsetX() {
-    return sk_context_get_shadow_offset_x(this.#ptr);
+    return sk_context_get_shadow_offset_x(this[_ptr]);
   }
 
   set shadowOffsetX(value: number) {
-    sk_context_set_shadow_offset_x(this.#ptr, value);
+    sk_context_set_shadow_offset_x(this[_ptr], value);
   }
 
   get shadowOffsetY() {
-    return sk_context_get_shadow_offset_y(this.#ptr);
+    return sk_context_get_shadow_offset_y(this[_ptr]);
   }
 
   set shadowOffsetY(value: number) {
-    sk_context_set_shadow_offset_y(this.#ptr, value);
+    sk_context_set_shadow_offset_y(this[_ptr], value);
   }
 
   /// Paths
 
   beginPath() {
-    sk_context_begin_path(this.#ptr);
+    sk_context_begin_path(this[_ptr]);
   }
 
   closePath() {
-    sk_context_close_path(this.#ptr);
+    sk_context_close_path(this[_ptr]);
   }
 
   moveTo(x: number, y: number) {
-    sk_context_move_to(this.#ptr, x, y);
+    sk_context_move_to(this[_ptr], x, y);
   }
 
   lineTo(x: number, y: number) {
-    sk_context_line_to(this.#ptr, x, y);
+    sk_context_line_to(this[_ptr], x, y);
   }
 
   bezierCurveTo(
@@ -683,11 +694,11 @@ export class CanvasRenderingContext2D {
     x: number,
     y: number,
   ) {
-    sk_context_bezier_curve_to(this.#ptr, cp1x, cp1y, cp2x, cp2y, x, y);
+    sk_context_bezier_curve_to(this[_ptr], cp1x, cp1y, cp2x, cp2y, x, y);
   }
 
   quadraticCurveTo(cpx: number, cpy: number, x: number, y: number) {
-    sk_context_quadratic_curve_to(this.#ptr, cpx, cpy, x, y);
+    sk_context_quadratic_curve_to(this[_ptr], cpx, cpy, x, y);
   }
 
   arc(
@@ -699,7 +710,7 @@ export class CanvasRenderingContext2D {
     anticlockwise: boolean,
   ) {
     sk_context_arc(
-      this.#ptr,
+      this[_ptr],
       x,
       y,
       radius,
@@ -716,7 +727,7 @@ export class CanvasRenderingContext2D {
     y2: number,
     radius: number,
   ) {
-    sk_context_arc_to(this.#ptr, x1, y1, x2, y2, radius);
+    sk_context_arc_to(this[_ptr], x1, y1, x2, y2, radius);
   }
 
   ellipse(
@@ -730,7 +741,7 @@ export class CanvasRenderingContext2D {
     anticlockwise: boolean,
   ) {
     sk_context_ellipse(
-      this.#ptr,
+      this[_ptr],
       x,
       y,
       radiusX,
@@ -743,7 +754,7 @@ export class CanvasRenderingContext2D {
   }
 
   rect(x: number, y: number, width: number, height: number) {
-    sk_context_rect(this.#ptr, x, y, width, height);
+    sk_context_rect(this[_ptr], x, y, width, height);
   }
 
   roundRect(
@@ -754,7 +765,7 @@ export class CanvasRenderingContext2D {
     r: RoundRectRadii,
   ) {
     sk_context_round_rect(
-      this.#ptr,
+      this[_ptr],
       x,
       y,
       width,
@@ -775,12 +786,12 @@ export class CanvasRenderingContext2D {
         ? path._unsafePointer
         : null;
     const irule = (typeof path === "string" ? path : rule) ?? "nonzero";
-    sk_context_fill(this.#ptr, pathptr, irule === "evenodd" ? 1 : 0);
+    sk_context_fill(this[_ptr], pathptr, irule === "evenodd" ? 1 : 0);
   }
 
   stroke(path?: Path2D) {
     sk_context_stroke(
-      this.#ptr,
+      this[_ptr],
       path ? path._unsafePointer : null,
     );
   }
@@ -806,7 +817,7 @@ export class CanvasRenderingContext2D {
       : null;
     const fillRuleStr = typeof path === "string" ? path : fillRule;
     const ifillRule = fillRuleStr === "evenodd" ? 1 : 0;
-    sk_context_clip(this.#ptr, pathptr, ifillRule);
+    sk_context_clip(this[_ptr], pathptr, ifillRule);
   }
 
   isPointInPath(
@@ -833,7 +844,7 @@ export class CanvasRenderingContext2D {
       ? 1
       : 0;
     return sk_context_is_point_in_path(
-      this.#ptr,
+      this[_ptr],
       typeof path === "number" ? path : x,
       typeof path === "number" ? x : y as number,
       pathptr,
@@ -859,7 +870,7 @@ export class CanvasRenderingContext2D {
       ? path._unsafePointer
       : null;
     return sk_context_is_point_in_stroke(
-      this.#ptr,
+      this[_ptr],
       typeof path === "number" ? path : x,
       typeof path === "number" ? x : y as number,
       pathptr,
@@ -870,20 +881,20 @@ export class CanvasRenderingContext2D {
 
   getTransform() {
     const f32 = new Float32Array(6);
-    sk_context_get_transform(this.#ptr, f32);
+    sk_context_get_transform(this[_ptr], f32);
     return new DOMMatrix(f32[0], f32[1], f32[2], f32[3], f32[4], f32[5]);
   }
 
   rotate(angle: number) {
-    sk_context_rotate(this.#ptr, angle);
+    sk_context_rotate(this[_ptr], angle);
   }
 
   scale(x: number, y: number) {
-    sk_context_scale(this.#ptr, x, y);
+    sk_context_scale(this[_ptr], x, y);
   }
 
   translate(x: number, y: number) {
-    sk_context_translate(this.#ptr, x, y);
+    sk_context_translate(this[_ptr], x, y);
   }
 
   transform(
@@ -894,7 +905,7 @@ export class CanvasRenderingContext2D {
     e: number,
     f: number,
   ) {
-    sk_context_transform(this.#ptr, a, b, c, d, e, f);
+    sk_context_transform(this[_ptr], a, b, c, d, e, f);
   }
 
   setTransform(
@@ -915,28 +926,28 @@ export class CanvasRenderingContext2D {
     f?: number,
   ) {
     if (typeof a === "number") {
-      sk_context_set_transform(this.#ptr, a, b!, c!, d!, e!, f!);
+      sk_context_set_transform(this[_ptr], a, b!, c!, d!, e!, f!);
     } else {
-      sk_context_set_transform(this.#ptr, a.a, a.b, a.c, a.d, a.e, a.f);
+      sk_context_set_transform(this[_ptr], a.a, a.b, a.c, a.d, a.e, a.f);
     }
   }
 
   resetTransform() {
-    sk_context_reset_transform(this.#ptr);
+    sk_context_reset_transform(this[_ptr]);
   }
 
   /// Compositing
 
   get globalAlpha() {
-    return sk_context_get_global_alpha(this.#ptr);
+    return sk_context_get_global_alpha(this[_ptr]);
   }
 
   set globalAlpha(value: number) {
-    sk_context_set_global_alpha(this.#ptr, value);
+    sk_context_set_global_alpha(this[_ptr], value);
   }
 
   get globalCompositeOperation() {
-    const op = sk_context_get_global_composite_operation(this.#ptr);
+    const op = sk_context_get_global_composite_operation(this[_ptr]);
     return Object.entries(CGlobalCompositeOperation).find((e) =>
       e[1] === op
     )![0] as GlobalCompositeOperation;
@@ -944,7 +955,7 @@ export class CanvasRenderingContext2D {
 
   set globalCompositeOperation(value: GlobalCompositeOperation) {
     sk_context_set_global_composite_operation(
-      this.#ptr,
+      this[_ptr],
       CGlobalCompositeOperation[value],
     );
   }
@@ -993,7 +1004,7 @@ export class CanvasRenderingContext2D {
     const sw = asw === undefined ? image.width : adw ?? image.width;
     const sh = ash === undefined ? image.height : adh ?? image.height;
     sk_context_draw_image(
-      this.#ptr,
+      this[_ptr],
       image instanceof Canvas ? image._unsafePointer : null,
       image instanceof Image ? image._unsafePointer : null,
       dx,
@@ -1020,11 +1031,11 @@ export class CanvasRenderingContext2D {
   }
 
   getImageData(sx: number, sy: number, sw: number, sh: number) {
-    if (!(this.#canvas instanceof Canvas)) {
+    if (!(this[_canvas] instanceof Canvas)) {
       throw new Error("getImageData is only supported on Canvas");
     }
     const data = new Uint8Array(sw * sh * 4);
-    this.#canvas.readPixels(sx, sy, sh, sh, data, "srgb");
+    this[_canvas].readPixels(sx, sy, sh, sh, data, "srgb");
     return new ImageData(data, sw, sh);
   }
 
@@ -1062,7 +1073,7 @@ export class CanvasRenderingContext2D {
         return;
       }
       sk_context_put_image_data_dirty(
-        this.#ptr,
+        this[_ptr],
         imagedata.width,
         imagedata.height,
         new Uint8Array(imagedata.data.buffer),
@@ -1078,7 +1089,7 @@ export class CanvasRenderingContext2D {
       );
     } else {
       sk_context_put_image_data(
-        this.#ptr,
+        this[_ptr],
         imagedata.width,
         imagedata.height,
         new Uint8Array(imagedata.data.buffer),
@@ -1092,21 +1103,21 @@ export class CanvasRenderingContext2D {
   /// Image smoothing
 
   get imageSmoothingEnabled() {
-    return sk_context_get_image_smoothing_enabled(this.#ptr) === 1;
+    return sk_context_get_image_smoothing_enabled(this[_ptr]) === 1;
   }
 
   set imageSmoothingEnabled(value: boolean) {
-    sk_context_set_image_smoothing_enabled(this.#ptr, value ? 1 : 0);
+    sk_context_set_image_smoothing_enabled(this[_ptr], value ? 1 : 0);
   }
 
   get imageSmoothingQuality() {
-    const quality = sk_context_get_image_smoothing_quality(this.#ptr);
+    const quality = sk_context_get_image_smoothing_quality(this[_ptr]);
     return CImageSmoothingQuality[quality] as ImageSmoothingQuality;
   }
 
   set imageSmoothingQuality(value: ImageSmoothingQuality) {
     sk_context_set_image_smoothing_quality(
-      this.#ptr,
+      this[_ptr],
       CImageSmoothingQuality[value],
     );
   }
@@ -1114,15 +1125,15 @@ export class CanvasRenderingContext2D {
   /// The canvas state
 
   save() {
-    sk_context_save(this.#ptr);
+    sk_context_save(this[_ptr]);
   }
 
   restore() {
-    sk_context_restore(this.#ptr);
+    sk_context_restore(this[_ptr]);
   }
 
   get canvas() {
-    return this.#canvas;
+    return this[_canvas];
   }
 
   getContextAttributes() {
@@ -1143,34 +1154,34 @@ export class CanvasRenderingContext2D {
   /// Filters
 
   get filter() {
-    return this.#filter;
+    return this[_filter];
   }
 
   set filter(value: string) {
     if (value === "none" || value === "") {
-      sk_context_filter_reset(this.#ptr);
-      this.#filter = value;
+      sk_context_filter_reset(this[_ptr]);
+      this[_filter] = value;
       return;
     }
     const filters = parseFilterString(value);
-    this.#filter = value;
+    this[_filter] = value;
     for (const filter of filters) {
       switch (filter.type) {
         case FilterType.Blur:
-          sk_context_filter_blur(this.#ptr, filter.value);
+          sk_context_filter_blur(this[_ptr], filter.value);
           break;
 
         case FilterType.Brightness:
-          sk_context_filter_brightness(this.#ptr, filter.value);
+          sk_context_filter_brightness(this[_ptr], filter.value);
           break;
 
         case FilterType.Contrast:
-          sk_context_filter_contrast(this.#ptr, filter.value);
+          sk_context_filter_contrast(this[_ptr], filter.value);
           break;
 
         case FilterType.DropShadow:
           sk_context_filter_drop_shadow(
-            this.#ptr,
+            this[_ptr],
             filter.dx,
             filter.dy,
             filter.radius,
@@ -1179,27 +1190,27 @@ export class CanvasRenderingContext2D {
           break;
 
         case FilterType.Grayscale:
-          sk_context_filter_grayscale(this.#ptr, filter.value);
+          sk_context_filter_grayscale(this[_ptr], filter.value);
           break;
 
         case FilterType.HueRotate:
-          sk_context_filter_hue_rotate(this.#ptr, filter.value);
+          sk_context_filter_hue_rotate(this[_ptr], filter.value);
           break;
 
         case FilterType.Invert:
-          sk_context_filter_invert(this.#ptr, filter.value);
+          sk_context_filter_invert(this[_ptr], filter.value);
           break;
 
         case FilterType.Opacity:
-          sk_context_filter_opacity(this.#ptr, filter.value);
+          sk_context_filter_opacity(this[_ptr], filter.value);
           break;
 
         case FilterType.Saturate:
-          sk_context_filter_saturated(this.#ptr, filter.value);
+          sk_context_filter_saturated(this[_ptr], filter.value);
           break;
 
         case FilterType.Sepia:
-          sk_context_filter_sepia(this.#ptr, filter.value);
+          sk_context_filter_sepia(this[_ptr], filter.value);
           break;
       }
     }

@@ -74,14 +74,16 @@ export class PdfRenderingContext2D extends CanvasRenderingContext2D {
   }
 }
 
+const _ptr = Symbol("[[ptr]]");
+
 /**
  * Create a new PDF document to draw using Canvas 2D API.
  */
 export class PdfDocument {
-  #ptr: Deno.PointerValue;
+  [_ptr]: Deno.PointerValue;
 
   constructor(options: PdfMetadata = {}) {
-    this.#ptr = sk_pdf_new(
+    this[_ptr] = sk_pdf_new(
       cstr(options.title ?? ""),
       cstr(options.author ?? ""),
       cstr(options.subject ?? ""),
@@ -97,7 +99,7 @@ export class PdfDocument {
       options.pdfa ?? false,
       options.encodingQuality ?? 0,
     );
-    PDF_DOCUMENT_FINALIZER.register(this, this.#ptr);
+    PDF_DOCUMENT_FINALIZER.register(this, this[_ptr]);
   }
 
   /**
@@ -108,7 +110,7 @@ export class PdfDocument {
    */
   newPage(w: number, h: number, contentRect?: Rect) {
     const ptr = sk_pdf_begin_page(
-      this.#ptr,
+      this[_ptr],
       w,
       h,
       ...(contentRect
@@ -123,19 +125,19 @@ export class PdfDocument {
 
   /** Writes the page into internal stream and destroys  */
   endPage() {
-    sk_pdf_end_page(this.#ptr);
+    sk_pdf_end_page(this[_ptr]);
   }
 
   /** Saves PDF to the file and closes the stream. Changes cannot be made to PDF after this. */
   save(path: string) {
-    if (!sk_pdf_write_file(this.#ptr, cstr(path))) {
+    if (!sk_pdf_write_file(this[_ptr], cstr(path))) {
       throw new Error("Failed to save PDF");
     }
   }
 
   /** Encodes the PDF into a buffer and closes the stream. Changes cannot be made to PDF after this. */
   encode() {
-    const skdata = sk_pdf_get_buffer(this.#ptr, OUT_DATA_PTR, OUT_SIZE_PTR);
+    const skdata = sk_pdf_get_buffer(this[_ptr], OUT_DATA_PTR, OUT_SIZE_PTR);
     if (!skdata) {
       throw new Error("Failed to encode PDF");
     }

@@ -42,6 +42,8 @@ export interface SvgCanvasOptions {
   relativePathEncoding?: boolean;
 }
 
+const _ptr = Symbol("[[ptr]]");
+
 /**
  * A canvas that can be used to render SVG.
  *
@@ -49,28 +51,28 @@ export interface SvgCanvasOptions {
  * Only call `save()` or `encode()` after calling `complete()`, once.
  */
 export class SvgCanvas {
-  #ptr: Deno.PointerValue;
+  [_ptr]: Deno.PointerValue;
 
   constructor(
     public readonly width: number,
     public readonly height: number,
     options: SvgCanvasOptions = {},
   ) {
-    this.#ptr = sk_svg_new(
+    this[_ptr] = sk_svg_new(
       width,
       height,
       0 | (options.convertTextsToPaths ? 1 : 0) |
         (options.noPrettyXml ? 2 : 0) | (options.relativePathEncoding ? 4 : 0),
     );
-    if (this.#ptr === null) {
+    if (this[_ptr] === null) {
       throw new Error("Failed to create SVG Canvas");
     }
-    SVG_FINALIZER.register(this, this.#ptr);
+    SVG_FINALIZER.register(this, this[_ptr]);
   }
 
   /** Obtain 2D context for drawing on SVG */
   getContext() {
-    const ptr = sk_svg_get_context(this.#ptr);
+    const ptr = sk_svg_get_context(this[_ptr]);
     if (ptr === null) {
       throw new Error("Failed to get SVG context");
     }
@@ -79,14 +81,14 @@ export class SvgCanvas {
 
   /** Save SVG on file system */
   save(path: string) {
-    if (!sk_svg_write_file(this.#ptr, cstr(path))) {
+    if (!sk_svg_write_file(this[_ptr], cstr(path))) {
       throw new Error("Failed to save SVG");
     }
   }
 
   /** Encode and return buffer containing SVG data */
   encode() {
-    const skdata = sk_svg_get_buffer(this.#ptr, OUT_DATA_PTR, OUT_SIZE_PTR);
+    const skdata = sk_svg_get_buffer(this[_ptr], OUT_DATA_PTR, OUT_SIZE_PTR);
     if (!skdata) {
       throw new Error("Failed to encode SVG");
     }
@@ -101,7 +103,7 @@ export class SvgCanvas {
 
   /** Convert to SVG string */
   toString() {
-    const skdata = sk_svg_get_buffer(this.#ptr, OUT_DATA_PTR, OUT_SIZE_PTR);
+    const skdata = sk_svg_get_buffer(this[_ptr], OUT_DATA_PTR, OUT_SIZE_PTR);
     if (!skdata) {
       throw new Error("Failed to encode SVG");
     }
@@ -120,6 +122,6 @@ export class SvgCanvas {
    * Call it only once before saving or encoding.
    */
   complete() {
-    sk_svg_delete_canvas(this.#ptr);
+    sk_svg_delete_canvas(this[_ptr]);
   }
 }

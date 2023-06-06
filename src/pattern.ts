@@ -22,22 +22,24 @@ const repeat = {
 export type CanvasPatternImage = Image;
 export type CanvasPatternRepeat = keyof typeof repeat;
 
+const _ptr = Symbol("[[ptr]]");
+
 export class CanvasPattern {
-  #ptr: Deno.PointerValue;
+  [_ptr]: Deno.PointerValue;
 
   get _unsafePointer() {
-    return this.#ptr;
+    return this[_ptr];
   }
 
   constructor(image: CanvasPatternImage, repetition: CanvasPatternRepeat) {
     if (image._unsafePointer === null) throw new Error("Image not loaded");
-    this.#ptr = sk_pattern_new_image(image._unsafePointer, repeat[repetition]);
-    PATTERN_FINALIZER.register(this, this.#ptr);
+    this[_ptr] = sk_pattern_new_image(image._unsafePointer, repeat[repetition]);
+    PATTERN_FINALIZER.register(this, this[_ptr]);
   }
 
   setTransform(transform: DOMMatrix) {
     sk_pattern_set_transform(
-      this.#ptr,
+      this[_ptr],
       transform.a,
       transform.b,
       transform.c,
