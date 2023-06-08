@@ -53,7 +53,9 @@ if (Deno.env.get("SKIA_FROM_SOURCE") !== "1") {
     "-o",
     "-d",
     "../",
-    new URL(`../skia/out/Release/prebuilt.zip`, import.meta.url).pathname,
+    new URL(`../skia/out/Release/prebuilt.zip`, import.meta.url).pathname.slice(
+      Deno.build.os === "windows" ? 1 : 0,
+    ),
   );
   console.log(`Downloaded prebuilt binaries (${relName}, ${os})`);
   Deno.exit(0);
