@@ -52,7 +52,7 @@ if (Deno.env.get("SKIA_FROM_SOURCE") !== "1") {
     "unzip",
     "-o",
     "-d",
-    "../",
+    Deno.build.os === "windows" ? "./out/Release" : "../",
     new URL(`../skia/out/Release/prebuilt.zip`, import.meta.url).pathname.slice(
       Deno.build.os === "windows" ? 1 : 0,
     ),
