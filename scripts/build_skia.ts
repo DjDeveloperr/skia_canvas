@@ -52,7 +52,7 @@ if (Deno.env.get("SKIA_FROM_SOURCE") !== "1") {
     "unzip",
     "-o",
     "-d",
-    "out/Release",
+    "../",
     new URL(`../skia/out/Release/prebuilt.zip`, import.meta.url).pathname,
   );
   console.log(`Downloaded prebuilt binaries (${relName}, ${os})`);
