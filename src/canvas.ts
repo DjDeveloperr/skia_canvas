@@ -209,6 +209,12 @@ export class Canvas {
   flush() {
     if (this[_gpu]) sk_canvas_flush(this[_ptr]);
   }
+
+  [Symbol.for("Jupyter.display")]() {
+    return {
+      "image/png": encodeBase64(this.encode("png")),
+    };
+  }
 }
 
 /**
