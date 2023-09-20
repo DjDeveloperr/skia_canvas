@@ -114,6 +114,13 @@ export class SvgCanvas {
     );
     const text = new TextDecoder().decode(buffer);
     sk_data_free(skdata);
+    Object.defineProperty(text, Symbol.for("Jupyter.display"), {
+      value: function (this: string) {
+        return {
+          "image/svg+xml": this,
+        };
+      },
+    });
     return text;
   }
 
