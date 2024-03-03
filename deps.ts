@@ -1,16 +1,9 @@
-export { dlopen } from "https://deno.land/x/plug@1.0.0-rc.3/mod.ts";
+export { dlopen } from "jsr:@denosaurs/plug@1.0.5";
 export {
   createDownloadURL,
   ensureCacheLocation,
-} from "https://deno.land/x/plug@1.0.0-rc.3/download.ts";
-export {
-  isFile,
-  urlToFilename,
-} from "https://deno.land/x/plug@1.0.0-rc.3/util.ts";
-export type { FetchOptions } from "https://deno.land/x/plug@1.0.0-rc.3/mod.ts";
-export {
-  dirname,
-  extname,
-  join,
-} from "https://deno.land/std@0.159.0/path/mod.ts";
-export { ensureDir } from "https://deno.land/std@0.159.0/fs/mod.ts";
+} from "jsr:@denosaurs/plug@1.0.5/download";
+export { isFile, urlToFilename } from "jsr:@denosaurs/plug@1.0.5/util";
+export type { FetchOptions } from "jsr:@denosaurs/plug@1";
+export { dirname, extname, join } from "jsr:@std/path@0.217.0";
+export { ensureDir } from "jsr:@std/fs@0.217.0";

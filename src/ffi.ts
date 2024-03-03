@@ -10,7 +10,7 @@ import {
   join,
   urlToFilename,
 } from "../deps.ts";
-import meta from "../deno.json" assert { type: "json" };
+import meta from "../deno.json" with { type: "json" };
 
 const SYMBOLS = {
   sk_canvas_create: {
