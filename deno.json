@@ -2,6 +2,7 @@
   "name": "@gfx/canvas",
   "github": "https://github.com/DjDeveloperr/skia_canvas",
   "version": "0.5.6",
+  "exports": "./mod.ts",
 
   "tasks": {
     "build": "cd native/build && CC=clang CXX=clang++ cmake .. && cmake --build . --config Release",
