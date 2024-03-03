@@ -912,7 +912,7 @@ if (LOCAL_BUILD) {
   lib = Deno.dlopen(CUSTOM_PATH, SYMBOLS).symbols;
 } else {
   const name = "native_canvas";
-  const url = `${meta.github}/releases/download/${meta.verision}`;
+  const url = `${meta.github}/releases/download/${meta.version}`;
   const options: FetchOptions = {
     url: {
       darwin: {
