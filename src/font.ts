@@ -27,21 +27,21 @@ export class Fonts {
    * If you want to disable loading system fonts, set the
    * `CANVAS_DISABLE_SYSTEM_FONTS` environment variable to `1`.
    */
-  static get systemFontCount() {
+  static get systemFontCount(): number {
     return SYSTEM_FONTS;
   }
 
   /**
    * Get number of font families registered.
    */
-  static get famliliesCount() {
+  static get famliliesCount(): number {
     return fonts_count();
   }
 
   /**
    * Get a list of all available font families.
    */
-  static get families() {
+  static get families(): string[] {
     const count = fonts_count();
     const families = new Array<string>(count);
     for (let i = 0; i < count; i++) {
@@ -53,7 +53,7 @@ export class Fonts {
   /**
    * Register all fonts in a directory.
    */
-  static registerDir(dir: string) {
+  static registerDir(dir: string): number {
     return fonts_register_dir(cstr(dir));
   }
 

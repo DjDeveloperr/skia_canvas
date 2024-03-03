@@ -72,7 +72,7 @@ const _ptr = Symbol("[[ptr]]");
 export class Path2D {
   [_ptr]: Deno.PointerValue;
 
-  get _unsafePointer() {
+  get _unsafePointer(): Deno.PointerValue {
     return this[_ptr];
   }
 
@@ -189,7 +189,7 @@ export class Path2D {
     sk_path_close(this[_ptr]);
   }
 
-  isPointInPath(x: number, y: number, fillRule?: FillRule) {
+  isPointInPath(x: number, y: number, fillRule?: FillRule): boolean {
     return sk_path_is_point_in_path(
       this[_ptr],
       x,
@@ -198,7 +198,7 @@ export class Path2D {
     ) === 1;
   }
 
-  isPointInStroke(x: number, y: number, lineWidth: number) {
+  isPointInStroke(x: number, y: number, lineWidth: number): boolean {
     return sk_path_is_point_in_stroke(
       this[_ptr],
       x,
@@ -207,7 +207,7 @@ export class Path2D {
     ) === 1;
   }
 
-  toSVGString() {
+  toSVGString(): string {
     const skstr = sk_path_to_svg(this[_ptr], OUT_PTR_U8, OUT_SIZE_U8);
     const buffer = Deno.UnsafePointerView.getArrayBuffer(
       Deno.UnsafePointer.create(OUT_PTR[0])!,
@@ -218,31 +218,31 @@ export class Path2D {
     return str;
   }
 
-  simplify() {
+  simplify(): boolean {
     return sk_path_simplify(this[_ptr]) === 1;
   }
 
-  asWinding() {
+  asWinding(): boolean {
     return sk_path_as_winding(this[_ptr]) === 1;
   }
 
-  difference(path: Path2D) {
+  difference(path: Path2D): number {
     return sk_path_op(this[_ptr], path._unsafePointer, 0);
   }
 
-  intersect(path: Path2D) {
+  intersect(path: Path2D): number {
     return sk_path_op(this[_ptr], path._unsafePointer, 1);
   }
 
-  reverseDifference(path: Path2D) {
+  reverseDifference(path: Path2D): number {
     return sk_path_op(this[_ptr], path._unsafePointer, 4);
   }
 
-  union(path: Path2D) {
+  union(path: Path2D): number {
     return sk_path_op(this[_ptr], path._unsafePointer, 2);
   }
 
-  xor(path: Path2D) {
+  xor(path: Path2D): number {
     return sk_path_op(this[_ptr], path._unsafePointer, 3);
   }
 

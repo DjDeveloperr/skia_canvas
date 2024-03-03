@@ -71,7 +71,7 @@ export class SvgCanvas {
   }
 
   /** Obtain 2D context for drawing on SVG */
-  getContext() {
+  getContext(): SvgRenderingContext2D {
     const ptr = sk_svg_get_context(this[_ptr]);
     if (ptr === null) {
       throw new Error("Failed to get SVG context");
@@ -87,7 +87,7 @@ export class SvgCanvas {
   }
 
   /** Encode and return buffer containing SVG data */
-  encode() {
+  encode(): Uint8Array {
     const skdata = sk_svg_get_buffer(this[_ptr], OUT_DATA_PTR, OUT_SIZE_PTR);
     if (!skdata) {
       throw new Error("Failed to encode SVG");
@@ -102,7 +102,7 @@ export class SvgCanvas {
   }
 
   /** Convert to SVG string */
-  toString() {
+  toString(): string {
     const skdata = sk_svg_get_buffer(this[_ptr], OUT_DATA_PTR, OUT_SIZE_PTR);
     if (!skdata) {
       throw new Error("Failed to encode SVG");

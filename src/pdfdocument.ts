@@ -108,7 +108,7 @@ export class PdfDocument {
    *
    * You must not use the context after calling endPage.
    */
-  newPage(w: number, h: number, contentRect?: Rect) {
+  newPage(w: number, h: number, contentRect?: Rect): PdfRenderingContext2D {
     const ptr = sk_pdf_begin_page(
       this[_ptr],
       w,
@@ -136,7 +136,7 @@ export class PdfDocument {
   }
 
   /** Encodes the PDF into a buffer and closes the stream. Changes cannot be made to PDF after this. */
-  encode() {
+  encode(): Uint8Array {
     const skdata = sk_pdf_get_buffer(this[_ptr], OUT_DATA_PTR, OUT_SIZE_PTR);
     if (!skdata) {
       throw new Error("Failed to encode PDF");

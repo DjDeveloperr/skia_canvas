@@ -190,6 +190,19 @@ export type ImageSmoothingQuality = keyof typeof CImageSmoothingQuality;
 const METRICS = new Float32Array(7);
 const METRICS_PTR = Deno.UnsafePointer.of(METRICS);
 
+export interface TextMetrics {
+  width: number;
+  actualBoundingBoxLeft: number;
+  actualBoundingBoxRight: number;
+  actualBoundingBoxAscent: number;
+  actualBoundingBoxDescent: number;
+  fontBoundingBoxAscent: number;
+  fontBoundingBoxDescent: number;
+  alphabeticBaseline: number;
+  emHeightAscent: number;
+  emHeightDescent: number;
+}
+
 export type Style = string | CanvasGradient | CanvasPattern;
 
 const CFontStretch = {
@@ -251,7 +264,7 @@ export class CanvasRenderingContext2D {
   [_filter] = "none";
 
   /// For FFI interface
-  get _unsafePointer() {
+  get _unsafePointer(): Deno.PointerValue {
     return this[_ptr];
   }
 
@@ -327,7 +340,7 @@ export class CanvasRenderingContext2D {
     }
   }
 
-  measureText(text: string) {
+  measureText(text: string): TextMetrics {
     if (text.length === 0) {
       return {
         width: 0,
@@ -373,7 +386,7 @@ export class CanvasRenderingContext2D {
 
   /// Line styles
 
-  get lineWidth() {
+  get lineWidth(): number {
     return sk_context_get_line_width(this[_ptr]);
   }
 
@@ -381,7 +394,7 @@ export class CanvasRenderingContext2D {
     sk_context_set_line_width(this[_ptr], value);
   }
 
-  get lineCap() {
+  get lineCap(): LineCap {
     return CLineCap[sk_context_get_line_cap(this[_ptr])] as LineCap;
   }
 
@@ -389,7 +402,7 @@ export class CanvasRenderingContext2D {
     sk_context_set_line_cap(this[_ptr], CLineCap[value]);
   }
 
-  get lineJoin() {
+  get lineJoin(): LineJoin {
     return CLineJoin[sk_context_get_line_join(this[_ptr])] as LineJoin;
   }
 
@@ -397,7 +410,7 @@ export class CanvasRenderingContext2D {
     sk_context_set_line_join(this[_ptr], CLineJoin[value]);
   }
 
-  get miterLimit() {
+  get miterLimit(): number {
     return sk_context_get_miter_limit(this[_ptr]);
   }
 
@@ -405,7 +418,7 @@ export class CanvasRenderingContext2D {
     sk_context_set_miter_limit(this[_ptr], value);
   }
 
-  getLineDash() {
+  getLineDash(): number[] {
     return this[_lineDash];
   }
 
@@ -414,7 +427,7 @@ export class CanvasRenderingContext2D {
     sk_context_set_line_dash(this[_ptr], new Float32Array(value), value.length);
   }
 
-  get lineDashOffset() {
+  get lineDashOffset(): number {
     return sk_context_get_line_dash_offset(this[_ptr]);
   }
 
@@ -445,11 +458,11 @@ export class CanvasRenderingContext2D {
     }
   }
 
-  get font() {
+  get font(): string {
     return this[_font];
   }
 
-  get textAlign() {
+  get textAlign(): TextAlign {
     return CTextAlign[sk_context_get_text_align(this[_ptr])] as TextAlign;
   }
 
@@ -457,7 +470,7 @@ export class CanvasRenderingContext2D {
     sk_context_set_text_align(this[_ptr], CTextAlign[value]);
   }
 
-  get textBaseline() {
+  get textBaseline(): TextBaseline {
     return CTextBaseline[
       sk_context_get_text_baseline(this[_ptr])
     ] as TextBaseline;
@@ -467,7 +480,7 @@ export class CanvasRenderingContext2D {
     sk_context_set_text_baseline(this[_ptr], CTextBaseline[value]);
   }
 
-  get direction() {
+  get direction(): TextDirection {
     return CTextDirection[
       sk_context_get_text_direction(this[_ptr])
     ] as TextDirection;
@@ -477,7 +490,7 @@ export class CanvasRenderingContext2D {
     sk_context_set_text_direction(this[_ptr], CTextDirection[value]);
   }
 
-  get letterSpacing() {
+  get letterSpacing(): number {
     return sk_context_get_letter_spacing(this[_ptr]);
   }
 
@@ -485,7 +498,7 @@ export class CanvasRenderingContext2D {
     sk_context_set_letter_spacing(this[_ptr], value);
   }
 
-  get wordSpacing() {
+  get wordSpacing(): number {
     return sk_context_get_word_spacing(this[_ptr]);
   }
 
@@ -493,7 +506,7 @@ export class CanvasRenderingContext2D {
     sk_context_set_word_spacing(this[_ptr], value);
   }
 
-  get fontKerning() {
+  get fontKerning(): string {
     return "auto";
   }
 
@@ -503,7 +516,7 @@ export class CanvasRenderingContext2D {
     }
   }
 
-  get fontStretch() {
+  get fontStretch(): FontStretch {
     return this[_fontStretch];
   }
 
@@ -516,7 +529,7 @@ export class CanvasRenderingContext2D {
     sk_context_set_font_stretch(this[_ptr], c);
   }
 
-  get fontVariantCaps() {
+  get fontVariantCaps(): FontVariantCaps {
     return this[_fontVariantCaps];
   }
 
@@ -529,7 +542,7 @@ export class CanvasRenderingContext2D {
     sk_context_set_font_variant_caps(this[_ptr], c);
   }
 
-  get textRendering() {
+  get textRendering(): string {
     return "auto";
   }
 
@@ -541,7 +554,7 @@ export class CanvasRenderingContext2D {
 
   /// Fill and stroke styles
 
-  get fillStyle() {
+  get fillStyle(): Style {
     return this[_fillStyle];
   }
 
@@ -567,7 +580,7 @@ export class CanvasRenderingContext2D {
     }
   }
 
-  get strokeStyle() {
+  get strokeStyle(): Style {
     return this[_strokeStyle];
   }
 
@@ -599,7 +612,7 @@ export class CanvasRenderingContext2D {
     r: number,
     x: number,
     y: number,
-  ) {
+  ): CanvasGradient {
     return new CanvasGradient(sk_gradient_create_conic(x, y, r));
   }
 
@@ -608,7 +621,7 @@ export class CanvasRenderingContext2D {
     y0: number,
     x1: number,
     y1: number,
-  ) {
+  ): CanvasGradient {
     return new CanvasGradient(sk_gradient_create_linear(x0, y0, x1, y1));
   }
 
@@ -619,7 +632,7 @@ export class CanvasRenderingContext2D {
     x1: number,
     y1: number,
     r1: number,
-  ) {
+  ): CanvasGradient {
     return new CanvasGradient(
       sk_gradient_create_radial(x0, y0, r0, x1, y1, r1),
     );
@@ -634,7 +647,7 @@ export class CanvasRenderingContext2D {
 
   /// Shadows
 
-  get shadowBlur() {
+  get shadowBlur(): number {
     return sk_context_get_shadow_blur(this[_ptr]);
   }
 
@@ -642,7 +655,7 @@ export class CanvasRenderingContext2D {
     sk_context_set_shadow_blur(this[_ptr], value);
   }
 
-  get shadowColor() {
+  get shadowColor(): string {
     return this[_shadowColor];
   }
 
@@ -652,7 +665,7 @@ export class CanvasRenderingContext2D {
     }
   }
 
-  get shadowOffsetX() {
+  get shadowOffsetX(): number {
     return sk_context_get_shadow_offset_x(this[_ptr]);
   }
 
@@ -660,7 +673,7 @@ export class CanvasRenderingContext2D {
     sk_context_set_shadow_offset_x(this[_ptr], value);
   }
 
-  get shadowOffsetY() {
+  get shadowOffsetY(): number {
     return sk_context_get_shadow_offset_y(this[_ptr]);
   }
 
@@ -879,7 +892,7 @@ export class CanvasRenderingContext2D {
 
   /// Transformations
 
-  getTransform() {
+  getTransform(): DOMMatrix {
     const f32 = new Float32Array(6);
     sk_context_get_transform(this[_ptr], f32);
     return new DOMMatrix(f32[0], f32[1], f32[2], f32[3], f32[4], f32[5]);
@@ -938,7 +951,7 @@ export class CanvasRenderingContext2D {
 
   /// Compositing
 
-  get globalAlpha() {
+  get globalAlpha(): number {
     return sk_context_get_global_alpha(this[_ptr]);
   }
 
@@ -946,7 +959,7 @@ export class CanvasRenderingContext2D {
     sk_context_set_global_alpha(this[_ptr], value);
   }
 
-  get globalCompositeOperation() {
+  get globalCompositeOperation(): GlobalCompositeOperation {
     const op = sk_context_get_global_composite_operation(this[_ptr]);
     return Object.entries(CGlobalCompositeOperation).find((e) =>
       e[1] === op
@@ -1030,7 +1043,7 @@ export class CanvasRenderingContext2D {
     }
   }
 
-  getImageData(sx: number, sy: number, sw: number, sh: number) {
+  getImageData(sx: number, sy: number, sw: number, sh: number): ImageData {
     if (!(this[_canvas] instanceof Canvas)) {
       throw new Error("getImageData is only supported on Canvas");
     }
@@ -1102,7 +1115,7 @@ export class CanvasRenderingContext2D {
 
   /// Image smoothing
 
-  get imageSmoothingEnabled() {
+  get imageSmoothingEnabled(): boolean {
     return sk_context_get_image_smoothing_enabled(this[_ptr]) === 1;
   }
 
@@ -1110,7 +1123,7 @@ export class CanvasRenderingContext2D {
     sk_context_set_image_smoothing_enabled(this[_ptr], value ? 1 : 0);
   }
 
-  get imageSmoothingQuality() {
+  get imageSmoothingQuality(): ImageSmoothingQuality {
     const quality = sk_context_get_image_smoothing_quality(this[_ptr]);
     return CImageSmoothingQuality[quality] as ImageSmoothingQuality;
   }
@@ -1132,11 +1145,14 @@ export class CanvasRenderingContext2D {
     sk_context_restore(this[_ptr]);
   }
 
-  get canvas() {
+  get canvas(): Canvas {
     return this[_canvas];
   }
 
-  getContextAttributes() {
+  getContextAttributes(): {
+    alpha: boolean;
+    desynchronized: boolean;
+  } {
     return {
       alpha: true,
       desynchronized: false,
@@ -1147,13 +1163,13 @@ export class CanvasRenderingContext2D {
     throw new Error("TODO: Context.reset()");
   }
 
-  isContextLost() {
+  isContextLost(): boolean {
     return false;
   }
 
   /// Filters
 
-  get filter() {
+  get filter(): string {
     return this[_filter];
   }
 

@@ -16,7 +16,7 @@ const _ptr = Symbol("[[ptr]]");
 export class CanvasGradient {
   [_ptr]: Deno.PointerValue;
 
-  get _unsafePointer() {
+  get _unsafePointer(): Deno.PointerValue {
     return this[_ptr];
   }
 

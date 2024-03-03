@@ -27,7 +27,7 @@ const _ptr = Symbol("[[ptr]]");
 export class CanvasPattern {
   [_ptr]: Deno.PointerValue;
 
-  get _unsafePointer() {
+  get _unsafePointer(): Deno.PointerValue {
     return this[_ptr];
   }
 

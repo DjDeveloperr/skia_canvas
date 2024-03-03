@@ -25,7 +25,7 @@ export class Image extends EventTarget {
   [_ptr]: Deno.PointerValue = null;
   [_src]?: ImageSource;
 
-  get _unsafePointer() {
+  get _unsafePointer(): Deno.PointerValue {
     return this[_ptr];
   }
 
@@ -34,7 +34,7 @@ export class Image extends EventTarget {
     this.src = data;
   }
 
-  get src() {
+  get src(): ImageSource | undefined{
     return this[_src];
   }
 
@@ -110,11 +110,11 @@ export class Image extends EventTarget {
   #onload?: EventListenerOrEventListenerObject;
   #onerror?: EventListenerOrEventListenerObject;
 
-  get onload() {
+  get onload(): EventListenerOrEventListenerObject | undefined {
     return this.#onload;
   }
 
-  get onerror() {
+  get onerror(): EventListenerOrEventListenerObject | undefined {
     return this.#onerror;
   }
 
@@ -136,7 +136,7 @@ export class Image extends EventTarget {
     if (fn) this.addEventListener("error", fn);
   }
 
-  static async load(path: string | URL) {
+  static async load(path: string | URL): Promise<Image> {
     const data = path instanceof URL || path.startsWith("http")
       ? await fetch(path).then((e) => e.arrayBuffer()).then((e) =>
         new Uint8Array(e)
@@ -148,22 +148,22 @@ export class Image extends EventTarget {
   /**
    * Load an image from a local file synchronously.
    */
-  static loadSync(path: string) {
+  static loadSync(path: string): Image {
     const data = Deno.readFileSync(path);
     return new Image(data);
   }
 
-  get width() {
+  get width(): number {
     if (this._unsafePointer === null) return 0;
     return sk_image_width(this[_ptr]);
   }
 
-  get height() {
+  get height(): number {
     if (this._unsafePointer === null) return 0;
     return sk_image_height(this[_ptr]);
   }
 
-  [Symbol.for("Deno.customInspect")]() {
+  [Symbol.for("Deno.customInspect")](): string {
     if (this._unsafePointer === null) {
       return `Image { pending, src: ${Deno.inspect(this.src)} }`;
     }
@@ -209,19 +209,19 @@ export class ImageData {
     }
   }
 
-  get width() {
+  get width(): number {
     return this.#width;
   }
 
-  get height() {
+  get height(): number {
     return this.#height;
   }
 
-  get data() {
+  get data(): Uint8ClampedArray {
     return this.#data;
   }
 
-  get colorSpace() {
+  get colorSpace(): ColorSpace {
     return this.#colorSpace;
   }
 }

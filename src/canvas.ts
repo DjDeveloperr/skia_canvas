@@ -61,11 +61,11 @@ export class Canvas {
   [_gpu] = false;
   [_ctx]: CanvasRenderingContext2D;
 
-  get _unsafePointer() {
+  get _unsafePointer(): Deno.PointerValue {
     return this[_ptr];
   }
 
-  get width() {
+  get width(): number {
     return this[_width];
   }
 
@@ -73,7 +73,7 @@ export class Canvas {
     this.resize(width, this[_height]);
   }
 
-  get height() {
+  get height(): number {
     return this[_height];
   }
 
@@ -82,7 +82,7 @@ export class Canvas {
   }
 
   /** Whether Canvas is GPU backed */
-  get gpu() {
+  get gpu(): boolean {
     return this[_gpu];
   }
 
@@ -123,7 +123,7 @@ export class Canvas {
    * Encode the canvas image into a buffer in specified format
    * and quality.
    */
-  encode(format: ImageFormat = "png", quality = 100) {
+  encode(format: ImageFormat = "png", quality = 100): Uint8Array {
     const bufptr = sk_canvas_encode_image(
       this[_ptr],
       CFormat[format],
@@ -146,7 +146,7 @@ export class Canvas {
   /**
    * Creates a data url from the canvas data
    */
-  toDataURL(format: ImageFormat = "png", quality = 100) {
+  toDataURL(format: ImageFormat = "png", quality = 100): string {
     const buffer = this.encode(format, quality);
     return `data:image/${format};base64,${encodeBase64(buffer)}`;
   }
@@ -161,7 +161,7 @@ export class Canvas {
     height?: number,
     into?: Uint8Array,
     colorSpace: ColorSpace = "srgb",
-  ) {
+  ): Uint8Array {
     width = width ?? this[_width];
     height = height ?? this[_height];
     const pixels = into ?? new Uint8Array(width * height * 4);
@@ -194,7 +194,7 @@ export class Canvas {
   /**
    * Resizes the Canvas to the specified dimensions
    */
-  resize(width: number, height: number) {
+  resize(width: number, height: number): void {
     if (this[_width] === width && this[_height] === height) return;
     sk_canvas_set_size(this[_ptr], width, height);
     this[_width] = width;
@@ -210,7 +210,7 @@ export class Canvas {
     if (this[_gpu]) sk_canvas_flush(this[_ptr]);
   }
 
-  [Symbol.for("Jupyter.display")]() {
+  [Symbol.for("Jupyter.display")](): Record<string, string> {
     return {
       "image/png": encodeBase64(this.encode("png")),
     };
@@ -223,6 +223,6 @@ export class Canvas {
  * Only pass `gpu: true` if you have an OpenGL context initialized
  * and made current already.
  */
-export function createCanvas(width: number, height: number, gpu?: boolean) {
+export function createCanvas(width: number, height: number, gpu?: boolean): Canvas {
   return new Canvas(width, height, gpu);
 }
