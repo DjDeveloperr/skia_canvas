@@ -6,14 +6,14 @@
   "tasks": {
     "build": "cd native/build && CC=clang CXX=clang++ cmake .. && cmake --build . --config Release",
     "build-win": "rm -rf native/build && mkdir native/build && cd native/build && cmake .. -G \"Visual Studio 17 2022\" -T ClangCL && cmake --build . --config Release",
-    "test": "deno run -A --unstable ./test/test.ts",
-    "test-prebuilt": "deno run -A --unstable --import-map=./test/import_map.json ./test/test.ts",
-    "test-pdf": "deno run -A --unstable ./test/pdf.ts",
-    "test-svg": "deno run -A --unstable ./test/svg.ts",
-    "bench-deno": "deno bench -A --unstable bench/deno.js",
+    "test": "deno run -A --unstable-ffi ./test/test.ts",
+    "test-prebuilt": "deno run -A --unstable-ffi --import-map=./test/import_map.json ./test/test.ts",
+    "test-pdf": "deno run -A --unstable-ffi ./test/pdf.ts",
+    "test-svg": "deno run -A --unstable-ffi ./test/svg.ts",
+    "bench-deno": "deno bench -A --unstable-ffi bench/deno.js",
     "bench-node": "node bench/node.mjs",
-    "bench": "deno run -A --unstable bench/main.js",
-    "build-skia": "deno run -A --unstable scripts/build_skia.ts"
+    "bench": "deno run -A --unstable-ffi bench/main.js",
+    "build-skia": "deno run -A --unstable-ffi scripts/build_skia.ts"
   },
 
   "fmt": {
