@@ -1,7 +1,7 @@
 # Skia Canvas
 
 [![Tags](https://img.shields.io/github/release/DjDeveloperr/skia_canvas)](https://github.com/DjDeveloperr/skia_canvas/releases)
-[![Doc](https://doc.deno.land/badge.svg)](https://doc.deno.land/https/deno.land/x/skia_canvas@0.5.5/mod.ts)
+[![Doc](https://doc.deno.land/badge.svg)](https://doc.deno.land/https/deno.land/x/skia_canvas@0.5.6/mod.ts)
 [![Checks](https://github.com/DjDeveloperr/skia_canvas/actions/workflows/ci.yml/badge.svg)](https://github.com/DjDeveloperr/skia_canvas/actions/workflows/ci.yml)
 [![License](https://img.shields.io/github/license/DjDeveloperr/skia_canvas)](https://github.com/DjDeveloperr/skia_canvas/blob/master/LICENSE)
 [![Sponsor](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/DjDeveloperr)
@@ -11,7 +11,7 @@ Fast HTML Canvas API implementation for Deno using Skia.
 ## Example
 
 ```ts
-import { createCanvas } from "https://deno.land/x/skia_canvas@0.5.5/mod.ts";
+import { createCanvas } from "jsr:@gfx/canvas@0.5.6";
 
 const canvas = createCanvas(300, 300);
 const ctx = canvas.getContext("2d");
@@ -39,13 +39,13 @@ canvas.save("image.png");
 ## Usage
 
 Since this library depends on the unstable FFI API, you must pass `--allow-env`,
-`--allow-ffi` and `--unstable` flags. Without it, the module will fail to find
-and open native library.
+`--allow-ffi` and `--unstable-ffi` flags. Without it, the module will fail to
+find and open native library.
 
 ```sh
-deno run --allow-ffi --allow-env --unstable <file>
+deno run --allow-ffi --allow-env --unstable-ffi <file>
 # or just
-deno run -A --unstable <file>
+deno run -A --unstable-ffi <file>
 ```
 
 ## API
