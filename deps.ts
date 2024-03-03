@@ -1,3 +1,4 @@
+export { decodeBase64, encodeBase64 } from "jsr:@std/encoding@0.217.0/base64";
 export { dlopen } from "jsr:@denosaurs/plug@1.0.5";
 export {
   createDownloadURL,
