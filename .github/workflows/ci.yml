@@ -81,6 +81,8 @@ jobs:
           deno task build-skia
           cp ./native/build/libnative_canvas{,_aarch64}.dylib
           deno task build-macos-x86_64
+          cp ./native/build/libnative_canvas{,_x86_64}.dylib
+          cp ./native/build/libnative_canvas{_aarch64,}.dylib
         
       - name: Build Native Library (Windows)
         if: runner.os == 'Windows'
@@ -98,6 +100,10 @@ jobs:
         env:
           DENO_SKIA_LOCAL: 1
         run: deno run -A --unstable test/test.ts
+
+      - name: Rename x86_64 binary (macOS)
+        if: runner.os == 'macOS'
+        run: cp ./native/build/libnative_canvas{_x86_64,}.dylib
 
       - name: Release
         uses: softprops/action-gh-release@master
