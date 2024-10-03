@@ -1,5 +1,6 @@
 #include "include/common.hpp"
 #include "include/context2d.hpp"
+#include "include/core/SkStream.h"
 #include "include/docs/SkPDFDocument.h"
 
 typedef struct sk_pdf_document {

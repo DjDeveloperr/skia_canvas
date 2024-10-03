@@ -1,4 +1,24 @@
 #include "include/context2d.hpp"
+#include "include/utils/SkParsePath.h"
+#include "include/core/SkMatrix.h"
+#include "include/core/SkPaint.h"
+#include "include/core/SkBitmap.h"
+#include <iostream>
+#include <vector>
+#include "include/core/SkFontMgr.h"
+#include "include/core/SkColorSpace.h"
+#include "include/core/SkBlurTypes.h"
+#include "modules/skparagraph/include/FontCollection.h"
+#include "modules/skparagraph/include/ParagraphStyle.h"
+#include "modules/skparagraph/include/ParagraphBuilder.h"
+#include "modules/skparagraph/src/ParagraphBuilderImpl.h"
+#include "modules/skparagraph/src/ParagraphImpl.h"
+#include "include/effects/SkColorMatrix.h"
+#include "include/effects/SkDashPathEffect.h"
+#include "include/effects/SkImageFilters.h"
+#include "include/path2d.hpp"
+#include "include/core/SkMaskFilter.h"
+#include "deps/csscolorparser.hpp"
 
 #ifndef _USE_MATH_DEFINES
 #define _USE_MATH_DEFINES
@@ -435,6 +455,9 @@ extern "C" {
       out_metrics->width = lineWidth;
       out_metrics->font_ascent = -font_metrics.fAscent + offset;
       out_metrics->font_descent = font_metrics.fDescent + offset;
+      out_metrics->alphabetic_baseline = -font_metrics.fAscent + offset;
+      out_metrics->ideographic_baseline = -paragraph->getIdeographicBaseline() + offset;
+      out_metrics->hanging_baseline = -paragraph->getAlphabeticBaseline() + offset;
     } else {
       auto needScale = lineWidth > maxWidth;
       auto ratio = needScale ? maxWidth / lineWidth : 1.0;
@@ -499,9 +522,9 @@ extern "C" {
     return res;
   }
 
-  // Context.fillText() implementation in JS using sk_context_test
-  // Context.strokeText() implementation in JS using sk_context_test
-  // Context.measureText() implementation in JS using sk_context_test
+  // Context.fillText() implementation in JS using sk_context_text
+  // Context.strokeText() implementation in JS using sk_context_text
+  // Context.measureText() implementation in JS using sk_context_text
 
   /// Line styles
 

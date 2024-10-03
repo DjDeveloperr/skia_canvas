@@ -1,5 +1,4 @@
 #include "include/font.hpp"
-#include "include/common.hpp"
 
 int systemFontsLoaded = -1;
 sk_sp<SkFontMgr> fontMgr = nullptr;

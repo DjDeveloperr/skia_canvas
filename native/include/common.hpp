@@ -114,6 +114,9 @@ typedef struct sk_line_metrics {
   float width;
   float font_ascent;
   float font_descent;
+  float alphabetic_baseline;
+  float ideographic_baseline;
+  float hanging_baseline;
 } sk_line_metrics;
 
 #define DEGREES(radians) ((radians) * 180.0 / M_PI)

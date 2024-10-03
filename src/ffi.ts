@@ -5,7 +5,7 @@ import {
   ensureCacheLocation,
   ensureDir,
   extname,
-  FetchOptions,
+  type FetchOptions,
   isFile,
   join,
   urlToFilename,

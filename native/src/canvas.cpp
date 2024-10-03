@@ -1,5 +1,9 @@
 #include "include/canvas.hpp"
 #include "include/context2d.hpp"
+#include "include/core/SkImageInfo.h"
+#include "include/core/SkStream.h"
+#include "include/gpu/GrBackendSurface.h"
+#include "include/gpu/gl/GrGLInterface.h"
 
 extern "C" {
   void sk_init() {

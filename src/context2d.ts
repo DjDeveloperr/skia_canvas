@@ -5,11 +5,11 @@ import { FilterType, parseFilterString } from "./filter.ts";
 import { CanvasGradient } from "./gradient.ts";
 import { Image, ImageData } from "./image.ts";
 import { parseFont } from "./parse_font.ts";
-import { Path2D, RoundRectRadii, roundRectRadiiArg } from "./path2d.ts";
+import { Path2D, type RoundRectRadii, roundRectRadiiArg } from "./path2d.ts";
 import {
   CanvasPattern,
-  CanvasPatternImage,
-  CanvasPatternRepeat,
+  type CanvasPatternImage,
+  type CanvasPatternRepeat,
 } from "./pattern.ts";
 
 const {
@@ -187,7 +187,7 @@ export type CanvasImageSource = Canvas | Image;
 export type GlobalCompositeOperation = keyof typeof CGlobalCompositeOperation;
 export type ImageSmoothingQuality = keyof typeof CImageSmoothingQuality;
 
-const METRICS = new Float32Array(7);
+const METRICS = new Float32Array(10);
 const METRICS_PTR = Deno.UnsafePointer.of(METRICS);
 
 export interface TextMetrics {
@@ -201,6 +201,8 @@ export interface TextMetrics {
   alphabeticBaseline: number;
   emHeightAscent: number;
   emHeightDescent: number;
+  hangingBaseline: number;
+  ideographicBaseline: number;
 }
 
 export type Style = string | CanvasGradient | CanvasPattern;
@@ -233,6 +235,12 @@ const CFontVariantCaps = {
 
 export type FontStretch = keyof typeof CFontStretch;
 export type FontVariantCaps = keyof typeof CFontVariantCaps;
+export type FontKerning = "auto" | "none" | "normal";
+export type TextRendering =
+  | "auto"
+  | "geometricPrecision"
+  | "optimizeLegibility"
+  | "optimizeSpeed";
 
 const _canvas = Symbol("[[canvas]]");
 const _ptr = Symbol("[[ptr]]");
@@ -353,6 +361,8 @@ export class CanvasRenderingContext2D {
         alphabeticBaseline: 0,
         emHeightAscent: 0,
         emHeightDescent: 0,
+        ideographicBaseline: 0,
+        hangingBaseline: 0,
       };
     }
     const encoded = new TextEncoder().encode(text);
@@ -378,9 +388,11 @@ export class CanvasRenderingContext2D {
       actualBoundingBoxDescent: METRICS[1],
       fontBoundingBoxAscent: METRICS[5],
       fontBoundingBoxDescent: METRICS[6],
-      alphabeticBaseline: METRICS[5],
+      alphabeticBaseline: METRICS[7],
       emHeightAscent: METRICS[5],
       emHeightDescent: METRICS[6],
+      ideographicBaseline: METRICS[8],
+      hangingBaseline: METRICS[9],
     };
   }
 
@@ -490,27 +502,33 @@ export class CanvasRenderingContext2D {
     sk_context_set_text_direction(this[_ptr], CTextDirection[value]);
   }
 
-  get letterSpacing(): number {
-    return sk_context_get_letter_spacing(this[_ptr]);
+  get letterSpacing(): string {
+    return sk_context_get_letter_spacing(this[_ptr]) + "px";
   }
 
-  set letterSpacing(value: number) {
-    sk_context_set_letter_spacing(this[_ptr], value);
+  set letterSpacing(value: number | string) {
+    sk_context_set_letter_spacing(
+      this[_ptr],
+      typeof value === "number" ? value : parseFloat(value),
+    );
   }
 
-  get wordSpacing(): number {
-    return sk_context_get_word_spacing(this[_ptr]);
+  get wordSpacing(): string {
+    return sk_context_get_word_spacing(this[_ptr]) + "px";
   }
 
-  set wordSpacing(value: number) {
-    sk_context_set_word_spacing(this[_ptr], value);
+  set wordSpacing(value: number | string) {
+    sk_context_set_word_spacing(
+      this[_ptr],
+      typeof value === "number" ? value : parseFloat(value),
+    );
   }
 
-  get fontKerning(): string {
+  get fontKerning(): FontKerning {
     return "auto";
   }
 
-  set fontKerning(value: "auto") {
+  set fontKerning(value: FontKerning) {
     if (value !== "auto") {
       throw new Error("fontKerning only supports 'auto'");
     }
@@ -542,11 +560,11 @@ export class CanvasRenderingContext2D {
     sk_context_set_font_variant_caps(this[_ptr], c);
   }
 
-  get textRendering(): string {
+  get textRendering(): TextRendering {
     return "auto";
   }
 
-  set textRendering(value: "auto") {
+  set textRendering(value: TextRendering) {
     if (value !== "auto") {
       throw new Error("textRendering only supports 'auto'");
     }

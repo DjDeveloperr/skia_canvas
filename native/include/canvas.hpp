@@ -4,14 +4,11 @@
 #include "include/core/SkCanvas.h"
 #include "include/core/SkSurface.h"
 #include "include/core/SkData.h"
-#include "include/core/SkImageInfo.h"
 #include "include/core/SkImageFilter.h"
 #include "include/common.hpp"
 #include "include/effects/SkImageFilters.h"
 #define SK_GL
-#include "include/gpu/GrBackendSurface.h"
 #include "include/gpu/GrDirectContext.h"
-#include "include/gpu/gl/GrGLInterface.h"
 
 typedef enum sk_canvas_backend {
   kBackendCPU,

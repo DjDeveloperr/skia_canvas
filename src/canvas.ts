@@ -1,6 +1,6 @@
 import { CanvasRenderingContext2D } from "./context2d.ts";
 import ffi, { cstr, encodeBase64, getBuffer } from "./ffi.ts";
-import { ColorSpace } from "./image.ts";
+import type { ColorSpace } from "./image.ts";
 
 const {
   sk_canvas_create,

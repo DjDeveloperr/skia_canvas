@@ -1,5 +1,5 @@
-import { FillRule } from "./context2d.ts";
-import { DOMMatrix } from "./dommatrix.ts";
+import type { FillRule } from "./context2d.ts";
+import type { DOMMatrix } from "./dommatrix.ts";
 import ffi, { cstr } from "./ffi.ts";
 
 const {

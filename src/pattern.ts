@@ -1,6 +1,6 @@
-import { DOMMatrix } from "./dommatrix.ts";
+import type { DOMMatrix } from "./dommatrix.ts";
 import ffi from "./ffi.ts";
-import { Image } from "./image.ts";
+import type { Image } from "./image.ts";
 
 const {
   sk_pattern_new_image,
