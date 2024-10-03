@@ -223,6 +223,10 @@ export class Canvas {
  * Only pass `gpu: true` if you have an OpenGL context initialized
  * and made current already.
  */
-export function createCanvas(width: number, height: number, gpu?: boolean): Canvas {
+export function createCanvas(
+  width: number,
+  height: number,
+  gpu?: boolean,
+): Canvas {
   return new Canvas(width, height, gpu);
 }

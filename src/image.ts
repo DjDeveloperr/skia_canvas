@@ -34,7 +34,7 @@ export class Image extends EventTarget {
     this.src = data;
   }
 
-  get src(): ImageSource | undefined{
+  get src(): ImageSource | undefined {
     return this[_src];
   }
 
