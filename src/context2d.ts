@@ -1066,7 +1066,7 @@ export class CanvasRenderingContext2D {
       throw new Error("getImageData is only supported on Canvas");
     }
     const data = new Uint8Array(sw * sh * 4);
-    this[_canvas].readPixels(sx, sy, sh, sh, data, "srgb");
+    this[_canvas].readPixels(sx, sy, sw, sh, data, "srgb");
     return new ImageData(data, sw, sh);
   }
 
