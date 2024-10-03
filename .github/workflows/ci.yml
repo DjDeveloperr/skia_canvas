@@ -74,7 +74,7 @@ jobs:
         run: deno task build
 
       - name: Build Native Library (macOS x86_64)
-        if: runner.os == 'macos-latest'
+        if: runner.os == 'macOS'
         env:
           TARGET_ARCH: x86_64
         run: |
