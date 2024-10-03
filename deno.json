@@ -1,7 +1,7 @@
 {
   "name": "@gfx/canvas",
   "github": "https://github.com/DjDeveloperr/skia_canvas",
-  "version": "0.5.6",
+  "version": "0.5.7",
   "exports": "./mod.ts",
 
   "exclude": ["skia", "scripts", "bench", "native", "test", "testdata"],
