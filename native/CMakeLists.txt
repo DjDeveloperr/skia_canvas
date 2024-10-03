@@ -1,9 +1,16 @@
 cmake_minimum_required(VERSION 3.10.0)
+
+set(MACOS_TARGET_ARCH "arm64" CACHE STRING "macOS target architecture (x86_64, arm64)")
+
 project(native_canvas VERSION 0.1.0)
 
 set (CMAKE_CXX_STANDARD 17)
 # set (CMAKE_BUILD_TYPE Debug)
 set (CMAKE_BUILD_TYPE Release)
+
+if (APPLE)
+  set(CMAKE_OSX_ARCHITECTURES ${MACOS_TARGET_ARCH})
+endif()
 
 include_directories(. ../skia)
 

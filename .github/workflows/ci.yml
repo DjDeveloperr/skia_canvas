@@ -72,6 +72,15 @@ jobs:
       - name: Build Native Library (Unix)
         if: runner.os != 'Windows'
         run: deno task build
+
+      - name: Build Native Library (macOS x86_64)
+        if: runner.os == 'macos-latest'
+        env:
+          TARGET_ARCH: x86_64
+        run: |
+          deno task build-skia
+          cp ./native/build/libnative_canvas{,_aarch64}.dylib
+          deno task build-macos-x86_64
         
       - name: Build Native Library (Windows)
         if: runner.os == 'Windows'
@@ -102,4 +111,5 @@ jobs:
             skia/out/Release/icudtl.dat
             native/build/libnative_canvas.so
             native/build/libnative_canvas.dylib
+            native/build/libnative_canvas_aarch64.dylib
             native/build/Release/native_canvas.dll

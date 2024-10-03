@@ -31,7 +31,7 @@ if (Deno.env.get("SKIA_FROM_SOURCE") !== "1") {
       os = "Linux";
       break;
   }
-  if (Deno.build.arch === "aarch64") {
+  if ((Deno.env.get("TARGET_ARCH") || Deno.build.arch) === "aarch64") {
     os += "-aarch64";
   }
   try {

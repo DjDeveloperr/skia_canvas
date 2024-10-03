@@ -8,6 +8,7 @@
 
   "tasks": {
     "build": "cd native/build && CC=clang CXX=clang++ cmake .. && cmake --build . --config Release",
+    "build-macos-x86_64": "cd native/build && CC=clang CXX=clang++ cmake .. -DMACOS_TARGET_ARCH=x86_64 && cmake --build . --config Release",
     "build-win": "rm -rf native/build && mkdir native/build && cd native/build && cmake .. -G \"Visual Studio 17 2022\" -T ClangCL && cmake --build . --config Release",
     "test": "deno run -A --unstable-ffi ./test/test.ts",
     "test-prebuilt": "deno run -A --unstable-ffi --import-map=./test/import_map.json ./test/test.ts",
