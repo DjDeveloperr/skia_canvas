@@ -118,19 +118,12 @@ sk_context_state* clone_context_state(sk_context_state* state) {
 }
 
 void free_context_state(sk_context_state* state) {
-  std::cout << "free context state" << std::endl;
   free_style(&state->fillStyle);
-  std::cout << "freed fill" << std::endl;
   free_style(&state->strokeStyle);
-  std::cout << "freed stroke" << std::endl;
   if (state->filter.get() != nullptr) state->filter->unref();
-  std::cout << "freed filter" << std::endl;
   delete state->paint;
-  std::cout << "freed paint, transform: " << (void*)state->transform << std::endl;
   delete state->transform;
-  std::cout << "freed transform" << std::endl;
   free_font(state->font);
-  std::cout << "freed font" << std::endl;
 }
 
 // Utility
